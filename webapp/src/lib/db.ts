@@ -14,7 +14,7 @@ export function checkIsDemoMode(): boolean {
 
 function checkIsDefaultUrl(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  return !url || url.includes("placeholder") || url.includes("nyvtrmwreujasdscfdit");
+  return !url || url.includes("placeholder");
 }
 
 // Initial seed data for the mock database

@@ -1,3 +1,12 @@
+-- 0. Clean / Reset Database (Delete everything and start over)
+DROP TABLE IF EXISTS public.logs CASCADE;
+DROP TABLE IF EXISTS public.shipment_assignments CASCADE;
+DROP TABLE IF EXISTS public.shipments CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+DROP TABLE IF EXISTS public.statuses CASCADE;
+DROP TABLE IF EXISTS public.carriers CASCADE;
+DROP TABLE IF EXISTS public.billable_concepts CASCADE;
+
 -- 1. Create System Master Data Tables
 
 -- Statuses Table
