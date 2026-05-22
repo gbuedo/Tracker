@@ -110,8 +110,10 @@ INSERT INTO public.billable_concepts (name) VALUES
 ALTER TABLE public.shipments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.statuses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billable_concepts ENABLE ROW LEVEL SECURITY;
 
 -- Temporary Policies to allow all access while we develop (In production we will restrict this)
 CREATE POLICY "Enable read/write access for all users on shipments" ON public.shipments FOR ALL USING (true);
 CREATE POLICY "Enable read/write access for all users on logs" ON public.logs FOR ALL USING (true);
 CREATE POLICY "Enable read access for all users on statuses" ON public.statuses FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users on billable_concepts" ON public.billable_concepts FOR SELECT USING (true);
