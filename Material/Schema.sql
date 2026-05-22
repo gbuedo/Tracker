@@ -64,6 +64,7 @@ CREATE TABLE public.logs (
     is_external BOOLEAN DEFAULT FALSE, -- TRUE = visible to clients, FALSE = internal only
     billable_concept_id INTEGER REFERENCES public.billable_concepts(id), -- For Pre-Invoicing
     amount NUMERIC(15,2), -- Cost capture if applicable
+    amount_type VARCHAR(50) DEFAULT 'cost', -- 'cost' or 'selling'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
