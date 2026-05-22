@@ -12,6 +12,11 @@ export function checkIsDemoMode(): boolean {
   return isDemo;
 }
 
+function checkIsDefaultUrl(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return !url || url.includes("placeholder") || url.includes("nyvtrmwreujasdscfdit");
+}
+
 // Initial seed data for the mock database
 const initialMockData = {
   statuses: [
@@ -221,7 +226,7 @@ function writeMockData(data: any) {
  * Executes a Supabase query with an automatic local fallback in case of connection errors.
  */
 async function queryWithFallback<T>(supabaseQuery: () => Promise<any>, fallbackFn: () => T): Promise<T> {
-  const isDefaultUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("nyvtrmwreujasdscfdit");
+  const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
     return fallbackFn();
@@ -325,7 +330,7 @@ export async function createShipment(
     eta?: string | null;
   } = {}
 ): Promise<Shipment> {
-  const isDefaultUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("nyvtrmwreujasdscfdit");
+  const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
@@ -424,7 +429,7 @@ export async function addLog(req: {
   amount?: number | null,
   amount_type?: 'cost' | 'selling' | null
 }): Promise<void> {
-  const isDefaultUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("nyvtrmwreujasdscfdit");
+  const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
@@ -488,7 +493,7 @@ export async function addLog(req: {
 }
 
 export async function updateShipmentStatus(shipment_id: number, status_id: number): Promise<void> {
-  const isDefaultUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("nyvtrmwreujasdscfdit");
+  const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
@@ -522,7 +527,7 @@ export async function updateShipmentStatus(shipment_id: number, status_id: numbe
 }
 
 export async function splitShipment(parent_id: number, splitDetails: any): Promise<Shipment> {
-  const isDefaultUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("nyvtrmwreujasdscfdit");
+  const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
