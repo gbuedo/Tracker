@@ -1,0 +1,85 @@
+{
+  "statuses": [
+    {
+      "id": 1,
+      "name": "Quoting",
+      "color_code": "#94a3b8",
+      "sort_order": 1
+    },
+    {
+      "id": 2,
+      "name": "Quoted",
+      "color_code": "#38bdf8",
+      "sort_order": 2
+    },
+    {
+      "id": 3,
+      "name": "Coordinating",
+      "color_code": "#fbbf24",
+      "sort_order": 3
+    },
+    {
+      "id": 4,
+      "name": "On the Way",
+      "color_code": "#818cf8",
+      "sort_order": 4
+    },
+    {
+      "id": 5,
+      "name": "STAGE 2 - Completed",
+      "color_code": "#4ade80",
+      "sort_order": 5
+    },
+    {
+      "id": 6,
+      "name": "Arrived",
+      "color_code": "#2dd4bf",
+      "sort_order": 6
+    },
+    {
+      "id": 7,
+      "name": "Delivered",
+      "color_code": "#22c55e",
+      "sort_order": 7
+    },
+    {
+      "id": 8,
+      "name": "Cancelled",
+      "color_code": "#f87171",
+      "sort_order": 8
+    }
+  ],
+  "billable_concepts": [
+    {
+      "id": 1,
+      "name": "Air Freight",
+      "description": "Standard air carriage charges"
+    },
+    {
+      "id": 2,
+      "name": "Ocean Freight",
+      "description": "Ocean container carriage charges"
+    },
+    {
+      "id": 3,
+      "name": "In & Out",
+      "description": "Warehouse handling in & out"
+    },
+    {
+      "id": 4,
+      "name": "Storage",
+      "description": "Daily warehouse storage rate"
+    },
+    {
+      "id": 5,
+      "name": "Customs Clearance",
+      "description": "Import custom broker filing fee"
+    }
+  ],
+  "shipments": [],
+  "logs": [],
+  "config": {
+    "next_shipment_id": 1001
+  },
+  "customers": []
+}
