@@ -86,7 +86,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
         
         if (fileNameLower.includes("invoice") || fileNameLower.includes("bill") || /\.(pdf|png|jpg|jpeg)$/i.test(fileNameLower) && !fileNameLower.includes("packing")) {
           // Pre-fill invoice data
-          setClientName("Masterline Logistics");
+          setClientName("Global Logistics Inc.");
           setReference("INV-2026-8831");
           setPcs("24");
           setKgs("450");

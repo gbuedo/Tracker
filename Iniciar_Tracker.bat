@@ -1,5 +1,5 @@
 @echo off
-title Masterline Operations Control Center
+title WCS Operations Control Center
 color 0b
 cls
 

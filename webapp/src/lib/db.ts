@@ -35,7 +35,7 @@ const initialMockData = {
     {
       id: 1,
       parent_shipment_id: null,
-      client_name: "Masterline Logistics",
+      client_name: "Global Logistics Inc.",
       reference: "PO-99281-AMZ",
       status_id: 6,
       shipment_type: "Import",
@@ -55,7 +55,7 @@ const initialMockData = {
     {
       id: 2,
       parent_shipment_id: 1,
-      client_name: "Masterline Logistics",
+      client_name: "Global Logistics Inc.",
       reference: "PO-99281-AMZ - SPLIT A",
       status_id: 7,
       shipment_type: "Import",
@@ -196,7 +196,7 @@ function readMockData() {
         });
       }
       if (clients.size === 0) {
-        clients.add("Masterline Logistics");
+        clients.add("Global Logistics Inc.");
         clients.add("Global Traders Corp");
         clients.add("InterContinental S.A.");
       }

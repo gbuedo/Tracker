@@ -20,7 +20,7 @@ We strongly recommend a modern Serverless/Edge stack designed for speed and rapi
 * **Shipments** (Core Entity)
   - `id` (Integer, Auto-increment)
   - `parent_shipment_id` (Integer, Foreign Key to Shipments - for fragmented partial arrivals)
-  - `client_name` (String, e.g., "masterline")
+  - `client_name` (String, e.g., "global-logistics")
   - `reference` (String, Supplier Ref / PO)
   - `status_id` (Foreign Key to Status Master)
   - `shipment_type` (Enum: Import, Export, Transit)

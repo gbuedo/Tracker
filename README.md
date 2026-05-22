@@ -1,7 +1,7 @@
-# Masterline Operations Control Center 🚀
+# WCS Tracker 🚀
 ### Integrated Logistics Tracking & Follow-up Middleware
 
-Masterline Operations Control Center is a specialized **Freight Follow-up & CRM web application** designed for freight forwarders to bridge the "follow-up gap" in standard ERP systems (like CargoTrack). 
+WCS Tracker is a specialized **Freight Follow-up & CRM web application** designed for freight forwarders to bridge the "follow-up gap" in standard ERP systems (like CargoTrack). 
 
 It centralizes shipment status tracking (Air, Ocean, Ground, FTZ), automates activity log timelines, handles partial shipment splits, and tracks pre-invoicing billable items from booking to final delivery.
 
