@@ -16,7 +16,7 @@ import { Shipment, Status } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { addCustomer, addStatus, updateAppConfig, resetDatabase } from "@/actions/shipments";
+import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase } from "@/actions/shipments";
 
 interface ShipmentsListProps {
   initialShipments: Shipment[];
@@ -48,6 +48,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
   const [saveSuccessMsg, setSaveSuccessMsg] = useState("");
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [wipingDb, setWipingDb] = useState(false);
+  const [seedingDb, setSeedingDb] = useState(false);
 
   // Preset colors for new status tags
   const statusColors = [
@@ -209,6 +210,25 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
       console.error(err);
     } finally {
       setWipingDb(false);
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    setSeedingDb(true);
+    try {
+      await seedDatabase();
+      setSaveSuccessMsg("🌱 Database successfully seeded with demo cargo!");
+      setNewCustomer("");
+      setNewStatusName("");
+      setTimeout(() => {
+        setDialogOpen(false);
+        setSaveSuccessMsg("");
+      }, 2500);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setSeedingDb(false);
     }
   };
 
@@ -414,6 +434,24 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                   </div>
                 </div>
 
+                {/* Initial Setup/Seed */}
+                <div className="space-y-3 border-t border-slate-850 pt-4">
+                  <Label className="text-sky-400 flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-black">
+                    🌱 Initial Demo Setup
+                  </Label>
+                  <p className="text-[10px] text-slate-500 font-medium">
+                    Populate your Supabase tables with sample parent/split shipments and tracking activity logs to test the terminal.
+                  </p>
+                  <Button 
+                    type="button" 
+                    onClick={handleSeedDatabase}
+                    disabled={seedingDb || wipingDb}
+                    className="w-full bg-sky-600/10 hover:bg-sky-600/20 border border-sky-500/30 text-sky-400 hover:text-sky-300 font-bold text-[11px] h-9 transition-all"
+                  >
+                    {seedingDb ? "Seeding Demo Data..." : "Seed Database with Demo Data"}
+                  </Button>
+                </div>
+
                 {/* Danger Zone: reset database */}
                 <div className="space-y-3 border-t border-rose-950/40 pt-4">
                   <Label className="text-rose-400 flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-black">
@@ -553,9 +591,36 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
             {sortedShipments.length === 0 ? (
               <TableRow className="border-slate-850 hover:bg-transparent">
                 <TableCell colSpan={8} className="text-center py-12 text-slate-500 font-medium">
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <FileText className="w-8 h-8 text-slate-600 animate-bounce" />
-                    <span>No active shipments found matching the filtered priorities.</span>
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="relative">
+                      <FileText className="w-10 h-10 text-slate-600" />
+                      <Sparkles className="w-4 h-4 text-sky-400 absolute -top-1 -right-1 animate-pulse" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-slate-400 font-semibold">No shipments found in the database</p>
+                      <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                        {initialShipments.length === 0 
+                          ? "Your database is currently empty. Seed it with sample cargo data to explore the terminal features."
+                          : "No active shipments match your search or filter settings."}
+                      </p>
+                    </div>
+                    {initialShipments.length === 0 && (
+                      <Button
+                        type="button"
+                        onClick={handleSeedDatabase}
+                        disabled={seedingDb}
+                        className="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-6 py-2 rounded-xl transition-all shadow-lg shadow-sky-950/50"
+                      >
+                        {seedingDb ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />
+                            Seeding Database...
+                          </>
+                        ) : (
+                          "Seed Sample Data"
+                        )}
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

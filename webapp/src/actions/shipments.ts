@@ -100,4 +100,10 @@ export async function resetDatabase() {
   revalidatePath("/");
 }
 
+export async function seedDatabase() {
+  await db.seedDemoData();
+  revalidatePath("/");
+}
+
+
 

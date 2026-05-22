@@ -15,3 +15,5 @@ webapp/.env*
 Thumbs.db
 .vscode/
 *.tsbuildinfo
+
+.vercel

@@ -179,7 +179,11 @@ const initialMockData = {
 // Helper: Ensure the mock file exists and read it
 function readMockData() {
   if (!fs.existsSync(MOCK_DB_PATH)) {
-    fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(initialMockData, null, 2), "utf8");
+    try {
+      fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(initialMockData, null, 2), "utf8");
+    } catch (e) {
+      // ignore write error on read-only environments
+    }
   }
   try {
     const raw = fs.readFileSync(MOCK_DB_PATH, "utf8");
@@ -209,17 +213,29 @@ function readMockData() {
       migrated = true;
     }
     if (migrated) {
-      fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(parsed, null, 2), "utf8");
+      try {
+        fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(parsed, null, 2), "utf8");
+      } catch (e) {
+        // ignore write error
+      }
     }
     return parsed;
   } catch (e) {
-    return initialMockData;
+    return {
+      ...initialMockData,
+      customers: ["Global Logistics Inc.", "Global Traders Corp", "InterContinental S.A."],
+      config: { next_shipment_id: 1001 }
+    };
   }
 }
 
 // Helper: Write data to the mock file
 function writeMockData(data: any) {
-  fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(data, null, 2), "utf8");
+  try {
+    fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(data, null, 2), "utf8");
+  } catch (e) {
+    // ignore write error
+  }
 }
 
 /**
@@ -681,8 +697,35 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
 }
 
 export async function getCustomers(): Promise<string[]> {
-  const data = readMockData();
-  return (data.customers || []) as string[];
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    return (data.customers || []) as string[];
+  }
+  try {
+    const { data, error } = await supabase
+      .from("shipments")
+      .select("client_name");
+    
+    if (error) throw error;
+    
+    const uniqueClients = new Set<string>();
+    if (data) {
+      data.forEach((s: any) => {
+        if (s.client_name) uniqueClients.add(s.client_name.trim());
+      });
+    }
+    
+    // Add defaults
+    const defaults = ["Global Logistics Inc.", "Global Traders Corp", "InterContinental S.A."];
+    defaults.forEach(c => uniqueClients.add(c));
+    
+    return Array.from(uniqueClients).sort();
+  } catch (err) {
+    const data = readMockData();
+    return (data.customers || []) as string[];
+  }
 }
 
 export async function addCustomer(name: string): Promise<void> {
@@ -711,13 +754,27 @@ export async function addStatus(name: string, color_code: string, sort_order: nu
 }
 
 export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
-  const data = readMockData();
-  if (!data.config) {
-    const maxId = data.shipments.length > 0 ? Math.max(...data.shipments.map((s: any) => s.id)) + 1 : 1;
-    data.config = { next_shipment_id: maxId };
-    writeMockData(data);
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    return data.config || { next_shipment_id: 1001 };
   }
-  return data.config;
+  try {
+    const { data, error } = await supabase
+      .from("shipments")
+      .select("id")
+      .order("id", { ascending: false })
+      .limit(1);
+    
+    if (error) throw error;
+    
+    const maxId = data && data.length > 0 ? data[0].id : 1000;
+    return { next_shipment_id: maxId + 1 };
+  } catch (err) {
+    const data = readMockData();
+    return data.config || { next_shipment_id: 1001 };
+  }
 }
 
 export async function updateAppConfig(config: { next_shipment_id: number }): Promise<void> {
@@ -773,6 +830,180 @@ export async function clearDatabase(): Promise<void> {
       writeMockData(data);
     }
   );
+}
+
+export async function seedDemoData(): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    writeMockData(initialMockData);
+    return;
+  }
+  
+  try {
+    // Check if we have statuses
+    const { data: statuses, error: stError } = await supabase.from("statuses").select("id");
+    if (stError) throw stError;
+    
+    if (!statuses || statuses.length === 0) {
+      await supabase.from("statuses").insert([
+        { id: 1, name: "Quoting", color_code: "#94a3b8", sort_order: 1 },
+        { id: 2, name: "Quoted", color_code: "#38bdf8", sort_order: 2 },
+        { id: 3, name: "Coordinating", color_code: "#fbbf24", sort_order: 3 },
+        { id: 4, name: "On the Way", color_code: "#818cf8", sort_order: 4 },
+        { id: 5, name: "STAGE 2 - Completed", color_code: "#4ade80", sort_order: 5 },
+        { id: 6, name: "Arrived", color_code: "#2dd4bf", sort_order: 6 },
+        { id: 7, name: "Delivered", color_code: "#22c55e", sort_order: 7 },
+        { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 }
+      ]);
+    }
+
+    // Check if we have billable concepts
+    const { data: concepts, error: bcError } = await supabase.from("billable_concepts").select("id");
+    if (bcError) throw bcError;
+    if (!concepts || concepts.length === 0) {
+      await supabase.from("billable_concepts").insert([
+        { id: 1, name: "Air Freight", description: "Standard air carriage charges" },
+        { id: 2, name: "Ocean Freight", description: "Ocean container carriage charges" },
+        { id: 3, name: "In & Out", description: "Warehouse handling in & out" },
+        { id: 4, name: "Storage", description: "Daily warehouse storage rate" },
+        { id: 5, name: "Customs Clearance", description: "Import custom broker filing fee" }
+      ]);
+    }
+
+    // Clear existing shipments/logs just in case
+    await supabase.from("logs").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    await supabase.from("shipments").delete().gt("id", 0);
+
+    // Insert parent shipments
+    const { data: parents, error: parentError } = await supabase.from("shipments").insert([
+      {
+        client_name: "Global Logistics Inc.",
+        reference: "PO-99281-AMZ",
+        status_id: 6,
+        shipment_type: "Import",
+        eta: "2026-05-20",
+        etd: "2026-05-15",
+        ct_file: "CT-77492",
+        warehouse_receipt: "WH-90812",
+        expo_mawb: "012-99887766",
+        expo_hawb: "HAWB-8812",
+        pcs: 45,
+        kgs: 1250.5,
+        chw: 1300,
+        aes: "AES-X992831",
+      },
+      {
+        client_name: "Global Traders Corp",
+        reference: "PO-8827-GT",
+        status_id: 3,
+        shipment_type: "Export",
+        eta: "2026-06-05",
+        etd: "2026-05-28",
+        ct_file: "CT-88391",
+        warehouse_receipt: "WH-77382",
+        expo_mawb: "016-88771122",
+        expo_hawb: "HAWB-4456",
+        pcs: 120,
+        kgs: 4800,
+        chw: 5000,
+        aes: "AES-Y883921",
+      },
+      {
+        client_name: "InterContinental S.A.",
+        reference: "PO-1102-IC",
+        status_id: 8,
+        shipment_type: "Transit",
+        eta: "2026-05-25",
+        etd: "2026-05-10",
+        ct_file: "CT-11029",
+        pcs: 5,
+        kgs: 95,
+        chw: 100,
+      }
+    ]).select();
+
+    if (parentError || !parents) throw parentError || new Error("Failed to insert parents");
+
+    const ship1 = parents.find(p => p.reference === "PO-99281-AMZ");
+    const ship3 = parents.find(p => p.reference === "PO-8827-GT");
+
+    if (ship1) {
+      const { data: child, error: childError } = await supabase.from("shipments").insert({
+        parent_shipment_id: ship1.id,
+        client_name: "Global Logistics Inc.",
+        reference: "PO-99281-AMZ - SPLIT A",
+        status_id: 7,
+        shipment_type: "Import",
+        eta: "2026-05-18",
+        etd: "2026-05-15",
+        ct_file: "CT-77492-A",
+        warehouse_receipt: "WH-90812-A",
+        expo_mawb: "012-99887766",
+        expo_hawb: "HAWB-8812-A",
+        pcs: 20,
+        kgs: 550,
+        chw: 550,
+        aes: "AES-X992831",
+      }).select().single();
+
+      if (childError || !child) throw childError || new Error("Failed to insert child");
+
+      const seedLogs = [
+        {
+          shipment_id: ship1.id,
+          event_text: "File created in follow-up middleware. Waiting for documentation from supplier.",
+          is_external: false,
+          amount: null,
+          billable_concept_id: null,
+        },
+        {
+          shipment_id: ship1.id,
+          event_text: "Documentation received. Coordinating flight schedules with Atlas Air.",
+          is_external: true,
+          amount: null,
+          billable_concept_id: null,
+        },
+        {
+          shipment_id: ship1.id,
+          event_text: "Cargo arrived at airport warehouse and inspected. In & Out fees captured.",
+          is_external: false,
+          amount: 150.00,
+          billable_concept_id: 3,
+        },
+        {
+          shipment_id: child.id,
+          event_text: "Cargo split from master shipment #1. Dispatched for final delivery to warehouse.",
+          is_external: true,
+          amount: null,
+          billable_concept_id: null,
+        },
+        {
+          shipment_id: child.id,
+          event_text: "Cargo successfully delivered and signed by consignee.",
+          is_external: true,
+          amount: null,
+          billable_concept_id: null,
+        }
+      ];
+
+      if (ship3) {
+        seedLogs.push({
+          shipment_id: ship3.id,
+          event_text: "Shipment details uploaded. Booking slot confirmed with airline carrier.",
+          is_external: true,
+          amount: null,
+          billable_concept_id: null,
+        });
+      }
+
+      const { error: logsError } = await supabase.from("logs").insert(seedLogs);
+      if (logsError) throw logsError;
+    }
+  } catch (err) {
+    console.error("Failed to seed database:", err);
+    throw err;
+  }
 }
 
 
