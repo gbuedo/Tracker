@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { AddLogForm } from "@/components/AddLogForm";
 import { SplitCargoDialog } from "@/components/SplitCargoDialog";
 import { StatusSelector } from "@/components/StatusSelector";
+import { EmailQuoteParser } from "@/components/EmailQuoteParser";
 import Link from "next/link";
 import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity } from "lucide-react";
 import { format } from "date-fns";
@@ -260,9 +261,14 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               </CardHeader>
               <CardContent className="pt-4 text-xs font-semibold text-slate-450 space-y-3">
                 {logs.filter(l => l.amount).length === 0 ? (
-                  <p className="text-center italic py-2 text-slate-500">
-                    No billing items logged on this shipment yet. Add billing details below.
-                  </p>
+                  <div className="space-y-4">
+                    <p className="text-center italic py-2 text-slate-500">
+                      No billing items logged on this shipment yet. Add billing details manually or parse an email quote.
+                    </p>
+                    <div className="flex justify-center pt-2">
+                      <EmailQuoteParser shipmentId={shipment.id} billableConcepts={billableConcepts} />
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
@@ -303,6 +309,10 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                           ${totalProfit.toFixed(2)}
                         </span>
                       </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-850 flex justify-center">
+                      <EmailQuoteParser shipmentId={shipment.id} billableConcepts={billableConcepts} />
                     </div>
                   </div>
                 )}

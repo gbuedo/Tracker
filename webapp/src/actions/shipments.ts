@@ -7,6 +7,7 @@ export async function createShipment(formData: FormData) {
   const client_name = formData.get("client_name") as string;
   const reference = formData.get("reference") as string;
   const shipment_type = formData.get("shipment_type") as string;
+  const transport_mode = formData.get("transport_mode") as string || null;
   
   const pcs = formData.get("pcs") ? Number(formData.get("pcs")) : null;
   const kgs = formData.get("kgs") ? Number(formData.get("kgs")) : null;
@@ -20,6 +21,7 @@ export async function createShipment(formData: FormData) {
   const eta = formData.get("eta") as string || null;
 
   const data = await db.createShipment(client_name, reference, shipment_type, {
+    transport_mode,
     pcs,
     kgs,
     chw,
@@ -32,6 +34,12 @@ export async function createShipment(formData: FormData) {
     eta
   });
 
+  revalidatePath("/");
+  return data;
+}
+
+export async function createBillableConcept(name: string, description?: string) {
+  const data = await db.createBillableConcept(name, description);
   revalidatePath("/");
   return data;
 }

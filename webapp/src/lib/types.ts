@@ -31,6 +31,7 @@ export type Shipment = {
   reference: string;
   status_id: number | null;
   shipment_type: string | null;
+  transport_mode: string | null;
   eta: string | null;
   etd: string | null;
   ct_file: string | null;

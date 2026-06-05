@@ -1,0 +1,16 @@
+## arreglos pendientes
+
+1. el operational milestones counters son muy grandes los botones, hacerlo mas compacto, la funcionalidad es correcta, pero son demasiado grandes como kpi y botones de filtro.
+2. el search esta correcto
+3. el all import export transit esta correcto, pero habria que tambien elegir aereo, maritimo, terrestre y combinado. todas las operaciones puede tener combianacion de esto, por ejemplo, importacion aerea, exportacion maritima, transito aereo y maritimo, etc, siempre todo en ingles.
+4. el sort esta correcto
+5. los botones de filtered cargo files, export operations, transit operations, etc estan correctos, pero tienen que ser mas compactos, son muy grandes.
+6. el listado de operaciones esta ok, pero los titulos hay que ponerlos en 2 filas si es necesario, porque no justifica muchas veces el ancho de la columna. los botones de type tienen avion para export y barco para import, pero el avion, barco, camion debe depender si es el tipo de operacion (que ahora hay que elegirlo) y la palabra esta correcta import, export, etc. en technical bills todos dicen MAWB: pero no debe tener este prefijo, ya que puede ser mawb, bl, y otro. el ancho general de la parte principal es demasiado ancho y el marco tiene barra de scroll lateral, esto no es necesrio y es incomodo, esta bueno que entre dentro del marco, sin scroll y la informacion que falta, que se presione en el embarque un dropdown y muestre la info hacia abajo, la que falta. que lo principal se muestre siempre, id, cliente, referencia, tipo, status, etc, el resto puede verse con el drop down.
+7. new shipment.
+   1. en shipment type esta ok, impo, expo, transit, combine, falta poner otro campo que sea aereo, maritimo, terrestre, wh y luego otro deberia haber que sea impo
+8. dentro de un ID
+   1. el update esta correcto
+   2. el concept, tiene drop down, pero debe permitir agregar y debe quedar para la proxima
+   3. amount, permite un solo monto, pero deberian ser 2 y uno deberia decir cost y otro selling, no uno solo que diga cual el, sino para selling y cost, hay que cargarlo 2 veces
+   4. seria bueno un boton que permita pegar texto traido de un email para costo y otro para cargar venta y que haya un reconocedor de cotizador para agregar los conceptos de venta y costo. por ejemplo si pego un texto completo en el boton de selling que diga ocean freight $1000, fuel $500, handling $200 y luego en el boton de cost, en el campo pegue el texto ocean freight $500, fuel $300 nada mas, que haya un reconocedor de valores y que los cruce para que arme la liquidacion, poniendo tipo excel concepto, monto, diferencia/ganancia. debe ser un buen reconocedor de texto para entender que donde haya montos y conceptos, asi los tome. La liquidacion de la operacion debe considerar por igual el bloque de texto agregado de cotizaciones como los que se agregan individualmente. tambien debe mostrar como reconoce el texto para permitir corregirlo para que quede correcta la liquidacion.
+   5. cuando se haga split cargo, esta bueno que en el panel principal ambos embarques se los muestre vinculados y siempre juntos idependientemente del eta en los sort y demas, ya que siempre deben estar vinculados.

@@ -30,6 +30,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
   const [clientName, setClientName] = useState("");
   const [reference, setReference] = useState("");
   const [shipmentType, setShipmentType] = useState("Import");
+  const [transportMode, setTransportMode] = useState("Air");
   const [pcs, setPcs] = useState("");
   const [kgs, setKgs] = useState("");
   const [chw, setChw] = useState("");
@@ -48,6 +49,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
     setClientName("");
     setReference("");
     setShipmentType("Import");
+    setTransportMode("Air");
     setPcs("");
     setKgs("");
     setChw("");
@@ -92,6 +94,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
           setKgs("450");
           setChw("475");
           setShipmentType("Import");
+          setTransportMode("Air");
           setCtFile("CT-8890");
           setWarehouseReceipt("WR-55120");
           setExpoMawb("016-88992341");
@@ -105,6 +108,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
           setKgs("2300");
           setChw("2350");
           setShipmentType("Export");
+          setTransportMode("Ocean");
           setCtFile("CT-2391");
           setExpoMawb("012-99881234");
           setExpoHawb("HAWB-77610");
@@ -117,6 +121,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
           setKgs("120");
           setChw("125");
           setShipmentType("Transit");
+          setTransportMode("Land");
           setCtFile("CT-3345");
         }
 
@@ -276,6 +281,25 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
                 <option value="Import">Import</option>
                 <option value="Export">Export</option>
                 <option value="Transit">Transit</option>
+                <option value="Combine">Combine</option>
+              </select>
+            </div>
+
+            {/* Transport Mode */}
+            <div className="grid gap-1.5">
+              <Label htmlFor="transport_mode" className="text-slate-300">Transport Mode</Label>
+              <select 
+                id="transport_mode" 
+                name="transport_mode" 
+                value={transportMode}
+                onChange={(e) => setTransportMode(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-slate-200"
+              >
+                <option value="Air">Air</option>
+                <option value="Ocean">Ocean</option>
+                <option value="Land">Land</option>
+                <option value="Warehouse">Warehouse</option>
+                <option value="Combined">Combined</option>
               </select>
             </div>
 

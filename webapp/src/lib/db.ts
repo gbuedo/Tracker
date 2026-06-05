@@ -44,6 +44,7 @@ const initialMockData = {
       reference: "PO-99281-AMZ",
       status_id: 6,
       shipment_type: "Import",
+      transport_mode: "Air",
       eta: "2026-05-20",
       etd: "2026-05-15",
       ct_file: "CT-77492",
@@ -64,6 +65,7 @@ const initialMockData = {
       reference: "PO-99281-AMZ - SPLIT A",
       status_id: 7,
       shipment_type: "Import",
+      transport_mode: "Air",
       eta: "2026-05-18",
       etd: "2026-05-15",
       ct_file: "CT-77492-A",
@@ -84,6 +86,7 @@ const initialMockData = {
       reference: "PO-8827-GT",
       status_id: 3,
       shipment_type: "Export",
+      transport_mode: "Ocean",
       eta: "2026-06-05",
       etd: "2026-05-28",
       ct_file: "CT-88391",
@@ -104,6 +107,7 @@ const initialMockData = {
       reference: "PO-1102-IC",
       status_id: 8,
       shipment_type: "Transit",
+      transport_mode: "Land",
       eta: "2026-05-25",
       etd: "2026-05-10",
       ct_file: "CT-11029",
@@ -334,6 +338,7 @@ export async function createShipment(
   reference: string, 
   shipment_type: string,
   extra: {
+    transport_mode?: string | null;
     pcs?: number | null;
     kgs?: number | null;
     chw?: number | null;
@@ -361,6 +366,7 @@ export async function createShipment(
       reference,
       status_id: 1, // Quoting
       shipment_type,
+      transport_mode: extra.transport_mode || null,
       eta: extra.eta || null,
       etd: extra.etd || null,
       ct_file: extra.ct_file || null,
@@ -385,6 +391,7 @@ export async function createShipment(
       client_name,
       reference,
       shipment_type,
+      transport_mode: extra.transport_mode || null,
       status_id: 1, // Quoting
       eta: extra.eta || null,
       etd: extra.etd || null,
@@ -415,6 +422,7 @@ export async function createShipment(
         reference,
         status_id: 1, // Quoting
         shipment_type,
+        transport_mode: extra.transport_mode || null,
         eta: extra.eta || null,
         etd: extra.etd || null,
         ct_file: extra.ct_file || null,
@@ -632,6 +640,50 @@ export async function getBillableConcepts(): Promise<BillableConcept[]> {
       return readMockData().billable_concepts as BillableConcept[];
     }
   );
+}
+
+export async function createBillableConcept(name: string, description?: string): Promise<BillableConcept> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.billable_concepts) data.billable_concepts = [];
+    const newId = data.billable_concepts.length > 0 ? Math.max(...data.billable_concepts.map((c: any) => c.id)) + 1 : 1;
+    const newConcept = {
+      id: newId,
+      name: name.trim(),
+      description: description || ""
+    };
+    data.billable_concepts.push(newConcept);
+    writeMockData(data);
+    return newConcept as BillableConcept;
+  }
+  try {
+    const { data, error } = await supabase.from("billable_concepts").insert({
+      name: name.trim(),
+      description: description || ""
+    }).select().single();
+    if (error) throw error;
+    isDemo = false;
+    return data as BillableConcept;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+      const data = readMockData();
+      if (!data.billable_concepts) data.billable_concepts = [];
+      const newId = data.billable_concepts.length > 0 ? Math.max(...data.billable_concepts.map((c: any) => c.id)) + 1 : 1;
+      const newConcept = {
+        id: newId,
+        name: name.trim(),
+        description: description || ""
+      };
+      data.billable_concepts.push(newConcept);
+      writeMockData(data);
+      return newConcept as BillableConcept;
+    }
+    throw err;
+  }
 }
 
 export async function searchPortalShipment(search: string): Promise<{ shipment: Shipment; logs: Log[] } | null> {
@@ -882,6 +934,7 @@ export async function seedDemoData(): Promise<void> {
         reference: "PO-99281-AMZ",
         status_id: 6,
         shipment_type: "Import",
+        transport_mode: "Air",
         eta: "2026-05-20",
         etd: "2026-05-15",
         ct_file: "CT-77492",
@@ -898,6 +951,7 @@ export async function seedDemoData(): Promise<void> {
         reference: "PO-8827-GT",
         status_id: 3,
         shipment_type: "Export",
+        transport_mode: "Ocean",
         eta: "2026-06-05",
         etd: "2026-05-28",
         ct_file: "CT-88391",
@@ -914,6 +968,7 @@ export async function seedDemoData(): Promise<void> {
         reference: "PO-1102-IC",
         status_id: 8,
         shipment_type: "Transit",
+        transport_mode: "Land",
         eta: "2026-05-25",
         etd: "2026-05-10",
         ct_file: "CT-11029",
@@ -935,6 +990,7 @@ export async function seedDemoData(): Promise<void> {
         reference: "PO-99281-AMZ - SPLIT A",
         status_id: 7,
         shipment_type: "Import",
+        transport_mode: "Air",
         eta: "2026-05-18",
         etd: "2026-05-15",
         ct_file: "CT-77492-A",

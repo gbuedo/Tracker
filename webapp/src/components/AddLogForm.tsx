@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { addLog } from "@/actions/shipments";
+import { addLog, createBillableConcept } from "@/actions/shipments";
 import { Eye, EyeOff, Send, DollarSign, Tag, FileText } from "lucide-react";
 import { BillableConcept } from "@/lib/types";
 
@@ -17,35 +17,96 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
   const [isExternal, setIsExternal] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [selectedConcept, setSelectedConcept] = useState<string>("");
-  const [amountType, setAmountType] = useState<"cost" | "selling">("cost");
+  const [customConceptName, setCustomConceptName] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
+  const handleConceptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedConcept(val);
+    if (val === "new_concept") {
+      setShowCustomInput(true);
+    } else {
+      setShowCustomInput(false);
+    }
+  };
 
   async function handleSubmit(formData: FormData) {
     setIsPending(true);
     try {
       const event_text = formData.get("event_text") as string;
-      const amount = formData.get("amount") ? Number(formData.get("amount")) : null;
-      const amount_type = formData.get("amount_type") as "cost" | "selling" || "cost";
-      const billable_concept_id = selectedConcept ? Number(selectedConcept) : null;
+      const cost_amount = formData.get("cost_amount") ? Number(formData.get("cost_amount")) : null;
+      const selling_amount = formData.get("selling_amount") ? Number(formData.get("selling_amount")) : null;
+      
+      let billable_concept_id = selectedConcept && selectedConcept !== "new_concept" ? Number(selectedConcept) : null;
 
-      await addLog({
-        shipment_id: shipmentId,
-        event_text,
-        is_external: isExternal,
-        billable_concept_id,
-        amount,
-        amount_type,
-      });
+      // Handle custom concept creation if chosen
+      if (selectedConcept === "new_concept" && customConceptName.trim()) {
+        const newConcept = await createBillableConcept(customConceptName.trim());
+        billable_concept_id = newConcept.id;
+      }
+
+      // If both cost and selling are defined, log them as two separate logs to support dual amounts
+      if (cost_amount !== null && selling_amount !== null) {
+        await addLog({
+          shipment_id: shipmentId,
+          event_text: `${event_text} (Cost Entry)`,
+          is_external: isExternal,
+          billable_concept_id,
+          amount: cost_amount,
+          amount_type: "cost"
+        });
+        await addLog({
+          shipment_id: shipmentId,
+          event_text: `${event_text} (Selling Entry)`,
+          is_external: isExternal,
+          billable_concept_id,
+          amount: selling_amount,
+          amount_type: "selling"
+        });
+      } else if (cost_amount !== null) {
+        await addLog({
+          shipment_id: shipmentId,
+          event_text,
+          is_external: isExternal,
+          billable_concept_id,
+          amount: cost_amount,
+          amount_type: "cost"
+        });
+      } else if (selling_amount !== null) {
+        await addLog({
+          shipment_id: shipmentId,
+          event_text,
+          is_external: isExternal,
+          billable_concept_id,
+          amount: selling_amount,
+          amount_type: "selling"
+        });
+      } else {
+        // Log without amount
+        await addLog({
+          shipment_id: shipmentId,
+          event_text,
+          is_external: isExternal,
+          billable_concept_id: null,
+          amount: null,
+          amount_type: null
+        });
+      }
 
       // Clear input fields
       const input = document.getElementById("event_text") as HTMLInputElement;
       if (input) input.value = "";
       
-      const amountInput = document.getElementById("amount") as HTMLInputElement;
-      if (amountInput) amountInput.value = "";
+      const costInput = document.getElementById("cost_amount") as HTMLInputElement;
+      if (costInput) costInput.value = "";
+
+      const sellInput = document.getElementById("selling_amount") as HTMLInputElement;
+      if (sellInput) sellInput.value = "";
       
       setSelectedConcept("");
+      setCustomConceptName("");
+      setShowCustomInput(false);
       setIsExternal(false);
-      setAmountType("cost");
     } catch (e) {
       console.error(e);
     } finally {
@@ -71,7 +132,7 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         {/* Billable Concept dropdown */}
-        <div className="space-y-1">
+        <div className="space-y-1 col-span-1">
           <Label htmlFor="billable_concept_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
             Concept (Optional)
           </Label>
@@ -80,7 +141,7 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
             <select
               id="billable_concept_id"
               value={selectedConcept}
-              onChange={(e) => setSelectedConcept(e.target.value)}
+              onChange={handleConceptChange}
               className="bg-transparent text-slate-300 border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
             >
               <option value="" className="bg-slate-950 text-slate-500">None (Log)</option>
@@ -89,20 +150,21 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
                   {concept.name}
                 </option>
               ))}
+              <option value="new_concept" className="bg-slate-950 text-sky-400 font-bold">+ Add Custom Concept...</option>
             </select>
           </div>
         </div>
 
-        {/* Amount input */}
+        {/* Cost Amount input */}
         <div className="space-y-1">
-          <Label htmlFor="amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
-            Amount (Optional)
+          <Label htmlFor="cost_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
+            Cost Amount ($)
           </Label>
           <div className="relative">
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
             <Input 
-              id="amount"
-              name="amount" 
+              id="cost_amount"
+              name="cost_amount" 
               type="number"
               step="any"
               placeholder="0.00" 
@@ -111,35 +173,21 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
           </div>
         </div>
 
-        {/* Amount Type select */}
+        {/* Selling Amount input */}
         <div className="space-y-1">
-          <Label htmlFor="amount_type" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
-            Type
+          <Label htmlFor="selling_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
+            Selling Amount ($)
           </Label>
-          <div className="flex gap-1 h-10 bg-slate-950/80 border border-slate-800 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setAmountType("cost")}
-              className={`flex-1 text-[10px] font-extrabold rounded transition-all uppercase ${
-                amountType === "cost"
-                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              Cost
-            </button>
-            <button
-              type="button"
-              onClick={() => setAmountType("selling")}
-              className={`flex-1 text-[10px] font-extrabold rounded transition-all uppercase ${
-                amountType === "selling"
-                  ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              Selling
-            </button>
-            <input type="hidden" name="amount_type" value={amountType} />
+          <div className="relative">
+            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+            <Input 
+              id="selling_amount"
+              name="selling_amount" 
+              type="number"
+              step="any"
+              placeholder="0.00" 
+              className="pl-8 bg-slate-950/80 border-slate-800 text-slate-300 placeholder:text-slate-650 h-10 rounded-lg font-mono text-xs font-semibold" 
+            />
           </div>
         </div>
 
@@ -163,6 +211,20 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
           </Button>
         </div>
       </div>
+
+      {/* Show custom concept name text field if selected */}
+      {showCustomInput && (
+        <div className="space-y-1.5 p-3.5 bg-slate-950/40 border border-slate-850 rounded-lg animate-in fade-in duration-200">
+          <Label htmlFor="custom_concept_name" className="text-[10px] uppercase font-bold text-slate-400">Custom Concept Name</Label>
+          <Input
+            id="custom_concept_name"
+            value={customConceptName}
+            onChange={(e) => setCustomConceptName(e.target.value)}
+            placeholder="Enter custom billable concept name..."
+            className="bg-slate-950/80 border-slate-800 text-slate-200 text-xs h-9"
+          />
+        </div>
+      )}
 
       {/* Form Submission button */}
       <div className="flex justify-end pt-1">
