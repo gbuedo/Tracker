@@ -180,8 +180,14 @@ const initialMockData = {
   ]
 };
 
+// In-memory cache for mock database updates on read-only filesystems
+let memoryMockData: any = null;
+
 // Helper: Ensure the mock file exists and read it
 function readMockData() {
+  if (memoryMockData) {
+    return memoryMockData;
+  }
   if (!fs.existsSync(MOCK_DB_PATH)) {
     try {
       fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(initialMockData, null, 2), "utf8");
@@ -223,18 +229,22 @@ function readMockData() {
         // ignore write error
       }
     }
+    memoryMockData = parsed;
     return parsed;
   } catch (e) {
-    return {
+    const fallback = {
       ...initialMockData,
       customers: ["Global Logistics Inc.", "Global Traders Corp", "InterContinental S.A."],
       config: { next_shipment_id: 1001 }
     };
+    memoryMockData = fallback;
+    return fallback;
   }
 }
 
 // Helper: Write data to the mock file
 function writeMockData(data: any) {
+  memoryMockData = data;
   try {
     fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(data, null, 2), "utf8");
   } catch (e) {
