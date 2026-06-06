@@ -27,7 +27,8 @@ const initialMockData = {
     { id: 5, name: "STAGE 2 - Completed", color_code: "#4ade80", sort_order: 5 },
     { id: 6, name: "Arrived", color_code: "#2dd4bf", sort_order: 6 },
     { id: 7, name: "Delivered", color_code: "#22c55e", sort_order: 7 },
-    { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 }
+    { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 },
+    { id: 9, name: "Closed", color_code: "#64748b", sort_order: 9 }
   ],
   billable_concepts: [
     { id: 1, name: "Air Freight", description: "Standard air carriage charges" },
@@ -909,7 +910,8 @@ export async function clearDatabase(): Promise<void> {
         { id: 5, name: "STAGE 2 - Completed", color_code: "#4ade80", sort_order: 5 },
         { id: 6, name: "Arrived", color_code: "#2dd4bf", sort_order: 6 },
         { id: 7, name: "Delivered", color_code: "#22c55e", sort_order: 7 },
-        { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 }
+        { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 },
+        { id: 9, name: "Closed", color_code: "#64748b", sort_order: 9 }
       ];
       writeMockData(data);
     },
@@ -927,7 +929,8 @@ export async function clearDatabase(): Promise<void> {
         { id: 5, name: "STAGE 2 - Completed", color_code: "#4ade80", sort_order: 5 },
         { id: 6, name: "Arrived", color_code: "#2dd4bf", sort_order: 6 },
         { id: 7, name: "Delivered", color_code: "#22c55e", sort_order: 7 },
-        { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 }
+        { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 },
+        { id: 9, name: "Closed", color_code: "#64748b", sort_order: 9 }
       ];
       writeMockData(data);
     }
@@ -956,7 +959,8 @@ export async function seedDemoData(): Promise<void> {
         { id: 5, name: "STAGE 2 - Completed", color_code: "#4ade80", sort_order: 5 },
         { id: 6, name: "Arrived", color_code: "#2dd4bf", sort_order: 6 },
         { id: 7, name: "Delivered", color_code: "#22c55e", sort_order: 7 },
-        { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 }
+        { id: 8, name: "Cancelled", color_code: "#f87171", sort_order: 8 },
+        { id: 9, name: "Closed", color_code: "#64748b", sort_order: 9 }
       ]);
     }
 

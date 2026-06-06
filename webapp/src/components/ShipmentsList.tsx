@@ -117,7 +117,9 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         ship.id.toString().includes(search);
 
       const matchesType = typeFilter === "All" || ship.shipment_type === typeFilter;
-      const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(ship.status?.name || "");
+      const matchesStatus = selectedStatuses.length === 0
+        ? ship.status?.name !== "Closed"
+        : selectedStatuses.includes(ship.status?.name || "");
 
       return matchesSearch && matchesType && matchesStatus;
     });
