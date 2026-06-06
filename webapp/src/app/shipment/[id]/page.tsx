@@ -6,6 +6,7 @@ import { AddLogForm } from "@/components/AddLogForm";
 import { SplitCargoDialog } from "@/components/SplitCargoDialog";
 import { StatusSelector } from "@/components/StatusSelector";
 import { EmailQuoteParser } from "@/components/EmailQuoteParser";
+import { DeleteShipmentButton } from "@/components/DeleteShipmentButton";
 import Link from "next/link";
 import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity } from "lucide-react";
 import { format } from "date-fns";
@@ -136,6 +137,9 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               parentKgs={shipment.kgs} 
               parentChw={shipment.chw} 
             />
+
+            {/* Delete Shipment Action */}
+            <DeleteShipmentButton shipmentId={shipment.id} />
           </div>
         </div>
 

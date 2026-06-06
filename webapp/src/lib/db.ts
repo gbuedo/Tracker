@@ -630,6 +630,46 @@ export async function splitShipment(parent_id: number, splitDetails: any): Promi
   }
 }
 
+export async function deleteShipment(id: number): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    const toDeleteIds = new Set<number>([id]);
+    data.shipments.forEach((s: any) => {
+      if (s.parent_shipment_id === id) {
+        toDeleteIds.add(s.id);
+      }
+    });
+    data.shipments = data.shipments.filter((s: any) => !toDeleteIds.has(s.id));
+    data.logs = data.logs.filter((l: any) => !toDeleteIds.has(l.shipment_id));
+    writeMockData(data);
+    return;
+  }
+  try {
+    const { error } = await supabase.from("shipments").delete().eq("id", id);
+    if (error) throw error;
+    isDemo = false;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+      const data = readMockData();
+      const toDeleteIds = new Set<number>([id]);
+      data.shipments.forEach((s: any) => {
+        if (s.parent_shipment_id === id) {
+          toDeleteIds.add(s.id);
+        }
+      });
+      data.shipments = data.shipments.filter((s: any) => !toDeleteIds.has(s.id));
+      data.logs = data.logs.filter((l: any) => !toDeleteIds.has(l.shipment_id));
+      writeMockData(data);
+      return;
+    }
+    throw err;
+  }
+}
+
 export async function getStatuses(): Promise<Status[]> {
   return queryWithFallback(
     async () => {

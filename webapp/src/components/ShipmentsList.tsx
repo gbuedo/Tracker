@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Search, Ship, Plane, Truck, Filter, ArrowUpRight, Calendar, 
   FileText, CheckCircle2, User, Settings, Sparkles, Plus, 
-  ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink 
+  ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink, Trash2 
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -16,7 +16,7 @@ import { Shipment, Status } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase } from "@/actions/shipments";
+import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase, deleteShipment } from "@/actions/shipments";
 
 interface ShipmentsListProps {
   initialShipments: Shipment[];
@@ -40,10 +40,22 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
 
   // Expandable rows state
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const toggleRow = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleDelete = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await deleteShipment(id);
+      setConfirmDeleteId(null);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const getTransportIcon = (mode: string | null) => {
@@ -825,13 +837,43 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                 </div>
                               </div>
                               
-                              <Link 
-                                href={`/shipment/${ship.id}`}
-                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 mt-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg transition-colors w-full text-[11px] uppercase tracking-wider shadow-sm"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                Manage Shipment Detail
-                              </Link>
+                              <div className="space-y-2">
+                                <Link 
+                                  href={`/shipment/${ship.id}`}
+                                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg transition-colors w-full text-[11px] uppercase tracking-wider shadow-sm"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  Manage Shipment Detail
+                                </Link>
+
+                                {confirmDeleteId === ship.id ? (
+                                  <div className="p-2 border border-rose-900/50 bg-rose-950/30 rounded-lg text-center space-y-1.5 animate-in zoom-in-95 duration-155">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-300">Confirm delete file?</p>
+                                    <div className="flex gap-2 justify-center">
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
+                                        className="h-6 px-2.5 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded text-[9px] font-bold border border-slate-800"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={(e) => handleDelete(ship.id, e)}
+                                        className="h-6 px-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-[9px] font-bold"
+                                      >
+                                        Yes, Delete
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(ship.id); }}
+                                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-rose-950 bg-rose-950/20 hover:bg-rose-950/40 hover:border-rose-900/40 text-rose-400 hover:text-rose-300 font-bold rounded-lg transition-colors w-full text-[11px] uppercase tracking-wider shadow-sm"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Delete Shipment
+                                  </button>
+                                )}
+                              </div>
                             </div>
 
                           </div>

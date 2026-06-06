@@ -113,5 +113,10 @@ export async function seedDatabase() {
   revalidatePath("/");
 }
 
+export async function deleteShipment(id: number) {
+  await db.deleteShipment(id);
+  revalidatePath("/");
+}
+
 
 
