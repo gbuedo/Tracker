@@ -39,8 +39,8 @@ export function DeleteShipmentButton({ shipmentId }: DeleteShipmentButtonProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" className="flex items-center border-rose-950 bg-rose-950/20 hover:bg-rose-950/40 hover:border-rose-900/50 text-rose-400 hover:text-rose-300 transition-colors" />}>
-        <span className="flex items-center"><Trash2 className="w-4 h-4 mr-2" /> Delete File</span>
+      <DialogTrigger render={<Button variant="outline" className="flex items-center justify-center border-rose-950 bg-rose-950/20 hover:bg-rose-950/40 hover:border-rose-900/50 text-rose-400 hover:text-rose-300 transition-colors p-2 h-9 w-9 shrink-0" title="Delete Shipment" />}>
+        <span className="flex items-center justify-center"><Trash2 className="w-4 h-4" /></span>
       </DialogTrigger>
       
       <DialogContent className="sm:max-w-[400px] bg-slate-950 border-slate-800 text-white">

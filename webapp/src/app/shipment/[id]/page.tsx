@@ -7,8 +7,9 @@ import { SplitCargoDialog } from "@/components/SplitCargoDialog";
 import { StatusSelector } from "@/components/StatusSelector";
 import { EmailQuoteParser } from "@/components/EmailQuoteParser";
 import { DeleteShipmentButton } from "@/components/DeleteShipmentButton";
+import { EditShipmentDialog } from "@/components/EditShipmentDialog";
 import Link from "next/link";
-import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity } from "lucide-react";
+import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 export const revalidate = 0;
@@ -21,6 +22,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const shipment = await db.getShipmentById(shipmentId);
   const statuses = await db.getStatuses();
   const billableConcepts = await db.getBillableConcepts();
+  const customers = await db.getCustomers();
   const isDemoMode = db.checkIsDemoMode();
 
   if (!shipment) {
@@ -95,12 +97,18 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                     ? 'bg-sky-950/40 text-sky-400 border-sky-900/50' 
                     : shipment.shipment_type === 'Import'
                     ? 'bg-teal-950/40 text-teal-400 border-teal-900/50'
-                    : 'bg-amber-950/40 text-amber-500 border-amber-900/50'
+                    : shipment.shipment_type === 'Quote'
+                    ? 'bg-yellow-950/40 text-yellow-500 border-yellow-900/50'
+                    : shipment.shipment_type === 'Transit'
+                    ? 'bg-amber-950/40 text-amber-500 border-amber-900/50'
+                    : 'bg-indigo-950/40 text-indigo-400 border-indigo-900/50'
                 }`}>
                   {shipment.shipment_type === 'Export' ? (
                     <Plane className="w-3 h-3" />
                   ) : shipment.shipment_type === 'Import' ? (
                     <Ship className="w-3 h-3" />
+                  ) : shipment.shipment_type === 'Quote' ? (
+                    <FileText className="w-3 h-3" />
                   ) : (
                     <Truck className="w-3 h-3" />
                   )}
@@ -127,6 +135,9 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
           </div>
           
           <div className="flex flex-wrap gap-3 items-center w-full md:w-auto justify-between border-t border-slate-800 md:border-none pt-4 md:pt-0">
+            {/* Edit Shipment Details */}
+            <EditShipmentDialog shipment={shipment} statuses={statuses} customers={customers} />
+
             {/* Status updates selector */}
             <StatusSelector shipmentId={shipment.id} currentStatusId={shipment.status_id} statuses={statuses} />
 
@@ -319,21 +330,18 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 )}
               </CardContent>
             </Card>
-
             {/* Danger Zone Card */}
             <Card className="bg-rose-950/5 border-rose-950/30 backdrop-blur-md">
-              <CardContent className="pt-4 space-y-2">
-                <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
-                  Permanently delete this shipment, its timeline events, invoices and logs.
-                </p>
-                <div className="w-full flex justify-stretch">
-                  <div className="w-full [&>button]:w-full">
-                    <DeleteShipmentButton shipmentId={shipment.id} />
-                  </div>
+              <CardContent className="pt-4 flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Danger Zone</p>
+                  <p className="text-[9px] text-slate-500 font-semibold leading-tight">
+                    Permanently delete this shipment and all linked logs.
+                  </p>
                 </div>
+                <DeleteShipmentButton shipmentId={shipment.id} />
               </CardContent>
             </Card>
-
           </div>
 
           {/* RIGHT COLUMN: TIMELINE & FORM */}
@@ -376,7 +384,15 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                         <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-850/80 hover:border-slate-800 transition-all shadow-sm">
                           <div className="flex items-center justify-between mb-2">
                             <time className="text-xs font-mono font-semibold text-slate-500">
-                              {format(new Date(log.created_at), 'MMM dd, yyyy • h:mm a')}
+                              {new Date(log.created_at).toLocaleString('en-US', {
+                                timeZone: 'America/New_York',
+                                month: 'short',
+                                day: '2-digit',
+                                year: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                              }).replace(',', ' •')}
                             </time>
                             
                             <div className="flex items-center gap-2">

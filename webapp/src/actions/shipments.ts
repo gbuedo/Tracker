@@ -9,6 +9,7 @@ export async function createShipment(formData: FormData) {
   const shipment_type = formData.get("shipment_type") as string;
   const transport_mode = formData.get("transport_mode") as string || null;
   
+  const status_id = formData.get("status_id") ? Number(formData.get("status_id")) : null;
   const pcs = formData.get("pcs") ? Number(formData.get("pcs")) : null;
   const kgs = formData.get("kgs") ? Number(formData.get("kgs")) : null;
   const chw = formData.get("chw") ? Number(formData.get("chw")) : null;
@@ -21,6 +22,7 @@ export async function createShipment(formData: FormData) {
   const eta = formData.get("eta") as string || null;
 
   const data = await db.createShipment(client_name, reference, shipment_type, {
+    status_id,
     transport_mode,
     pcs,
     kgs,
@@ -35,6 +37,32 @@ export async function createShipment(formData: FormData) {
   });
 
   revalidatePath("/");
+  return data;
+}
+
+export async function updateShipment(
+  id: number,
+  fields: {
+    client_name?: string;
+    reference?: string;
+    shipment_type?: string;
+    transport_mode?: string | null;
+    status_id?: number;
+    eta?: string | null;
+    etd?: string | null;
+    ct_file?: string | null;
+    warehouse_receipt?: string | null;
+    expo_mawb?: string | null;
+    expo_hawb?: string | null;
+    pcs?: number | null;
+    kgs?: number | null;
+    chw?: number | null;
+    aes?: string | null;
+  }
+) {
+  const data = await db.updateShipment(id, fields);
+  revalidatePath("/");
+  revalidatePath(`/shipment/${id}`);
   return data;
 }
 

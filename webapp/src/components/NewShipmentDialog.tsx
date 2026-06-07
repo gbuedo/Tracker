@@ -12,14 +12,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createShipment } from "@/actions/shipments";
-import { useState, useRef } from "react";
-import { Plus, Sparkles, UploadCloud, FileText, CheckCircle2, RefreshCw } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Plus, Sparkles, UploadCloud, FileText, CheckCircle2, Calendar, Clipboard, Weight, Plane } from "lucide-react";
 
 interface NewShipmentDialogProps {
   customers?: string[];
+  statuses?: { id: number; name: string; color_code: string }[];
 }
 
-export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
+export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipmentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState("");
@@ -31,6 +32,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
   const [reference, setReference] = useState("");
   const [shipmentType, setShipmentType] = useState("Import");
   const [transportMode, setTransportMode] = useState("Air");
+  const [statusId, setStatusId] = useState("");
   const [pcs, setPcs] = useState("");
   const [kgs, setKgs] = useState("");
   const [chw, setChw] = useState("");
@@ -44,12 +46,23 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Reset status ID to first milestone when dialog opens or statuses load
+  useEffect(() => {
+    if (statuses && statuses.length > 0 && !statusId) {
+      // Prefer "Quoting" or first available status
+      const quoting = statuses.find(s => s.name.toLowerCase() === "quoting");
+      setStatusId(quoting ? quoting.id.toString() : statuses[0].id.toString());
+    }
+  }, [statuses, open]);
+
   // Reset form helper
   const handleResetForm = () => {
     setClientName("");
     setReference("");
     setShipmentType("Import");
     setTransportMode("Air");
+    const quoting = statuses.find(s => s.name.toLowerCase() === "quoting");
+    setStatusId(quoting ? quoting.id.toString() : statuses[0]?.id?.toString() || "");
     setPcs("");
     setKgs("");
     setChw("");
@@ -100,6 +113,8 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
           setExpoMawb("016-88992341");
           setExpoHawb("HAWB-44120");
           setAes("");
+          const quoted = statuses.find(s => s.name.toLowerCase() === "quoted" || s.name.toLowerCase() === "quoting");
+          if (quoted) setStatusId(quoted.id.toString());
         } else if (fileNameLower.includes("packing") || fileNameLower.includes("sheet") || /\.(xls|xlsx|csv)$/i.test(fileNameLower)) {
           // Pre-fill sheet/packing list data
           setClientName("Kuehne Nagel");
@@ -144,7 +159,6 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
   };
 
   async function actionWithClose(formData: FormData) {
-    // Inject programmatical state values in case user submitted custom edits
     await createShipment(formData);
     setOpen(false);
     handleResetForm();
@@ -155,15 +169,15 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
       setOpen(v);
       if (!v) handleResetForm();
     }}>
-      <DialogTrigger render={<Button className="bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-lg shadow-sky-500/20" />}>
-        <span className="flex items-center"><Plus className="mr-2 h-4 w-4" /> New Shipment</span>
+      <DialogTrigger render={<Button className="bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-lg shadow-sky-500/20 rounded-xl" />}>
+        <span className="flex items-center"><Plus className="mr-1.5 h-4 w-4" /> New Shipment</span>
       </DialogTrigger>
       
-      <DialogContent className="max-w-2xl bg-slate-950 border-slate-800 text-white max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="border-b border-slate-850 pb-4">
-          <DialogTitle className="text-xl font-extrabold flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+      <DialogContent className="max-w-3xl bg-slate-950 border-slate-900 text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-6">
+        <DialogHeader className="border-b border-slate-900 pb-4">
+          <DialogTitle className="text-xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-mono tracking-wider">
             <Sparkles className="w-5 h-5 text-sky-400 animate-pulse" />
-            Create New Shipment File
+            CREATE NEW FREIGHT FILE
           </DialogTitle>
           <DialogDescription className="text-slate-400 text-xs">
             Initiate a tracking record in the WCS database. Complete fields manually or use the AI parser.
@@ -171,28 +185,25 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
         </DialogHeader>
 
         {/* --- AI Document Parser Dropzone --- */}
-        <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-4 relative overflow-hidden backdrop-blur-sm">
+        <div className="bg-slate-900/30 border border-slate-900 rounded-xl p-3 relative overflow-hidden backdrop-blur-sm">
           {isScanning ? (
-            <div className="py-6 flex flex-col items-center justify-center space-y-4">
-              {/* Green Laser Bar Animation */}
-              <div className="relative w-full max-w-md h-32 bg-slate-950 border border-slate-850 rounded-lg overflow-hidden flex flex-col items-center justify-center p-4">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent shadow-[0_0_15px_#22d3ee] animate-bounce z-10"></div>
-                <div className="w-10 h-10 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin mb-2"></div>
-                <span className="text-[11px] font-mono text-cyan-400 animate-pulse font-bold">{scanMessage}</span>
-                
-                {/* Progress bar */}
-                <div className="w-2/3 bg-slate-900 rounded-full h-1 mt-3 overflow-hidden border border-slate-800">
+            <div className="py-4 flex flex-col items-center justify-center space-y-4">
+              <div className="relative w-full max-w-md h-24 bg-slate-950 border border-slate-900 rounded-lg overflow-hidden flex flex-col items-center justify-center p-4">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent shadow-[0_0_10px_#22d3ee] animate-bounce z-10"></div>
+                <div className="w-8 h-8 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin mb-1"></div>
+                <span className="text-[10px] font-mono text-cyan-400 animate-pulse font-bold">{scanMessage}</span>
+                <div className="w-2/3 bg-slate-900 rounded-full h-1 mt-2 overflow-hidden border border-slate-800">
                   <div className="bg-cyan-500 h-1 rounded-full transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
                 </div>
               </div>
             </div>
           ) : scanSuccess ? (
-            <div className="py-3 px-4 bg-emerald-950/20 border border-emerald-900/40 rounded-lg flex items-center justify-between">
+            <div className="py-2.5 px-4 bg-emerald-950/20 border border-emerald-900/40 rounded-lg flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 animate-bounce" />
                 <div>
-                  <h4 className="text-xs font-bold text-white">Document Scan Successful!</h4>
-                  <p className="text-[10px] text-emerald-400/80">Extracted and pre-filled cargo parameters without saving files.</p>
+                  <h4 className="text-xs font-bold text-white">AI Extraction Complete</h4>
+                  <p className="text-[9px] text-emerald-400/80">Extracted and pre-filled cargo parameters.</p>
                 </div>
               </div>
               <Button 
@@ -207,7 +218,7 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
           ) : (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-slate-800 hover:border-sky-500/50 hover:bg-slate-900/20 cursor-pointer rounded-lg p-6 text-center transition-all group"
+              className="border border-dashed border-slate-850 hover:border-sky-500/50 hover:bg-slate-900/20 cursor-pointer rounded-lg p-4 text-center transition-all group"
             >
               <input 
                 type="file" 
@@ -216,238 +227,275 @@ export function NewShipmentDialog({ customers = [] }: NewShipmentDialogProps) {
                 className="hidden" 
                 accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv" 
               />
-              <UploadCloud className="w-8 h-8 text-slate-500 group-hover:text-sky-400 transition-colors mx-auto mb-2" />
-              <h4 className="text-xs font-bold text-slate-200">✨ Drag & Drop Cargo Documents</h4>
-              <p className="text-[10px] text-slate-500 mt-1 max-w-sm mx-auto">
-                Scan Commercial Invoices, HAWBs, or Excel packing lists to auto-fill metadata in 3 seconds.
+              <UploadCloud className="w-6 h-6 text-slate-500 group-hover:text-sky-400 transition-colors mx-auto mb-1" />
+              <h4 className="text-[11px] font-bold text-slate-200">✨ Drag & Drop Cargo Documents</h4>
+              <p className="text-[9px] text-slate-500 mt-0.5">
+                Upload commercial invoices, airway bills, or Excel lists to parse instantly.
               </p>
             </div>
           )}
         </div>
 
         {/* --- Form Details --- */}
-        <form action={actionWithClose} className="space-y-6">
+        <form action={actionWithClose} className="space-y-5">
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-400">
             
-            {/* Client Name Input/Dropdown */}
-            <div className="grid gap-1.5 col-span-1 md:col-span-2">
-              <Label htmlFor="client_name" className="text-slate-300">Client Name</Label>
-              <div className="flex gap-2">
-                <select 
-                  className="flex h-10 w-1/3 rounded-md border border-slate-800 bg-slate-900 text-slate-200 px-3 py-2"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                >
-                  <option value="">-- Choose Client --</option>
-                  {customers.map((cust) => (
-                    <option key={cust} value={cust}>{cust}</option>
-                  ))}
-                </select>
-                <Input 
-                  id="client_name" 
-                  name="client_name" 
-                  required 
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Or type custom Client name..." 
-                  className="flex-grow bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-600"
-                />
+            {/* Section 1: Core Operations */}
+            <div className="space-y-3 p-4 bg-slate-900/20 border border-slate-900 rounded-xl md:col-span-2">
+              <h3 className="text-[10px] font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2 border-b border-slate-900">
+                <Clipboard className="w-3.5 h-3.5" /> 1. Core Operations Settings
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2 grid gap-1">
+                  <Label htmlFor="client_name" className="text-slate-350 text-[10px] uppercase font-bold">Client / Customer Profile</Label>
+                  <div className="flex gap-1.5">
+                    <select 
+                      className="flex h-9 rounded-md border border-slate-800 bg-slate-900 text-slate-200 px-2.5 py-1 text-xs"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                    >
+                      <option value="">-- Catalog --</option>
+                      {customers.map((cust) => (
+                        <option key={cust} value={cust}>{cust}</option>
+                      ))}
+                    </select>
+                    <Input 
+                      id="client_name" 
+                      name="client_name" 
+                      required 
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="Or type custom client profile name..." 
+                      className="flex-grow h-9 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-1">
+                  <Label htmlFor="reference" className="text-slate-350 text-[10px] uppercase font-bold">Client Reference / PO</Label>
+                  <Input 
+                    id="reference" 
+                    name="reference" 
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650 text-xs font-mono"
+                    placeholder="e.g. PO-881293-AMZ" 
+                  />
+                </div>
+
+                <div className="grid gap-1">
+                  <Label htmlFor="shipment_type" className="text-slate-350 text-[10px] uppercase font-bold">Operation Type</Label>
+                  <select 
+                    id="shipment_type" 
+                    name="shipment_type" 
+                    value={shipmentType}
+                    onChange={(e) => setShipmentType(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-1 text-slate-200 text-xs"
+                  >
+                    <option value="Quote">Quote</option>
+                    <option value="Import">Import</option>
+                    <option value="Export">Export</option>
+                    <option value="Transit">Transit</option>
+                    <option value="Combine">Combine</option>
+                  </select>
+                </div>
+
+                <div className="grid gap-1">
+                  <Label htmlFor="transport_mode" className="text-slate-350 text-[10px] uppercase font-bold">Transport Mode</Label>
+                  <select 
+                    id="transport_mode" 
+                    name="transport_mode" 
+                    value={transportMode}
+                    onChange={(e) => setTransportMode(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-1 text-slate-200 text-xs"
+                  >
+                    <option value="Air">Air</option>
+                    <option value="Ocean">Ocean</option>
+                    <option value="Land">Land</option>
+                    <option value="Warehouse">Warehouse</option>
+                    <option value="Combined">Combined</option>
+                  </select>
+                </div>
+
+                <div className="grid gap-1">
+                  <Label htmlFor="status_id" className="text-slate-350 text-[10px] uppercase font-bold">Initial Milestone</Label>
+                  <select 
+                    id="status_id" 
+                    name="status_id" 
+                    value={statusId}
+                    onChange={(e) => setStatusId(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-1 text-slate-200 text-xs"
+                  >
+                    {statuses.map((st) => (
+                      <option key={st.id} value={st.id}>{st.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            {/* Reference */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="reference" className="text-slate-300">Reference / PO</Label>
-              <Input 
-                id="reference" 
-                name="reference" 
-                value={reference}
-                onChange={(e) => setReference(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650"
-                placeholder="e.g. PO-881293-AMZ" 
-              />
+            {/* Section 2: Load Metrics */}
+            <div className="space-y-3 p-4 bg-slate-900/20 border border-slate-900 rounded-xl col-span-1">
+              <h3 className="text-[10px] font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2 border-b border-slate-900">
+                <Weight className="w-3.5 h-3.5" /> 2. Cargo Parameters
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="grid gap-1">
+                  <Label htmlFor="pcs" className="text-slate-450 text-[9px] uppercase font-bold">Pieces (PCS)</Label>
+                  <Input 
+                    id="pcs" 
+                    name="pcs" 
+                    type="number"
+                    value={pcs}
+                    onChange={(e) => setPcs(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 font-mono text-xs" 
+                    placeholder="0" 
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <Label htmlFor="kgs" className="text-slate-450 text-[9px] uppercase font-bold">Gross KGS</Label>
+                  <Input 
+                    id="kgs" 
+                    name="kgs" 
+                    type="number"
+                    step="any"
+                    value={kgs}
+                    onChange={(e) => setKgs(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 font-mono text-xs" 
+                    placeholder="0.0" 
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <Label htmlFor="chw" className="text-slate-450 text-[9px] uppercase font-bold">Charge CHW</Label>
+                  <Input 
+                    id="chw" 
+                    name="chw" 
+                    type="number"
+                    step="any"
+                    value={chw}
+                    onChange={(e) => setChw(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 font-mono text-xs" 
+                    placeholder="0.0" 
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Shipment Type */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="shipment_type" className="text-slate-300">Shipment Type</Label>
-              <select 
-                id="shipment_type" 
-                name="shipment_type" 
-                value={shipmentType}
-                onChange={(e) => setShipmentType(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-slate-200"
-              >
-                <option value="Import">Import</option>
-                <option value="Export">Export</option>
-                <option value="Transit">Transit</option>
-                <option value="Combine">Combine</option>
-              </select>
+            {/* Section 3: Time Scheduling */}
+            <div className="space-y-3 p-4 bg-slate-900/20 border border-slate-900 rounded-xl col-span-1">
+              <h3 className="text-[10px] font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2 border-b border-slate-900">
+                <Calendar className="w-3.5 h-3.5" /> 3. Schedule Timetable
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="grid gap-1">
+                  <Label htmlFor="etd" className="text-slate-450 text-[9px] uppercase font-bold">Departure (ETD)</Label>
+                  <Input 
+                    id="etd" 
+                    name="etd" 
+                    type="date"
+                    value={etd}
+                    onChange={(e) => setEtd(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-200 font-mono text-xs" 
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <Label htmlFor="eta" className="text-slate-450 text-[9px] uppercase font-bold">Arrival (ETA)</Label>
+                  <Input 
+                    id="eta" 
+                    name="eta" 
+                    type="date"
+                    value={eta}
+                    onChange={(e) => setEta(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-200 font-mono text-xs" 
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Transport Mode */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="transport_mode" className="text-slate-300">Transport Mode</Label>
-              <select 
-                id="transport_mode" 
-                name="transport_mode" 
-                value={transportMode}
-                onChange={(e) => setTransportMode(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-slate-200"
-              >
-                <option value="Air">Air</option>
-                <option value="Ocean">Ocean</option>
-                <option value="Land">Land</option>
-                <option value="Warehouse">Warehouse</option>
-                <option value="Combined">Combined</option>
-              </select>
-            </div>
+            {/* Section 4: Logistical Bills & References */}
+            <div className="space-y-3 p-4 bg-slate-900/20 border border-slate-900 rounded-xl md:col-span-2">
+              <h3 className="text-[10px] font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2 border-b border-slate-900">
+                <Plane className="w-3.5 h-3.5" /> 4. Logistics references & Airbills
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                <div className="grid gap-1 sm:col-span-1">
+                  <Label htmlFor="ct_file" className="text-slate-350 text-[9px] uppercase font-bold">CT File Ref</Label>
+                  <Input 
+                    id="ct_file" 
+                    name="ct_file" 
+                    value={ctFile}
+                    onChange={(e) => setCtFile(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650 text-xs font-mono" 
+                    placeholder="CT-9821" 
+                  />
+                </div>
 
-            {/* CT File */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="ct_file" className="text-slate-300">CT File Ref</Label>
-              <Input 
-                id="ct_file" 
-                name="ct_file" 
-                value={ctFile}
-                onChange={(e) => setCtFile(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650" 
-                placeholder="e.g. CT-9821" 
-              />
-            </div>
+                <div className="grid gap-1 sm:col-span-1">
+                  <Label htmlFor="warehouse_receipt" className="text-slate-350 text-[9px] uppercase font-bold">Warehouse Rec.</Label>
+                  <Input 
+                    id="warehouse_receipt" 
+                    name="warehouse_receipt" 
+                    value={warehouseReceipt}
+                    onChange={(e) => setWarehouseReceipt(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650 text-xs font-mono" 
+                    placeholder="WH-44192" 
+                  />
+                </div>
 
-            {/* Warehouse Receipt */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="warehouse_receipt" className="text-slate-300">Warehouse Receipt</Label>
-              <Input 
-                id="warehouse_receipt" 
-                name="warehouse_receipt" 
-                value={warehouseReceipt}
-                onChange={(e) => setWarehouseReceipt(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650" 
-                placeholder="e.g. WH-44192" 
-              />
-            </div>
+                <div className="grid gap-1 sm:col-span-1">
+                  <Label htmlFor="aes" className="text-slate-350 text-[9px] uppercase font-bold">AES Filing Ref</Label>
+                  <Input 
+                    id="aes" 
+                    name="aes" 
+                    value={aes}
+                    onChange={(e) => setAes(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 font-mono text-xs" 
+                    placeholder="AES-X2026..." 
+                  />
+                </div>
 
-            {/* Pieces */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="pcs" className="text-slate-300">Pieces (PCS)</Label>
-              <Input 
-                id="pcs" 
-                name="pcs" 
-                type="number"
-                value={pcs}
-                onChange={(e) => setPcs(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 font-mono" 
-                placeholder="0" 
-              />
-            </div>
+                <div className="grid gap-1 sm:col-span-1">
+                  <Label htmlFor="expo_mawb" className="text-slate-350 text-[9px] uppercase font-bold">MAWB Master bill</Label>
+                  <Input 
+                    id="expo_mawb" 
+                    name="expo_mawb" 
+                    value={expoMawb}
+                    onChange={(e) => setExpoMawb(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 font-mono text-xs" 
+                    placeholder="000-00000000" 
+                  />
+                </div>
 
-            {/* Gross Weight */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="kgs" className="text-slate-300">Gross Weight (KGS)</Label>
-              <Input 
-                id="kgs" 
-                name="kgs" 
-                type="number"
-                value={kgs}
-                onChange={(e) => setKgs(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 font-mono" 
-                placeholder="0.0" 
-              />
-            </div>
-
-            {/* Chargeable Weight */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="chw" className="text-slate-300">Chargeable Weight (CHW)</Label>
-              <Input 
-                id="chw" 
-                name="chw" 
-                type="number"
-                value={chw}
-                onChange={(e) => setChw(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 font-mono" 
-                placeholder="0.0" 
-              />
-            </div>
-
-            {/* AES */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="aes" className="text-slate-300">AES Filing Ref</Label>
-              <Input 
-                id="aes" 
-                name="aes" 
-                value={aes}
-                onChange={(e) => setAes(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 font-mono" 
-                placeholder="e.g. AES-X2026..." 
-              />
-            </div>
-
-            {/* MAWB */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="expo_mawb" className="text-slate-300">MAWB Airbill</Label>
-              <Input 
-                id="expo_mawb" 
-                name="expo_mawb" 
-                value={expoMawb}
-                onChange={(e) => setExpoMawb(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 font-mono" 
-                placeholder="000-00000000" 
-              />
-            </div>
-
-            {/* HAWB */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="expo_hawb" className="text-slate-300">HAWB Housebill</Label>
-              <Input 
-                id="expo_hawb" 
-                name="expo_hawb" 
-                value={expoHawb}
-                onChange={(e) => setExpoHawb(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-100 font-mono" 
-                placeholder="e.g. HAWB-1002" 
-              />
-            </div>
-
-            {/* ETD */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="etd" className="text-slate-300">Estimated Departure (ETD)</Label>
-              <Input 
-                id="etd" 
-                name="etd" 
-                type="date"
-                value={etd}
-                onChange={(e) => setEtd(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-200 font-mono" 
-              />
-            </div>
-
-            {/* ETA */}
-            <div className="grid gap-1.5">
-              <Label htmlFor="eta" className="text-slate-300">Estimated Arrival (ETA)</Label>
-              <Input 
-                id="eta" 
-                name="eta" 
-                type="date"
-                value={eta}
-                onChange={(e) => setEta(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-200 font-mono" 
-              />
+                <div className="grid gap-1 sm:col-span-1">
+                  <Label htmlFor="expo_hawb" className="text-slate-350 text-[9px] uppercase font-bold">HAWB Housebill</Label>
+                  <Input 
+                    id="expo_hawb" 
+                    name="expo_hawb" 
+                    value={expoHawb}
+                    onChange={(e) => setExpoHawb(e.target.value)}
+                    className="h-9 bg-slate-900 border-slate-800 text-slate-100 font-mono text-xs" 
+                    placeholder="HAWB-1002" 
+                  />
+                </div>
+              </div>
             </div>
 
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-850">
+          {/* Action Row */}
+          <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-900">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => { setOpen(false); handleResetForm(); }} 
-              className="bg-transparent border-slate-800 text-slate-400 hover:text-white"
+              className="bg-transparent border-slate-800 text-slate-400 hover:text-white rounded-xl h-10 px-4 text-xs font-bold"
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-sky-600 hover:bg-sky-700 text-white font-bold">
+            <Button type="submit" className="bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl h-10 px-5 text-xs">
               Create Shipment File
             </Button>
           </div>

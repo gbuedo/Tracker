@@ -349,6 +349,7 @@ export async function createShipment(
   reference: string, 
   shipment_type: string,
   extra: {
+    status_id?: number | null;
     transport_mode?: string | null;
     pcs?: number | null;
     kgs?: number | null;
@@ -375,7 +376,7 @@ export async function createShipment(
       parent_shipment_id: null,
       client_name,
       reference,
-      status_id: 1, // Quoting
+      status_id: extra.status_id || 1,
       shipment_type,
       transport_mode: extra.transport_mode || null,
       eta: extra.eta || null,
@@ -407,7 +408,7 @@ export async function createShipment(
       reference,
       shipment_type,
       transport_mode: extra.transport_mode || null,
-      status_id: 1, // Quoting
+      status_id: extra.status_id || 1,
       eta: extra.eta || null,
       etd: extra.etd || null,
       ct_file: extra.ct_file || null,
@@ -879,27 +880,43 @@ export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
     // ignore
   }
 
+  let maxId = 0;
   const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    return data.config || { next_shipment_id: 1001 };
+  if (!isDemo && !isDefaultUrl) {
+    try {
+      const { data, error } = await supabase
+        .from("shipments")
+        .select("id")
+        .order("id", { ascending: false })
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        maxId = data[0].id;
+      }
+    } catch (e) {
+      // ignore
+    }
+  } else {
+    try {
+      const data = readMockData();
+      if (data.shipments && data.shipments.length > 0) {
+        maxId = Math.max(...data.shipments.map((s: any) => s.id));
+      }
+    } catch (e) {
+      // ignore
+    }
   }
-  try {
-    const { data, error } = await supabase
-      .from("shipments")
-      .select("id")
-      .order("id", { ascending: false })
-      .limit(1);
-    
-    if (error) throw error;
-    
-    const maxId = data && data.length > 0 ? data[0].id : 0;
-    return { next_shipment_id: Math.max(localNext, maxId + 1) };
-  } catch (err) {
-    const data = readMockData();
-    return data.config || { next_shipment_id: 1001 };
+
+  let nextId = 1001;
+  if (maxId > 0) {
+    if (localNext === 1001) {
+      nextId = maxId + 1;
+    } else {
+      nextId = Math.max(localNext || 1, maxId + 1);
+    }
+  } else {
+    nextId = localNext || 1001;
   }
+  return { next_shipment_id: nextId };
 }
 
 export async function deleteStatus(id: number): Promise<void> {
@@ -1158,6 +1175,74 @@ export async function seedDemoData(): Promise<void> {
     }
   } catch (err) {
     console.error("Failed to seed database:", err);
+    throw err;
+  }
+}
+
+export async function updateShipment(
+  id: number,
+  fields: {
+    client_name?: string;
+    reference?: string;
+    shipment_type?: string;
+    transport_mode?: string | null;
+    status_id?: number;
+    eta?: string | null;
+    etd?: string | null;
+    ct_file?: string | null;
+    warehouse_receipt?: string | null;
+    expo_mawb?: string | null;
+    expo_hawb?: string | null;
+    pcs?: number | null;
+    kgs?: number | null;
+    chw?: number | null;
+    aes?: string | null;
+  }
+): Promise<Shipment> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    const index = data.shipments.findIndex((s: any) => s.id === id);
+    if (index === -1) throw new Error("Shipment not found");
+    const updated = {
+      ...data.shipments[index],
+      ...fields,
+      updated_at: new Date().toISOString()
+    };
+    data.shipments[index] = updated;
+    writeMockData(data);
+    return updated as Shipment;
+  }
+  try {
+    const { data, error } = await supabase
+      .from("shipments")
+      .update({
+        ...fields,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    isDemo = false;
+    return data as Shipment;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+      const data = readMockData();
+      const index = data.shipments.findIndex((s: any) => s.id === id);
+      if (index === -1) throw new Error("Shipment not found");
+      const updated = {
+        ...data.shipments[index],
+        ...fields,
+        updated_at: new Date().toISOString()
+      };
+      data.shipments[index] = updated;
+      writeMockData(data);
+      return updated as Shipment;
+    }
     throw err;
   }
 }

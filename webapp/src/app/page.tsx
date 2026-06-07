@@ -58,11 +58,11 @@ export default async function Dashboard() {
           <div className="flex items-center gap-3 self-stretch md:self-auto justify-between border-t border-slate-900 md:border-none pt-4 md:pt-0">
             <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-black border border-slate-900 font-mono">
               <span className="w-2 h-2 rounded-full bg-yellow-500 animate-ping shrink-0" />
-              <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
-                BOARD LOCAL TIME: {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}Z
+              <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest animate-pulse">
+                MIAMI TIME: {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })} EST/EDT
               </span>
             </div>
-            <NewShipmentDialog customers={customers} />
+            <NewShipmentDialog customers={customers} statuses={statuses} />
           </div>
         </div>
 
