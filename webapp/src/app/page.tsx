@@ -16,7 +16,7 @@ export default async function Dashboard() {
   const isDemoMode = db.checkIsDemoMode();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-sky-500/30 selection:text-sky-300">
+    <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans selection:bg-yellow-500/30 selection:text-yellow-300">
       
       {/* ⚠️ DEMO MODE ACTIVE BANNER */}
       {isDemoMode && (
@@ -37,37 +37,30 @@ export default async function Dashboard() {
       {/* Main Container */}
       <div className="max-w-6xl w-full mx-auto p-4 md:p-8 space-y-8 flex-grow">
         
-        {/* Terminal Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/40 border border-slate-800 p-6 rounded-2xl backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Terminal Header (Airport Board Style) */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0a0a0c] border-t-4 border-yellow-500 border-x border-b border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-lg">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500">
                 <Cpu className="w-5 h-5 animate-pulse" />
               </div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-400">
-                WCS Operations Terminal
+              <h1 className="text-2xl md:text-3xl font-black tracking-widest text-yellow-500 uppercase font-mono">
+                WCS OPERATIONS TERMINAL
               </h1>
             </div>
-            <p className="text-sm text-slate-400">
-              Integrated Cargo Tracking & Follow-up Middleware • Real-time Airport/Ocean Feed
+            <p className="text-xs text-slate-400 font-mono tracking-wider uppercase">
+              Integrated Cargo Tracking & Follow-up Middleware • Real-time Operations Feed
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-stretch md:self-auto justify-between border-t border-slate-800 md:border-none pt-4 md:pt-0">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800">
-              {isDemoMode ? (
-                <>
-                  <Activity className="w-4 h-4 text-amber-500 animate-spin" />
-                  <span className="text-xs font-bold text-amber-500 uppercase tracking-widest">LOCAL DEV MODE</span>
-                </>
-              ) : (
-                <>
-                  <Wifi className="w-4 h-4 text-emerald-400 animate-bounce" />
-                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">CLOUD ONLINE</span>
-                </>
-              )}
+          <div className="flex items-center gap-3 self-stretch md:self-auto justify-between border-t border-slate-900 md:border-none pt-4 md:pt-0">
+            <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-black border border-slate-900 font-mono">
+              <span className="w-2 h-2 rounded-full bg-yellow-500 animate-ping shrink-0" />
+              <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
+                BOARD LOCAL TIME: {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}Z
+              </span>
             </div>
             <NewShipmentDialog customers={customers} />
           </div>
@@ -84,7 +77,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-600">
+      <footer className="border-t border-slate-950 bg-black py-6 text-center text-xs text-slate-600 font-mono tracking-wider uppercase">
         <p>© 2026 WCS Tracker. All systems operational.</p>
       </footer>
     </div>

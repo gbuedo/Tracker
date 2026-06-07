@@ -14,21 +14,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addLog, createBillableConcept } from "@/actions/shipments";
 import { FileCode2, Sparkles, DollarSign, Plus, Trash2, Check, ArrowRight, Table as TableIcon } from "lucide-react";
-import { BillableConcept } from "@/lib/types";
+import { BillableConcept, Shipment } from "@/lib/types";
 
 interface EmailQuoteParserProps {
-  shipmentId: number;
+  shipment: Shipment;
   billableConcepts: BillableConcept[];
 }
 
 interface ParsedItem {
   id: string;
   conceptName: string;
-  cost: number | "";
-  selling: number | "";
+  costRate: number | "";
+  costUnit: "flat" | "kg" | "chw" | "lb" | "tn" | "pcs";
+  sellingRate: number | "";
+  sellingUnit: "flat" | "kg" | "chw" | "lb" | "tn" | "pcs";
 }
 
-export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuoteParserProps) {
+export function EmailQuoteParser({ shipment, billableConcepts }: EmailQuoteParserProps) {
+  const shipmentId = shipment.id;
   const [open, setOpen] = useState(false);
   const [sellingText, setSellingText] = useState("");
   const [costText, setCostText] = useState("");
@@ -38,9 +41,9 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
   const [showTable, setShowTable] = useState(false);
 
   // Helper to extract concepts and values from block of text
-  const parseQuoteText = (text: string): { name: string; amount: number }[] => {
+  const parseQuoteText = (text: string): { name: string; amount: number; unit: "flat" | "kg" | "chw" | "lb" | "tn" | "pcs" }[] => {
     const lines = text.split(/\r?\n/);
-    const results: { name: string; amount: number }[] = [];
+    const results: { name: string; amount: number; unit: "flat" | "kg" | "chw" | "lb" | "tn" | "pcs" }[] = [];
 
     // Common concepts list to help clean up names
     const commonConcepts = [
@@ -75,7 +78,21 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
       // Check if we can map it to a standard concept or clean it up
       let matchedConcept = "";
       const lowerClean = cleanName.toLowerCase();
+      const lowerLine = line.toLowerCase();
       
+      let unit: "flat" | "kg" | "chw" | "lb" | "tn" | "pcs" = "flat";
+      if (lowerLine.includes("/kg") || lowerLine.includes("per kg") || lowerLine.includes("per kilo") || lowerLine.includes("kilo rate")) {
+        unit = "kg";
+      } else if (lowerLine.includes("/chw") || lowerLine.includes("per chw") || lowerLine.includes("chargeable") || lowerLine.includes("w/m") || lowerLine.includes("kg/vol")) {
+        unit = "chw";
+      } else if (lowerLine.includes("/lb") || lowerLine.includes("per lb") || lowerLine.includes("pound")) {
+        unit = "lb";
+      } else if (lowerLine.includes("/ton") || lowerLine.includes("per ton") || lowerLine.includes("tn")) {
+        unit = "tn";
+      } else if (lowerLine.includes("/pcs") || lowerLine.includes("per piece") || lowerLine.includes("per pc")) {
+        unit = "pcs";
+      }
+
       for (const concept of commonConcepts) {
         if (lowerClean.includes(concept)) {
           matchedConcept = concept;
@@ -89,11 +106,34 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
 
       results.push({
         name: displayName,
-        amount: amount
+        amount: amount,
+        unit
       });
     });
 
     return results;
+  };
+  const getMultipliedValue = (rate: number | "", unit: string) => {
+    if (rate === "") return 0;
+    const grossWeight = shipment.kgs || 0;
+    const chgWeight = shipment.chw || 0;
+    const pieces = shipment.pcs || 1;
+    
+    switch (unit) {
+      case "kg":
+        return rate * grossWeight;
+      case "chw":
+        return rate * chgWeight;
+      case "lb":
+        return rate * (grossWeight * 2.20462);
+      case "tn":
+        return rate * (grossWeight / 1000);
+      case "pcs":
+        return rate * pieces;
+      case "flat":
+      default:
+        return rate;
+    }
   };
 
   const handleParse = () => {
@@ -113,8 +153,10 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
       itemsMap[key] = {
         id: `parsed-cost-${index}-${Date.now()}`,
         conceptName: costItem.name,
-        cost: costItem.amount,
-        selling: ""
+        costRate: costItem.amount,
+        costUnit: costItem.unit,
+        sellingRate: "",
+        sellingUnit: "flat"
       };
     });
 
@@ -128,13 +170,16 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
       );
 
       if (existing) {
-        existing.selling = sellItem.amount;
+        existing.sellingRate = sellItem.amount;
+        existing.sellingUnit = sellItem.unit;
       } else {
         itemsMap[key] = {
           id: `parsed-sell-${index}-${Date.now()}`,
           conceptName: sellItem.name,
-          cost: "",
-          selling: sellItem.amount
+          costRate: "",
+          costUnit: "flat",
+          sellingRate: sellItem.amount,
+          sellingUnit: sellItem.unit
         };
       }
     });
@@ -147,8 +192,8 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
   const handleUpdateItem = (id: string, field: keyof ParsedItem, val: string) => {
     setParsedItems(prev => prev.map(item => {
       if (item.id === id) {
-        if (field === "conceptName") {
-          return { ...item, conceptName: val };
+        if (field === "conceptName" || field === "costUnit" || field === "sellingUnit") {
+          return { ...item, [field]: val };
         } else {
           const num = val === "" ? "" : parseFloat(val);
           return { ...item, [field]: isNaN(num as number) ? "" : num };
@@ -168,8 +213,10 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
       {
         id: `manual-new-${Date.now()}`,
         conceptName: "",
-        cost: "",
-        selling: ""
+        costRate: "",
+        costUnit: "flat",
+        sellingRate: "",
+        sellingUnit: "flat"
       }
     ]);
   };
@@ -194,29 +241,31 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
           conceptId = newConcept.id;
         }
 
-        const costNum = Number(item.cost);
-        const sellNum = Number(item.selling);
+        const costVal = getMultipliedValue(item.costRate, item.costUnit);
+        const sellVal = getMultipliedValue(item.sellingRate, item.sellingUnit);
 
         // Add log for cost if specified
-        if (!isNaN(costNum) && costNum > 0) {
+        if (costVal > 0) {
+          const unitDesc = item.costUnit !== "flat" ? ` @ $${item.costRate}/${item.costUnit}` : "";
           await addLog({
             shipment_id: shipmentId,
-            event_text: `${item.conceptName} cost captured from parsed quote`,
+            event_text: `${item.conceptName}${unitDesc} cost captured from parsed quote`,
             is_external: false,
             billable_concept_id: conceptId,
-            amount: costNum,
+            amount: costVal,
             amount_type: "cost"
           });
         }
 
         // Add log for selling if specified
-        if (!isNaN(sellNum) && sellNum > 0) {
+        if (sellVal > 0) {
+          const unitDesc = item.sellingUnit !== "flat" ? ` @ $${item.sellingRate}/${item.sellingUnit}` : "";
           await addLog({
             shipment_id: shipmentId,
-            event_text: `${item.conceptName} selling rate captured from parsed quote`,
+            event_text: `${item.conceptName}${unitDesc} selling rate captured from parsed quote`,
             is_external: true,
             billable_concept_id: conceptId,
-            amount: sellNum,
+            amount: sellVal,
             amount_type: "selling"
           });
         }
@@ -324,75 +373,134 @@ export function EmailQuoteParser({ shipmentId, billableConcepts }: EmailQuotePar
             </div>
 
             {/* Editable Spreadsheet Table */}
-            <div className="border border-slate-850 rounded-xl overflow-hidden bg-slate-950/60 text-slate-300">
-              <table className="w-full text-left border-collapse text-xs font-semibold">
+            <div className="border border-slate-850 rounded-xl overflow-x-auto bg-slate-950/60 text-slate-350">
+              <table className="w-full text-left border-collapse text-[11px] font-semibold min-w-[650px]">
                 <thead>
-                  <tr className="bg-slate-900/80 border-b border-slate-850 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    <th className="p-3 w-1/3">Concept Description</th>
-                    <th className="p-3 w-1/5">Cost ($)</th>
-                    <th className="p-3 w-1/5">Selling ($)</th>
-                    <th className="p-3 w-1/5 text-right">Gain / Profit ($)</th>
-                    <th className="p-3 w-[60px] text-center">Delete</th>
+                  <tr className="bg-slate-900/80 border-b border-slate-850 text-slate-400 font-bold uppercase tracking-wider text-[9px]">
+                    <th className="p-2.5 w-[25%]">Concept</th>
+                    <th className="p-2.5 w-[33%]">Cost Tariff (Rate / Unit / Calc)</th>
+                    <th className="p-2.5 w-[33%]">Selling Tariff (Rate / Unit / Calc)</th>
+                    <th className="p-2.5 w-[7%] text-right">Profit</th>
+                    <th className="p-2.5 w-[2%] text-center">Del</th>
                   </tr>
                 </thead>
                 <tbody>
                   {parsedItems.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center italic text-slate-600">
+                      <td colSpan={5} className="p-8 text-center italic text-slate-650">
                         No pricing concepts extracted. Use Add Row to load manually or reset.
                       </td>
                     </tr>
                   ) : (
                     parsedItems.map((item) => {
-                      const costVal = item.cost === "" ? 0 : item.cost;
-                      const sellVal = item.selling === "" ? 0 : item.selling;
+                      const costVal = getMultipliedValue(item.costRate, item.costUnit);
+                      const sellVal = getMultipliedValue(item.sellingRate, item.sellingUnit);
                       const profitVal = sellVal - costVal;
 
+                      const handleRateKeyDown = (
+                        e: React.KeyboardEvent<HTMLInputElement>,
+                        field: "costRate" | "sellingRate",
+                        currentVal: number | ""
+                      ) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                          const current = currentVal === "" ? 0 : Number(currentVal);
+                          const step = e.shiftKey ? 10 : 1;
+                          const newVal = e.key === "ArrowUp" ? current + step : Math.max(0, current - step);
+                          // Format to 2 decimal places or keep clean
+                          handleUpdateItem(item.id, field, Number(newVal.toFixed(2)).toString());
+                        }
+                      };
+
                       return (
-                        <tr key={item.id} className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-                          <td className="p-2.5">
+                        <tr key={item.id} className="border-b border-slate-900/40 hover:bg-slate-900/10 transition-colors">
+                          <td className="p-1.5">
                             <Input
                               value={item.conceptName}
                               onChange={(e) => handleUpdateItem(item.id, "conceptName", e.target.value)}
                               className="h-8 bg-slate-900/40 border-slate-800 text-slate-200 text-xs font-bold"
-                              placeholder="Concept title (e.g. Inland Freight)"
+                              placeholder="Concept title (e.g. Inland)"
                             />
                           </td>
-                          <td className="p-2.5">
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-[10px]">$</span>
-                              <Input
-                                type="number"
-                                value={item.cost}
-                                onChange={(e) => handleUpdateItem(item.id, "cost", e.target.value)}
-                                className="h-8 pl-6 bg-slate-900/40 border-slate-800 text-slate-200 text-xs font-mono text-left font-bold"
-                                placeholder="0.00"
-                              />
+                          <td className="p-1.5">
+                            <div className="flex items-center gap-1.5">
+                              {/* Rate Input */}
+                              <div className="relative flex-grow max-w-[95px]">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-[9px]">$</span>
+                                <Input
+                                  type="number"
+                                  value={item.costRate}
+                                  onChange={(e) => handleUpdateItem(item.id, "costRate", e.target.value)}
+                                  onKeyDown={(e: any) => handleRateKeyDown(e, "costRate", item.costRate)}
+                                  className="h-8 pl-5 pr-1.5 bg-slate-900/40 border-slate-800 text-slate-200 text-xs font-mono text-left font-bold"
+                                  placeholder="0.00"
+                                  step="any"
+                                />
+                              </div>
+                              {/* Unit Selector */}
+                              <select
+                                value={item.costUnit}
+                                onChange={(e) => handleUpdateItem(item.id, "costUnit", e.target.value)}
+                                className="h-8 w-[72px] bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded-lg outline-none focus:ring-1 focus:ring-sky-500/30 px-1"
+                              >
+                                <option value="flat">Flat</option>
+                                <option value="kg">/Kg (G)</option>
+                                <option value="chw">/Kg (Chw)</option>
+                                <option value="lb">/Lb</option>
+                                <option value="tn">/Ton</option>
+                                <option value="pcs">/Piece</option>
+                              </select>
+                              {/* Multiplied Sum */}
+                              <span className="text-[10px] font-mono text-amber-500 font-bold shrink-0 min-w-[45px] text-right">
+                                ${costVal.toFixed(2)}
+                              </span>
                             </div>
                           </td>
-                          <td className="p-2.5">
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-[10px]">$</span>
-                              <Input
-                                type="number"
-                                value={item.selling}
-                                onChange={(e) => handleUpdateItem(item.id, "selling", e.target.value)}
-                                className="h-8 pl-6 bg-slate-900/40 border-slate-800 text-slate-200 text-xs font-mono text-left font-bold"
-                                placeholder="0.00"
-                              />
+                          <td className="p-1.5">
+                            <div className="flex items-center gap-1.5">
+                              {/* Rate Input */}
+                              <div className="relative flex-grow max-w-[95px]">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-[9px]">$</span>
+                                <Input
+                                  type="number"
+                                  value={item.sellingRate}
+                                  onChange={(e) => handleUpdateItem(item.id, "sellingRate", e.target.value)}
+                                  onKeyDown={(e: any) => handleRateKeyDown(e, "sellingRate", item.sellingRate)}
+                                  className="h-8 pl-5 pr-1.5 bg-slate-900/40 border-slate-800 text-slate-200 text-xs font-mono text-left font-bold"
+                                  placeholder="0.00"
+                                  step="any"
+                                />
+                              </div>
+                              {/* Unit Selector */}
+                              <select
+                                value={item.sellingUnit}
+                                onChange={(e) => handleUpdateItem(item.id, "sellingUnit", e.target.value)}
+                                className="h-8 w-[72px] bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded-lg outline-none focus:ring-1 focus:ring-sky-500/30 px-1"
+                              >
+                                <option value="flat">Flat</option>
+                                <option value="kg">/Kg (G)</option>
+                                <option value="chw">/Kg (Chw)</option>
+                                <option value="lb">/Lb</option>
+                                <option value="tn">/Ton</option>
+                                <option value="pcs">/Piece</option>
+                              </select>
+                              {/* Multiplied Sum */}
+                              <span className="text-[10px] font-mono text-sky-400 font-bold shrink-0 min-w-[45px] text-right">
+                                ${sellVal.toFixed(2)}
+                              </span>
                             </div>
                           </td>
-                          <td className={`p-2.5 text-right font-mono font-bold text-sm leading-none ${
+                          <td className={`p-1.5 text-right font-mono font-bold text-xs leading-none ${
                             profitVal >= 0 ? 'text-emerald-400' : 'text-rose-450'
                           }`}>
                             {profitVal >= 0 ? "+" : ""}${profitVal.toFixed(2)}
                           </td>
-                          <td className="p-2.5 text-center">
+                          <td className="p-1.5 text-center">
                             <button
                               onClick={() => handleDeleteItem(item.id)}
-                              className="p-1 rounded-md border border-slate-850 hover:bg-rose-950/20 text-slate-500 hover:text-rose-400 transition-colors"
+                              className="p-1 rounded bg-slate-900 border border-slate-800 hover:bg-rose-950/20 text-slate-500 hover:text-rose-400 transition-colors"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3 h-3" />
                             </button>
                           </td>
                         </tr>

@@ -48,7 +48,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const totalProfit = sellingTotal - costTotal;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-300">
+    <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans selection:bg-yellow-500/30 selection:text-yellow-300">
       
       {/* ⚠️ DEMO MODE ACTIVE BANNER */}
       {isDemoMode && (
@@ -72,25 +72,25 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
         {/* Navigation Breadcrumb */}
         <div className="flex justify-between items-center">
           <Link href="/" className="inline-flex items-center text-slate-400 hover:text-white transition-colors group text-sm font-semibold">
-            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Terminal Board
           </Link>
           <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">
             File Details Center
           </span>
         </div>
         
-        {/* Shipment Banner Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-slate-900/40 border border-slate-800 p-6 rounded-2xl backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Shipment Banner Header (Airport Board Style) */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#0a0a0c] border-t-4 border-yellow-500 border-x border-b border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-md">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                File #{shipment.id}
+              <h1 className="text-2xl md:text-3xl font-black font-mono tracking-widest text-yellow-500 uppercase">
+                FILE #{shipment.id}
               </h1>
               
               {shipment.shipment_type && (
-                <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2 py-0.5 rounded border ${
+                <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded border uppercase ${
                   shipment.shipment_type === 'Export' 
                     ? 'bg-sky-950/40 text-sky-400 border-sky-900/50' 
                     : shipment.shipment_type === 'Import'
@@ -137,9 +137,6 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               parentKgs={shipment.kgs} 
               parentChw={shipment.chw} 
             />
-
-            {/* Delete Shipment Action */}
-            <DeleteShipmentButton shipmentId={shipment.id} />
           </div>
         </div>
 
@@ -270,7 +267,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                       No billing items logged on this shipment yet. Add billing details manually or parse an email quote.
                     </p>
                     <div className="flex justify-center pt-2">
-                      <EmailQuoteParser shipmentId={shipment.id} billableConcepts={billableConcepts} />
+                      <EmailQuoteParser shipment={shipment} billableConcepts={billableConcepts} />
                     </div>
                   </div>
                 ) : (
@@ -316,10 +313,24 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                     </div>
 
                     <div className="pt-3 border-t border-slate-850 flex justify-center">
-                      <EmailQuoteParser shipmentId={shipment.id} billableConcepts={billableConcepts} />
+                      <EmailQuoteParser shipment={shipment} billableConcepts={billableConcepts} />
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Danger Zone Card */}
+            <Card className="bg-rose-950/5 border-rose-950/30 backdrop-blur-md">
+              <CardContent className="pt-4 space-y-2">
+                <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                  Permanently delete this shipment, its timeline events, invoices and logs.
+                </p>
+                <div className="w-full flex justify-stretch">
+                  <div className="w-full [&>button]:w-full">
+                    <DeleteShipmentButton shipmentId={shipment.id} />
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

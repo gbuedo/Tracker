@@ -94,6 +94,11 @@ export async function addStatus(name: string, color_code: string, sort_order: nu
   revalidatePath("/");
 }
 
+export async function deleteStatus(id: number) {
+  await db.deleteStatus(id);
+  revalidatePath("/");
+}
+
 export async function getAppConfig() {
   return await db.getAppConfig();
 }

@@ -16,7 +16,7 @@ import { Shipment, Status } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase, deleteShipment } from "@/actions/shipments";
+import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase, deleteShipment, deleteStatus } from "@/actions/shipments";
 
 interface ShipmentsListProps {
   initialShipments: Shipment[];
@@ -308,8 +308,8 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           )}
         </div>
         
-        {/* Horizontal Status Pills Container */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5">
+        {/* Horizontal Status Pills Container - Single Line Compact Flexbar */}
+        <div className="flex flex-row flex-nowrap overflow-x-auto gap-2 pb-2 scrollbar-none max-w-full">
           {statuses.map((status) => {
             const count = globalStatusCounts[status.name] || 0;
             const isSelected = selectedStatuses.includes(status.name);
@@ -317,34 +317,28 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <button
                 key={status.id}
                 onClick={() => handleToggleStatus(status.name)}
-                className={`p-2 rounded-lg border text-left transition-all duration-200 backdrop-blur-md relative overflow-hidden group flex flex-col justify-between h-[58px] ${
+                className={`py-1 px-2.5 rounded-lg border flex items-center gap-2 transition-all duration-200 backdrop-blur-md relative overflow-hidden group shrink-0 h-[34px] ${
                   isSelected 
                     ? "bg-slate-900 border-slate-700 shadow-md ring-1 ring-sky-500/30"
                     : "bg-slate-900/30 border-slate-900/60 hover:border-slate-800/80 hover:bg-slate-900/50"
                 }`}
               >
-                {/* Visual Accent Glow */}
-                <div 
-                  className="absolute top-0 left-0 w-1 h-full transition-opacity duration-200" 
-                  style={{ backgroundColor: status.color_code }}
+                {/* Visual Accent Dot */}
+                <span 
+                  className="w-1.5 h-1.5 rounded-full shrink-0" 
+                  style={{ 
+                    backgroundColor: status.color_code,
+                    boxShadow: isSelected ? `0 0 6px ${status.color_code}` : "none"
+                  }}
                 />
 
-                <span className="text-[9px] font-extrabold uppercase tracking-wide text-slate-500 group-hover:text-slate-400 transition-colors truncate max-w-full pl-0.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wide text-slate-300 group-hover:text-white transition-colors truncate max-w-[110px]">
                   {status.name}
                 </span>
 
-                <div className="flex justify-between items-center mt-1 pl-0.5">
-                  <span className="text-base font-black font-mono text-white tracking-tight leading-none">
-                    {count}
-                  </span>
-                  <div 
-                    className="w-2 h-2 rounded-full" 
-                    style={{ 
-                      backgroundColor: status.color_code,
-                      boxShadow: `0 0 6px ${status.color_code}`
-                    }}
-                  />
-                </div>
+                <span className="text-[10px] font-black font-mono text-white bg-slate-950/80 px-1.5 py-0.25 rounded border border-slate-850/60 ml-0.5">
+                  {count}
+                </span>
               </button>
             );
           })}
@@ -485,6 +479,32 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="max-h-36 overflow-y-auto bg-slate-900/40 p-2 rounded border border-slate-900 text-[10px] font-mono font-semibold space-y-1.5 mt-2 text-slate-500">
+                    <span className="block font-bold uppercase text-[9px] text-slate-650 mb-1">Registered Milestones ({statuses.length})</span>
+                    {statuses.map(st => (
+                      <div key={st.id} className="flex justify-between items-center py-0.5 border-b border-slate-900/30">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: st.color_code }} />
+                          <span className="text-slate-300">{st.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            if (confirm(`Are you sure you want to delete status milestone "${st.name}"?`)) {
+                              await deleteStatus(st.id);
+                              router.refresh();
+                            }
+                          }}
+                          className="text-rose-500 hover:text-rose-450 hover:bg-rose-950/20 p-1 rounded transition-colors"
+                          title="Delete milestone"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -627,16 +647,16 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
       </div>
 
       {/* --- MAIN OPERATIONAL TERMINAL SHIPMENTS TABLE --- */}
-      <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl overflow-hidden backdrop-blur-md shadow-2xl shadow-slate-950">
+      <div className="bg-black border border-slate-900 rounded-xl overflow-hidden shadow-2xl">
         <Table>
-          <TableHeader className="bg-slate-950/80 border-slate-850">
-            <TableRow className="hover:bg-transparent border-slate-850">
-              <TableHead className="text-slate-400 font-bold text-xs uppercase tracking-wider py-3 max-w-[80px] whitespace-normal leading-tight">ID & Relations</TableHead>
-              <TableHead className="text-slate-400 font-bold text-xs uppercase tracking-wider py-3 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
-              <TableHead className="text-slate-400 font-bold text-xs uppercase tracking-wider py-3 max-w-[120px] whitespace-normal leading-tight">Reference / PO</TableHead>
-              <TableHead className="text-slate-400 font-bold text-xs uppercase tracking-wider py-3 max-w-[130px] whitespace-normal leading-tight">Type & Mode</TableHead>
-              <TableHead className="text-slate-400 font-bold text-xs uppercase tracking-wider py-3 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
-              <TableHead className="text-slate-400 font-bold text-xs uppercase tracking-wider py-3 text-center w-[80px]">Expand</TableHead>
+          <TableHeader className="bg-[#0a0a0c] border-slate-900">
+            <TableRow className="hover:bg-transparent border-slate-900">
+              <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-3 max-w-[80px] whitespace-normal leading-tight">ID & Relations</TableHead>
+              <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-3 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
+              <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-3 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">Reference / PO</TableHead>
+              <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-3 max-w-[130px] whitespace-normal leading-tight hidden md:table-cell">Type & Mode</TableHead>
+              <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-3 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
+              <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-3 text-center w-[80px]">Expand</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -684,47 +704,47 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                     <TableRow
                       key={ship.id}
                       onClick={(e) => toggleRow(ship.id, e)}
-                      className={`border-slate-850 hover:bg-slate-800/20 cursor-pointer transition-all duration-200 group text-slate-300 ${
-                        ship.parent_shipment_id ? "bg-indigo-950/5" : ""
+                      className={`border-slate-900 hover:bg-slate-900/50 cursor-pointer transition-all duration-200 group text-slate-350 ${
+                        ship.parent_shipment_id ? "bg-[#0b0c10]" : ""
                       }`}
                     >
-                      <TableCell className="font-bold text-sky-400 py-3 relative">
+                      <TableCell className="font-bold text-yellow-500 py-3 relative">
                         <div className="flex items-center space-x-1.5 font-mono">
                           {ship.parent_shipment_id && (
-                            <span className="text-indigo-550 mr-0.5 text-[11px] font-black font-sans">↳</span>
+                            <span className="text-indigo-500 mr-0.5 text-[11px] font-black font-sans">↳</span>
                           )}
                           <span>{ship.id}</span>
                         </div>
                         {ship.parent_shipment_id && (
-                          <span className="text-[8px] bg-indigo-950/70 text-indigo-300 border border-indigo-900/40 px-1 py-0.25 rounded font-mono block mt-0.5 w-max">
+                          <span className="text-[8px] bg-indigo-950/70 text-indigo-350 border border-indigo-900/30 px-1 py-0.25 rounded font-mono block mt-0.5 w-max">
                             Sub of {ship.parent_shipment_id}
                           </span>
                         )}
                       </TableCell>
                       
-                      <TableCell className="font-bold text-slate-200 group-hover:text-white transition-colors truncate max-w-[150px]">
+                      <TableCell className="font-bold text-slate-100 group-hover:text-yellow-400 transition-colors truncate max-w-[120px] sm:max-w-[180px]">
                         {ship.client_name}
                       </TableCell>
                       
-                      <TableCell className="text-slate-300 font-mono text-xs truncate max-w-[120px]">
-                        {ship.reference || <span className="text-slate-600">-</span>}
+                      <TableCell className="text-slate-300 font-mono text-xs truncate max-w-[120px] hidden sm:table-cell">
+                        {ship.reference || <span className="text-slate-650">-</span>}
                       </TableCell>
                       
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <div className="flex items-center gap-1.5">
-                          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border uppercase ${
                             ship.shipment_type === 'Export' 
                               ? 'bg-sky-950/40 text-sky-400 border-sky-900/30' 
                               : ship.shipment_type === 'Import'
                               ? 'bg-teal-950/40 text-teal-400 border-teal-900/30'
                               : ship.shipment_type === 'Transit'
-                              ? 'bg-amber-950/40 text-amber-550 border-amber-900/30'
+                              ? 'bg-amber-950/40 text-amber-500 border-amber-900/30'
                               : 'bg-indigo-950/40 text-indigo-400 border-indigo-900/30'
                           }`}>
                             {ship.shipment_type}
                           </span>
                           {ship.transport_mode && (
-                            <span className="inline-flex items-center justify-center p-1 rounded-md bg-slate-950 border border-slate-800" title={ship.transport_mode}>
+                            <span className="inline-flex items-center justify-center p-1 rounded-md bg-slate-950 border border-slate-900" title={ship.transport_mode}>
                               {getTransportIcon(ship.transport_mode)}
                             </span>
                           )}
@@ -733,12 +753,12 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                       
                       <TableCell className="text-right">
                         <span 
-                          className="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-black shadow-sm tracking-wide transition-all border uppercase"
+                          className="inline-flex px-2.5 py-0.5 rounded text-[10px] font-black tracking-widest font-mono transition-all border uppercase"
                           style={{ 
-                            backgroundColor: `${ship.status?.color_code}15` || '#47556915',
-                            borderColor: `${ship.status?.color_code}40` || '#47556940',
+                            backgroundColor: '#0c0c0e',
+                            borderColor: ship.status?.color_code || '#cbd5e1',
                             color: ship.status?.color_code || '#cbd5e1',
-                            boxShadow: `0 0 10px ${ship.status?.color_code}10`
+                            boxShadow: `0 0 8px ${ship.status?.color_code}40`
                           }}
                         >
                           {ship.status?.name || "Unknown"}
@@ -748,7 +768,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                       <TableCell className="text-center py-3">
                         <button
                           onClick={(e) => toggleRow(ship.id, e)}
-                          className="p-1 rounded-md bg-slate-950 border border-slate-850 hover:bg-slate-900 text-slate-400 hover:text-white transition-colors"
+                          className="p-1 rounded bg-slate-950 border border-slate-900 hover:bg-slate-900 text-slate-400 hover:text-white transition-colors"
                         >
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         </button>

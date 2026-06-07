@@ -398,7 +398,11 @@ export async function createShipment(
   }
   try {
     // Attempt Supabase
+    const config = await getAppConfig();
+    const targetId = config.next_shipment_id;
+
     const { data, error } = await supabase.from("shipments").insert({
+      id: targetId,
       client_name,
       reference,
       shipment_type,
@@ -418,6 +422,14 @@ export async function createShipment(
 
     if (error) throw error;
     isDemo = false;
+    
+    // Automatically increment local starting shipment ID sequence to prevent collisions
+    try {
+      await updateAppConfig({ next_shipment_id: targetId + 1 });
+    } catch (e) {
+      // Ignore config saving error
+    }
+
     return data as Shipment;
   } catch (err: any) {
     const errMsg = err?.message || String(err);
@@ -857,6 +869,16 @@ export async function addStatus(name: string, color_code: string, sort_order: nu
 }
 
 export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
+  let localNext = 1001;
+  try {
+    const data = readMockData();
+    if (data && data.config && data.config.next_shipment_id) {
+      localNext = Number(data.config.next_shipment_id);
+    }
+  } catch (e) {
+    // ignore
+  }
+
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
@@ -872,11 +894,35 @@ export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
     
     if (error) throw error;
     
-    const maxId = data && data.length > 0 ? data[0].id : 1000;
-    return { next_shipment_id: maxId + 1 };
+    const maxId = data && data.length > 0 ? data[0].id : 0;
+    return { next_shipment_id: Math.max(localNext, maxId + 1) };
   } catch (err) {
     const data = readMockData();
     return data.config || { next_shipment_id: 1001 };
+  }
+}
+
+export async function deleteStatus(id: number): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (data.statuses) {
+      data.statuses = data.statuses.filter((s: any) => s.id !== id);
+      writeMockData(data);
+    }
+    return;
+  }
+  try {
+    const { error } = await supabase.from("statuses").delete().eq("id", id);
+    if (error) throw error;
+  } catch (err) {
+    isDemo = true;
+    const data = readMockData();
+    if (data.statuses) {
+      data.statuses = data.statuses.filter((s: any) => s.id !== id);
+      writeMockData(data);
+    }
   }
 }
 
