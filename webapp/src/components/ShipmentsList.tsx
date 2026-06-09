@@ -360,20 +360,20 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
 
       {/* --- STATUS DYNAMIC CARDS ROW & VOLUME INDICATORS --- */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="flex justify-between items-center">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5" />
+          <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+            <Layers className="w-3 h-3" />
             Operational Milestones Counters
           </h3>
           {selectedStatuses.length > 0 && (
             <Button 
               variant="ghost" 
               onClick={handleClearStatusFilters} 
-              className="h-6 px-2 text-[10px] text-sky-400 hover:text-white uppercase font-bold"
+              className="h-5 px-1.5 text-[9px] text-sky-400 hover:text-white uppercase font-bold"
             >
               Clear Filters ({selectedStatuses.length})
             </Button>
@@ -381,7 +381,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         </div>
         
         {/* Horizontal Status Pills Container - Wrapping Flexbar (No Scroll) */}
-        <div className="flex flex-row flex-wrap gap-2 pb-2 max-w-full">
+        <div className="flex flex-row flex-wrap gap-1.5 pb-1 max-w-full">
           {statuses.map((status) => {
             const count = globalStatusCounts[status.name] || 0;
             const isSelected = selectedStatuses.includes(status.name);
@@ -389,10 +389,10 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <button
                 key={status.id}
                 onClick={() => handleToggleStatus(status.name)}
-                className={`py-1 px-2.5 rounded-lg border flex items-center gap-2 transition-all duration-200 backdrop-blur-md relative overflow-hidden group shrink-0 h-[34px] ${
+                className={`py-0.5 px-2 rounded-lg border flex items-center gap-1.5 transition-all duration-200 backdrop-blur-md relative overflow-hidden group shrink-0 h-[28px] ${
                   isSelected 
-                    ? "bg-slate-900 border-slate-700 shadow-md ring-1 ring-sky-500/30"
-                    : "bg-slate-900/30 border-slate-900/60 hover:border-slate-800/80 hover:bg-slate-900/50"
+                    ? "bg-slate-900 border-slate-700 shadow-md ring-1 ring-sky-500/20"
+                    : "bg-slate-900/20 border-slate-900/50 hover:border-slate-800/80 hover:bg-slate-900/40"
                 }`}
               >
                 {/* Visual Accent Dot */}
@@ -400,15 +400,15 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                   className="w-1.5 h-1.5 rounded-full shrink-0" 
                   style={{ 
                     backgroundColor: status.color_code,
-                    boxShadow: isSelected ? `0 0 6px ${status.color_code}` : "none"
+                    boxShadow: isSelected ? `0 0 5px ${status.color_code}` : "none"
                   }}
                 />
 
-                <span className="text-[10px] font-extrabold uppercase tracking-wide text-slate-300 group-hover:text-white transition-colors truncate max-w-[110px]">
+                <span className="text-[9px] font-extrabold uppercase tracking-wide text-slate-350 group-hover:text-white transition-colors truncate max-w-[100px]">
                   {status.name}
                 </span>
 
-                <span className="text-[10px] font-black font-mono text-white bg-slate-950/80 px-1.5 py-0.25 rounded border border-slate-850/60 ml-0.5">
+                <span className="text-[9px] font-black font-mono text-white bg-slate-950/80 px-1 py-0.25 rounded border border-slate-900 ml-0.5">
                   {count}
                 </span>
               </button>
@@ -417,32 +417,31 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         </div>
       </div>
 
-      {/* --- SEARCH, SEARCH FILTER & ORDER OPTIONS BAR --- */}
-      <div className="flex flex-col xl:flex-row gap-4 justify-between items-stretch xl:items-center bg-slate-900/60 border border-slate-800 p-4 rounded-2xl backdrop-blur-md">
-        
-        {/* Left Search input */}
-        <div className="relative flex-grow max-w-xl">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search Client, Reference, CT File, Airway Bill (MAWB/HAWB) or ID..."
-            className="pl-10 h-11 bg-slate-950/80 border-slate-850 text-slate-200 placeholder:text-slate-500 focus-visible:ring-sky-500/50 focus-visible:border-sky-500/80 transition-all rounded-xl"
-          />
-        </div>
+      {/* --- SEARCH BAR (LINE 1) --- */}
+      <div className="relative w-full">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search Client, Reference, CT File, Airway Bill (MAWB/HAWB) or ID..."
+          className="pl-10 h-10 bg-slate-900/60 border-slate-800 text-slate-200 placeholder:text-slate-505 focus-visible:ring-sky-500/50 focus-visible:border-sky-500/80 transition-all rounded-xl w-full text-xs font-semibold"
+        />
+      </div>
 
-        {/* Filters and Config utilities */}
-        <div className="flex flex-wrap gap-3 items-center justify-between xl:justify-end shrink-0">
-          
+      {/* --- CONTROLS & UTILITIES ROW (LINE 2) --- */}
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between bg-slate-900/40 border border-slate-850 p-2.5 rounded-xl backdrop-blur-md">
+        
+        {/* Left: filters & selectors */}
+        <div className="flex flex-wrap gap-2.5 items-center">
           {/* Shipment Type filter */}
-          <div className="flex bg-slate-950/60 p-1 rounded-xl border border-slate-850 gap-1 flex-wrap">
+          <div className="flex bg-slate-950/60 p-0.5 rounded-lg border border-slate-850 gap-0.5 flex-wrap">
             {["All", "Quote", "Import", "Export", "Transit", "Combine"].map((type) => (
               <button
                 key={type}
                 onClick={() => setTypeFilter(type)}
-                className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all ${
+                className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all ${
                   typeFilter === type
-                    ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20"
+                    ? "bg-sky-600 text-white shadow shadow-sky-500/10"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -452,49 +451,51 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           </div>
 
           {/* Priority sorting select */}
-          <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-2.5 rounded-xl border border-slate-850 text-xs font-semibold text-slate-300">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
+            <ArrowUpDown className="w-3 h-3 text-slate-500" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-xs font-bold text-slate-200"
+              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-slate-200"
             >
-              <option value="created_at" className="bg-slate-950">Default (Date Created)</option>
-              <option value="eta_asc" className="bg-slate-950">First ETA (Priorities Arrival)</option>
-              <option value="eta_desc" className="bg-slate-950">Latest ETA (Arrival)</option>
-              <option value="etd_asc" className="bg-slate-950">First ETD (Departing Priorities)</option>
-              <option value="etd_desc" className="bg-slate-950">Latest ETD (Departing)</option>
+              <option value="created_at" className="bg-slate-950">Sort: Default (Created)</option>
+              <option value="eta_asc" className="bg-slate-950">Sort: First ETA (Arrival)</option>
+              <option value="eta_desc" className="bg-slate-950">Sort: Latest ETA (Arrival)</option>
+              <option value="etd_asc" className="bg-slate-950">Sort: First ETD (Departure)</option>
+              <option value="etd_desc" className="bg-slate-950">Sort: Latest ETD (Departure)</option>
             </select>
           </div>
 
           {/* Grouping select */}
-          <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-2.5 rounded-xl border border-slate-850 text-xs font-semibold text-slate-300">
-            <Layers className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
+            <Layers className="w-3 h-3 text-slate-500" />
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
-              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-xs font-bold text-slate-200"
+              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-slate-200"
             >
-              <option value="none" className="bg-slate-950">No Grouping (List)</option>
-              <option value="customer" className="bg-slate-950">Group by Customer</option>
-              <option value="type" className="bg-slate-950">Group by Operation Type</option>
-              <option value="status" className="bg-slate-950">Group by Milestone Status</option>
+              <option value="none" className="bg-slate-950">Group: None (List)</option>
+              <option value="customer" className="bg-slate-950">Group: Customer</option>
+              <option value="type" className="bg-slate-950">Group: Type</option>
+              <option value="status" className="bg-slate-950">Group: Status</option>
             </select>
           </div>
+        </div>
 
-          {/* --- CONFIGURATION GEAR DIALOG PANEL --- */}
+        {/* Right: Backup CSV & Configuration gear */}
+        <div className="flex items-center gap-2 justify-end">
           <Button 
             onClick={exportToCSV}
-            className="h-10 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl shadow-lg hover:border-slate-700 hover:bg-slate-800/40 text-xs font-bold gap-1.5 px-3"
+            className="h-8 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30 text-[10px] font-bold gap-1.5 px-3"
             title="Download CSV Backup"
           >
-            <Download className="w-4.5 h-4.5 text-emerald-500" />
+            <Download className="w-3.5 h-3.5 text-emerald-500" />
             Backup CSV
           </Button>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger render={<Button className="h-10 w-10 p-0 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl shadow-lg hover:border-slate-700 hover:bg-slate-800/40" />}>
-              <Settings className="w-4 h-4" />
+            <DialogTrigger render={<Button className="h-8 w-8 p-0 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30" />}>
+              <Settings className="w-3.5 h-3.5" />
             </DialogTrigger>
             
             <DialogContent className="max-w-md bg-slate-950 border-slate-800 text-slate-50 max-h-[90vh] overflow-y-auto">
