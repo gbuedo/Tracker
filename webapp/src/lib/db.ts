@@ -958,20 +958,44 @@ export async function deleteStatus(id: number): Promise<void> {
     const data = readMockData();
     if (data.statuses) {
       data.statuses = data.statuses.filter((s: any) => s.id !== id);
+      if (data.shipments) {
+        data.shipments.forEach((s: any) => {
+          if (s.status_id === id) {
+            s.status_id = null;
+          }
+        });
+      }
       writeMockData(data);
     }
     return;
   }
   try {
+    // 1. Clear status_id references on shipments to prevent foreign key constraint violations
+    const { error: updateError } = await supabase.from("shipments").update({ status_id: null }).eq("status_id", id);
+    if (updateError) throw updateError;
+
+    // 2. Delete the status
     const { error } = await supabase.from("statuses").delete().eq("id", id);
     if (error) throw error;
-  } catch (err) {
-    isDemo = true;
-    const data = readMockData();
-    if (data.statuses) {
-      data.statuses = data.statuses.filter((s: any) => s.id !== id);
-      writeMockData(data);
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+      const data = readMockData();
+      if (data.statuses) {
+        data.statuses = data.statuses.filter((s: any) => s.id !== id);
+        if (data.shipments) {
+          data.shipments.forEach((s: any) => {
+            if (s.status_id === id) {
+              s.status_id = null;
+            }
+          });
+        }
+        writeMockData(data);
+      }
+      return;
     }
+    throw err;
   }
 }
 
