@@ -296,7 +296,7 @@ export function EmailQuoteParser({ shipment, billableConcepts }: EmailQuoteParse
         <span className="flex items-center"><FileCode2 className="mr-2 h-4 w-4" /> AI Paste Quote Parser</span>
       </DialogTrigger>
 
-      <DialogContent className="max-w-3xl bg-slate-950 border-slate-800 text-white max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl md:max-w-6xl w-full bg-slate-950 border-slate-900 text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
         <DialogHeader className="border-b border-slate-850 pb-4">
           <DialogTitle className="text-lg font-black uppercase flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
             <Sparkles className="w-5 h-5 text-sky-400 animate-pulse" />
