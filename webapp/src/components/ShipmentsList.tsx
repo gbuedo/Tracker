@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Search, Ship, Plane, Truck, Filter, ArrowUpRight, Calendar, 
   FileText, CheckCircle2, User, Settings, Sparkles, Plus, 
-  ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink, Trash2 
+  ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink, Trash2, Download 
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -27,6 +27,52 @@ interface ShipmentsListProps {
 
 export function ShipmentsList({ initialShipments, statuses, initialCustomers, initialConfig }: ShipmentsListProps) {
   const router = useRouter();
+
+  // CSV backup exporter
+  const exportToCSV = () => {
+    const headers = [
+      "File ID", "Parent File ID", "Client Name", "Reference", 
+      "Type", "Mode", "Milestone Status", "Pieces", "Gross KGS", 
+      "Chargeable CHW", "CT File", "Warehouse Receipt", "AES Ref", 
+      "MAWB", "HAWB", "ETD", "ETA", "Created At"
+    ];
+
+    const rows = sortedShipments.map((ship) => [
+      ship.id,
+      ship.parent_shipment_id || "",
+      `"${(ship.client_name || "").replace(/"/g, '""')}"`,
+      `"${(ship.reference || "").replace(/"/g, '""')}"`,
+      ship.shipment_type || "",
+      ship.transport_mode || "",
+      ship.status?.name || "In Progress",
+      ship.pcs || "",
+      ship.kgs || "",
+      ship.chw || "",
+      ship.ct_file || "",
+      ship.warehouse_receipt || "",
+      ship.aes || "",
+      ship.expo_mawb || "",
+      ship.expo_hawb || "",
+      ship.etd || "",
+      ship.eta || "",
+      ship.created_at || ""
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(e => e.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    const miamiTime = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' }).replace(/\//g, "-");
+    link.setAttribute("download", `wcs_tracker_backup_${miamiTime}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Search & Type Filters
   const [search, setSearch] = useState("");
@@ -437,6 +483,15 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           </div>
 
           {/* --- CONFIGURATION GEAR DIALOG PANEL --- */}
+          <Button 
+            onClick={exportToCSV}
+            className="h-10 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl shadow-lg hover:border-slate-700 hover:bg-slate-800/40 text-xs font-bold gap-1.5 px-3"
+            title="Download CSV Backup"
+          >
+            <Download className="w-4.5 h-4.5 text-emerald-500" />
+            Backup CSV
+          </Button>
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger render={<Button className="h-10 w-10 p-0 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl shadow-lg hover:border-slate-700 hover:bg-slate-800/40" />}>
               <Settings className="w-4 h-4" />
@@ -697,6 +752,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">Reference / PO</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[130px] whitespace-normal leading-tight hidden md:table-cell">Type & Mode</TableHead>
+                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">ETD / ETA</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-center w-[80px]">Expand</TableHead>
                 </TableRow>
@@ -704,7 +760,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <TableBody>
                 {shipmentsList.length === 0 ? (
                   <TableRow className="border-slate-850 hover:bg-transparent">
-                    <TableCell colSpan={6} className="text-center py-8 text-slate-500 font-medium">
+                    <TableCell colSpan={7} className="text-center py-8 text-slate-500 font-medium">
                       No shipments found in this group.
                     </TableCell>
                   </TableRow>
@@ -765,16 +821,24 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                               )}
                             </div>
                           </TableCell>
+
+                          <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
+                            <div className="flex flex-col">
+                              <span className="font-bold">{ship.etd || "-"}</span>
+                              <span className="text-[10px] text-sky-400 font-bold">{ship.eta || "-"}</span>
+                            </div>
+                          </TableCell>
                           
                           <TableCell className="text-right">
                             <span 
-                              className="px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase inline-block font-sans"
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-extrabold uppercase font-sans"
                               style={{ 
-                                backgroundColor: `${ship.status?.color_code}12` || '#47556912',
-                                borderColor: `${ship.status?.color_code}35` || '#47556935',
+                                backgroundColor: `${ship.status?.color_code}08` || '#47556908',
+                                borderColor: `${ship.status?.color_code}25` || '#47556925',
                                 color: ship.status?.color_code || '#cbd5e1'
                               }}
                             >
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: ship.status?.color_code || '#cbd5e1' }} />
                               {ship.status?.name || 'In Progress'}
                             </span>
                           </TableCell>
@@ -792,7 +856,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         {/* Expanded details container */}
                         {isExpanded && (
                           <TableRow className="bg-[#040406]/60 border-slate-900 hover:bg-transparent">
-                            <TableCell colSpan={6} className="p-4">
+                            <TableCell colSpan={7} className="p-4">
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-400">
                                 
                                 {/* Airbills & Documentation */}

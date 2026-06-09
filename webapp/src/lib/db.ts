@@ -856,17 +856,49 @@ export async function addCustomer(name: string): Promise<void> {
 }
 
 export async function addStatus(name: string, color_code: string, sort_order: number): Promise<void> {
-  const data = readMockData();
-  if (!data.statuses) data.statuses = [];
-  const newId = data.statuses.length > 0 ? Math.max(...data.statuses.map((s: any) => s.id)) + 1 : 1;
-  data.statuses.push({
-    id: newId,
-    name: name.trim(),
-    color_code,
-    sort_order
-  });
-  data.statuses.sort((a: any, b: any) => a.sort_order - b.sort_order);
-  writeMockData(data);
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.statuses) data.statuses = [];
+    const newId = data.statuses.length > 0 ? Math.max(...data.statuses.map((s: any) => s.id)) + 1 : 1;
+    data.statuses.push({
+      id: newId,
+      name: name.trim(),
+      color_code,
+      sort_order
+    });
+    data.statuses.sort((a: any, b: any) => a.sort_order - b.sort_order);
+    writeMockData(data);
+    return;
+  }
+  try {
+    const { error } = await supabase.from("statuses").insert({
+      name: name.trim(),
+      color_code,
+      sort_order
+    });
+    if (error) throw error;
+    isDemo = false;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+      const data = readMockData();
+      if (!data.statuses) data.statuses = [];
+      const newId = data.statuses.length > 0 ? Math.max(...data.statuses.map((s: any) => s.id)) + 1 : 1;
+      data.statuses.push({
+        id: newId,
+        name: name.trim(),
+        color_code,
+        sort_order
+      });
+      data.statuses.sort((a: any, b: any) => a.sort_order - b.sort_order);
+      writeMockData(data);
+      return;
+    }
+    throw err;
+  }
 }
 
 export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
