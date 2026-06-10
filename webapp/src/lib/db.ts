@@ -17,6 +17,161 @@ function checkIsDefaultUrl(): boolean {
   return !url || url.includes("placeholder");
 }
 
+let cachedSystemShipmentId: number | null = null;
+
+async function getOrCreateSystemShipmentId(): Promise<number> {
+  if (cachedSystemShipmentId !== null) {
+    return cachedSystemShipmentId;
+  }
+  
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    return 999999;
+  }
+  
+  try {
+    const { data: existing, error: findError } = await supabase
+      .from("shipments")
+      .select("id")
+      .eq("client_name", "SYSTEM_DATA_STORE")
+      .maybeSingle();
+      
+    if (findError) throw findError;
+    
+    if (existing) {
+      cachedSystemShipmentId = existing.id;
+      return existing.id;
+    }
+    
+    // Create new system shipment
+    const { data: newShip, error: createError } = await supabase
+      .from("shipments")
+      .insert({
+        client_name: "SYSTEM_DATA_STORE",
+        reference: "System Configuration Store"
+      })
+      .select()
+      .single();
+      
+    if (createError) throw createError;
+    
+    cachedSystemShipmentId = newShip.id;
+    return newShip.id;
+  } catch (err) {
+    console.error("Error in getOrCreateSystemShipmentId:", err);
+    return 999999;
+  }
+}
+
+async function getSystemValue<T>(key: string, defaultValue: T): Promise<T> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    const data = readMockData();
+    if (!data.system_store) data.system_store = {};
+    if (data.system_store[key] !== undefined) {
+      return data.system_store[key] as T;
+    }
+    if (key === "SYSTEM_CARRIERS") return (data.carriers || defaultValue) as unknown as T;
+    if (key === "SYSTEM_CUSTOMERS") return (data.customers || defaultValue) as unknown as T;
+    if (key === "SYSTEM_CONFIG") return (data.config || defaultValue) as unknown as T;
+    if (key === "SYSTEM_STATUSES") return (data.custom_statuses || defaultValue) as unknown as T;
+    if (key === "SYSTEM_SHIPMENT_STATUSES") return (data.shipment_statuses || defaultValue) as unknown as T;
+    return defaultValue;
+  }
+  
+  try {
+    const systemShipmentId = await getOrCreateSystemShipmentId();
+    const { data: logRow, error: logError } = await supabase
+      .from("logs")
+      .select("amount_type")
+      .eq("shipment_id", systemShipmentId)
+      .eq("event_text", key)
+      .maybeSingle();
+      
+    if (logError) throw logError;
+    if (logRow && logRow.amount_type) {
+      return JSON.parse(logRow.amount_type) as T;
+    }
+  } catch (err) {
+    console.error(`Error loading system key ${key} from logs:`, err);
+  }
+  
+  // Fallback to memory/file
+  const data = readMockData();
+  if (!data.system_store) data.system_store = {};
+  if (data.system_store[key] !== undefined) {
+    return data.system_store[key] as T;
+  }
+  if (key === "SYSTEM_CARRIERS") return (data.carriers || defaultValue) as unknown as T;
+  if (key === "SYSTEM_CUSTOMERS") return (data.customers || defaultValue) as unknown as T;
+  if (key === "SYSTEM_CONFIG") return (data.config || defaultValue) as unknown as T;
+  if (key === "SYSTEM_STATUSES") return (data.custom_statuses || defaultValue) as unknown as T;
+  if (key === "SYSTEM_SHIPMENT_STATUSES") return (data.shipment_statuses || defaultValue) as unknown as T;
+  return defaultValue;
+}
+
+async function setSystemValue<T>(key: string, value: T): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.system_store) data.system_store = {};
+    data.system_store[key] = value;
+    if (key === "SYSTEM_CARRIERS") data.carriers = value;
+    if (key === "SYSTEM_CUSTOMERS") data.customers = value;
+    if (key === "SYSTEM_CONFIG") data.config = value;
+    if (key === "SYSTEM_STATUSES") data.custom_statuses = value;
+    if (key === "SYSTEM_SHIPMENT_STATUSES") data.shipment_statuses = value;
+    writeMockData(data);
+    return;
+  }
+  
+  try {
+    const systemShipmentId = await getOrCreateSystemShipmentId();
+    const updatedValue = JSON.stringify(value);
+    
+    const { data: existingLog, error: findLogError } = await supabase
+      .from("logs")
+      .select("id")
+      .eq("shipment_id", systemShipmentId)
+      .eq("event_text", key)
+      .maybeSingle();
+      
+    if (findLogError) throw findLogError;
+    
+    if (existingLog) {
+      const { error: updateError } = await supabase
+        .from("logs")
+        .update({ amount_type: updatedValue })
+        .eq("id", existingLog.id);
+      if (updateError) throw updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from("logs")
+        .insert({
+          shipment_id: systemShipmentId,
+          event_text: key,
+          amount_type: updatedValue,
+          is_external: false
+        });
+      if (insertError) throw insertError;
+    }
+  } catch (err) {
+    console.error(`Error saving system key ${key} to logs:`, err);
+    // fallback to local mock data
+    isDemo = true;
+    const data = readMockData();
+    if (!data.system_store) data.system_store = {};
+    data.system_store[key] = value;
+    if (key === "SYSTEM_CARRIERS") data.carriers = value;
+    if (key === "SYSTEM_CUSTOMERS") data.customers = value;
+    if (key === "SYSTEM_CONFIG") data.config = value;
+    if (key === "SYSTEM_STATUSES") data.custom_statuses = value;
+    if (key === "SYSTEM_SHIPMENT_STATUSES") data.shipment_statuses = value;
+    writeMockData(data);
+  }
+}
+
 // Initial seed data for the mock database
 const initialMockData = {
   statuses: [
@@ -290,7 +445,7 @@ async function queryWithFallback<T>(supabaseQuery: () => Promise<any>, fallbackF
 // ----------------------------------------------------
 
 export async function getShipments(): Promise<Shipment[]> {
-  return queryWithFallback(
+  const baseShipments = await queryWithFallback<Shipment[]>(
     async () => {
       return await supabase
         .from("shipments")
@@ -305,10 +460,30 @@ export async function getShipments(): Promise<Shipment[]> {
       })) as Shipment[];
     }
   );
+
+  const filtered = baseShipments.filter(s => s.client_name !== "SYSTEM_DATA_STORE");
+
+  const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+  const allStatuses = await getStatuses();
+
+  return filtered.map(s => {
+    const customStatusId = shipmentStatuses[s.id];
+    if (customStatusId !== undefined) {
+      const matched = allStatuses.find(st => st.id === customStatusId);
+      if (matched) {
+        return {
+          ...s,
+          status_id: customStatusId,
+          status: matched
+        };
+      }
+    }
+    return s;
+  });
 }
 
 export async function getShipmentById(id: number): Promise<Shipment | null> {
-  return queryWithFallback(
+  const baseShipment = await queryWithFallback<Shipment | null>(
     async () => {
       return await supabase
         .from("shipments")
@@ -342,6 +517,41 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
       } as Shipment;
     }
   );
+
+  if (!baseShipment || baseShipment.client_name === "SYSTEM_DATA_STORE") {
+    return null;
+  }
+
+  const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+  const customStatusId = shipmentStatuses[id];
+  if (customStatusId !== undefined) {
+    const allStatuses = await getStatuses();
+    const matched = allStatuses.find(st => st.id === customStatusId);
+    if (matched) {
+      baseShipment.status_id = customStatusId;
+      baseShipment.status = matched;
+    }
+  }
+
+  if (baseShipment.children) {
+    const allStatuses = await getStatuses();
+    baseShipment.children = baseShipment.children.map(child => {
+      const childCustomId = shipmentStatuses[child.id];
+      if (childCustomId !== undefined) {
+        const matched = allStatuses.find(st => st.id === childCustomId);
+        if (matched) {
+          return {
+            ...child,
+            status_id: childCustomId,
+            status: matched
+          };
+        }
+      }
+      return child;
+    });
+  }
+
+  return baseShipment;
 }
 
 export async function createShipment(
@@ -363,6 +573,12 @@ export async function createShipment(
     eta?: string | null;
   } = {}
 ): Promise<Shipment> {
+  const initialStatusId = extra.status_id;
+  const extraCopy = { ...extra };
+  if (initialStatusId && initialStatusId >= 10000) {
+    extraCopy.status_id = null;
+  }
+
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
@@ -376,29 +592,42 @@ export async function createShipment(
       parent_shipment_id: null,
       client_name,
       reference,
-      status_id: extra.status_id || 1,
+      status_id: extraCopy.status_id || (initialStatusId && initialStatusId >= 10000 ? null : 1),
       shipment_type,
-      transport_mode: extra.transport_mode || null,
-      eta: extra.eta || null,
-      etd: extra.etd || null,
-      ct_file: extra.ct_file || null,
-      warehouse_receipt: extra.warehouse_receipt || null,
-      expo_mawb: extra.expo_mawb || null,
-      expo_hawb: extra.expo_hawb || null,
-      pcs: extra.pcs || null,
-      kgs: extra.kgs || null,
-      chw: extra.chw || null,
-      aes: extra.aes || null,
+      transport_mode: extraCopy.transport_mode || null,
+      eta: extraCopy.eta || null,
+      etd: extraCopy.etd || null,
+      ct_file: extraCopy.ct_file || null,
+      warehouse_receipt: extraCopy.warehouse_receipt || null,
+      expo_mawb: extraCopy.expo_mawb || null,
+      expo_hawb: extraCopy.expo_hawb || null,
+      pcs: extraCopy.pcs || null,
+      kgs: extraCopy.kgs || null,
+      chw: extraCopy.chw || null,
+      aes: extraCopy.aes || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
     data.shipments.push(newShipment);
     writeMockData(data);
+
+    if (initialStatusId && initialStatusId >= 10000) {
+      const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+      shipmentStatuses[newId] = initialStatusId;
+      await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+      
+      const allStatuses = await getStatuses();
+      return {
+        ...newShipment,
+        status_id: initialStatusId,
+        status: allStatuses.find(st => st.id === initialStatusId) || null
+      } as unknown as Shipment;
+    }
+
     return newShipment as Shipment;
   }
   try {
-    // Attempt Supabase
     const config = await getAppConfig();
     const targetId = config.next_shipment_id;
 
@@ -407,28 +636,40 @@ export async function createShipment(
       client_name,
       reference,
       shipment_type,
-      transport_mode: extra.transport_mode || null,
-      status_id: extra.status_id || 1,
-      eta: extra.eta || null,
-      etd: extra.etd || null,
-      ct_file: extra.ct_file || null,
-      warehouse_receipt: extra.warehouse_receipt || null,
-      expo_mawb: extra.expo_mawb || null,
-      expo_hawb: extra.expo_hawb || null,
-      pcs: extra.pcs || null,
-      kgs: extra.kgs || null,
-      chw: extra.chw || null,
-      aes: extra.aes || null,
+      transport_mode: extraCopy.transport_mode || null,
+      status_id: extraCopy.status_id || (initialStatusId && initialStatusId >= 10000 ? null : 1),
+      eta: extraCopy.eta || null,
+      etd: extraCopy.etd || null,
+      ct_file: extraCopy.ct_file || null,
+      warehouse_receipt: extraCopy.warehouse_receipt || null,
+      expo_mawb: extraCopy.expo_mawb || null,
+      expo_hawb: extraCopy.expo_hawb || null,
+      pcs: extraCopy.pcs || null,
+      kgs: extraCopy.kgs || null,
+      chw: extraCopy.chw || null,
+      aes: extraCopy.aes || null,
     }).select().single();
 
     if (error) throw error;
     isDemo = false;
     
-    // Automatically increment local starting shipment ID sequence to prevent collisions
     try {
       await updateAppConfig({ next_shipment_id: targetId + 1 });
     } catch (e) {
       // Ignore config saving error
+    }
+
+    if (initialStatusId && initialStatusId >= 10000) {
+      const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+      shipmentStatuses[targetId] = initialStatusId;
+      await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+      
+      const allStatuses = await getStatuses();
+      return {
+        ...data,
+        status_id: initialStatusId,
+        status: allStatuses.find(st => st.id === initialStatusId) || null
+      } as Shipment;
     }
 
     return data as Shipment;
@@ -444,25 +685,39 @@ export async function createShipment(
         parent_shipment_id: null,
         client_name,
         reference,
-        status_id: 1, // Quoting
+        status_id: extraCopy.status_id || (initialStatusId && initialStatusId >= 10000 ? null : 1),
         shipment_type,
-        transport_mode: extra.transport_mode || null,
-        eta: extra.eta || null,
-        etd: extra.etd || null,
-        ct_file: extra.ct_file || null,
-        warehouse_receipt: extra.warehouse_receipt || null,
-        expo_mawb: extra.expo_mawb || null,
-        expo_hawb: extra.expo_hawb || null,
-        pcs: extra.pcs || null,
-        kgs: extra.kgs || null,
-        chw: extra.chw || null,
-        aes: extra.aes || null,
+        transport_mode: extraCopy.transport_mode || null,
+        eta: extraCopy.eta || null,
+        etd: extraCopy.etd || null,
+        ct_file: extraCopy.ct_file || null,
+        warehouse_receipt: extraCopy.warehouse_receipt || null,
+        expo_mawb: extraCopy.expo_mawb || null,
+        expo_hawb: extraCopy.expo_hawb || null,
+        pcs: extraCopy.pcs || null,
+        kgs: extraCopy.kgs || null,
+        chw: extraCopy.chw || null,
+        aes: extraCopy.aes || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
       data.shipments.push(newShipment);
       writeMockData(data);
+
+      if (initialStatusId && initialStatusId >= 10000) {
+        const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+        shipmentStatuses[newId] = initialStatusId;
+        await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+        
+        const allStatuses = await getStatuses();
+        return {
+          ...newShipment,
+          status_id: initialStatusId,
+          status: allStatuses.find(st => st.id === initialStatusId) || null
+        } as unknown as Shipment;
+      }
+
       return newShipment as Shipment;
     }
     throw err;
@@ -606,25 +861,29 @@ export async function deleteLog(id: string): Promise<void> {
 
 
 export async function updateShipmentStatus(shipment_id: number, status_id: number): Promise<void> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    const shipment = data.shipments.find((s: any) => s.id === shipment_id);
-    if (shipment) {
-      shipment.status_id = status_id;
-      shipment.updated_at = new Date().toISOString();
-      writeMockData(data);
+  const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+  
+  if (status_id >= 10000) {
+    shipmentStatuses[shipment_id] = status_id;
+    await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+    
+    const isDefaultUrl = checkIsDefaultUrl();
+    if (!isDemo && !isDefaultUrl) {
+      try {
+        const { error } = await supabase.from("shipments").update({ status_id: null }).eq("id", shipment_id);
+        if (error) throw error;
+      } catch (err) {
+        console.error("Error updating status_id to null in Supabase:", err);
+      }
     }
-    return;
-  }
-  try {
-    const { error } = await supabase.from("shipments").update({ status_id }).eq("id", shipment_id);
-    if (error) throw error;
-    isDemo = false;
-  } catch (err: any) {
-    const errMsg = err?.message || String(err);
-    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+  } else {
+    if (shipmentStatuses[shipment_id] !== undefined) {
+      delete shipmentStatuses[shipment_id];
+      await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+    }
+    
+    const isDefaultUrl = checkIsDefaultUrl();
+    if (isDemo || isDefaultUrl) {
       isDemo = true;
       const data = readMockData();
       const shipment = data.shipments.find((s: any) => s.id === shipment_id);
@@ -635,7 +894,25 @@ export async function updateShipmentStatus(shipment_id: number, status_id: numbe
       }
       return;
     }
-    throw err;
+    try {
+      const { error } = await supabase.from("shipments").update({ status_id }).eq("id", shipment_id);
+      if (error) throw error;
+      isDemo = false;
+    } catch (err: any) {
+      const errMsg = err?.message || String(err);
+      if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+        isDemo = true;
+        const data = readMockData();
+        const shipment = data.shipments.find((s: any) => s.id === shipment_id);
+        if (shipment) {
+          shipment.status_id = status_id;
+          shipment.updated_at = new Date().toISOString();
+          writeMockData(data);
+        }
+        return;
+      }
+      throw err;
+    }
   }
 }
 
@@ -750,7 +1027,7 @@ export async function deleteShipment(id: number): Promise<void> {
 }
 
 export async function getStatuses(): Promise<Status[]> {
-  return queryWithFallback(
+  const baseStatuses = await queryWithFallback<Status[]>(
     async () => {
       return await supabase.from("statuses").select("*").order("sort_order", { ascending: true });
     },
@@ -758,10 +1035,21 @@ export async function getStatuses(): Promise<Status[]> {
       return readMockData().statuses as Status[];
     }
   );
+
+  const customStatuses = await getSystemValue<Status[]>("SYSTEM_STATUSES", []);
+  
+  const merged = [...baseStatuses];
+  customStatuses.forEach(cs => {
+    if (!merged.some(st => st.id === cs.id)) {
+      merged.push(cs);
+    }
+  });
+
+  return merged.sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export async function getBillableConcepts(): Promise<BillableConcept[]> {
-  return queryWithFallback(
+  const list = await queryWithFallback<BillableConcept[]>(
     async () => {
       return await supabase.from("billable_concepts").select("*");
     },
@@ -769,6 +1057,7 @@ export async function getBillableConcepts(): Promise<BillableConcept[]> {
       return readMockData().billable_concepts as BillableConcept[];
     }
   );
+  return list.filter(c => !c.name.startsWith("SYSTEM_"));
 }
 
 export async function createBillableConcept(name: string, description?: string): Promise<BillableConcept> {
@@ -878,104 +1167,68 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
 }
 
 export async function getCustomers(): Promise<string[]> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    return (data.customers || []) as string[];
-  }
+  const defaults = ["Global Logistics Inc.", "Global Traders Corp", "InterContinental S.A."];
+  const uniqueClients = new Set<string>(defaults);
+
   try {
-    const { data, error } = await supabase
-      .from("shipments")
-      .select("client_name");
-    
-    if (error) throw error;
-    
-    const uniqueClients = new Set<string>();
-    if (data) {
-      data.forEach((s: any) => {
-        if (s.client_name) uniqueClients.add(s.client_name.trim());
-      });
+    const isDefaultUrl = checkIsDefaultUrl();
+    if (!isDemo && !isDefaultUrl) {
+      const { data: shipmentsData, error: shipmentsError } = await supabase
+        .from("shipments")
+        .select("client_name");
+      
+      if (!shipmentsError && shipmentsData) {
+        shipmentsData.forEach((s: any) => {
+          if (s.client_name && s.client_name !== "SYSTEM_DATA_STORE") {
+            uniqueClients.add(s.client_name.trim());
+          }
+        });
+      }
     }
-    
-    // Add defaults
-    const defaults = ["Global Logistics Inc.", "Global Traders Corp", "InterContinental S.A."];
-    defaults.forEach(c => uniqueClients.add(c));
-    
-    return Array.from(uniqueClients).sort();
   } catch (err) {
-    const data = readMockData();
-    return (data.customers || []) as string[];
+    // ignore
   }
+
+  const customCusts = await getSystemValue<string[]>("SYSTEM_CUSTOMERS", []);
+  customCusts.forEach(c => uniqueClients.add(c));
+
+  return Array.from(uniqueClients).sort();
 }
 
 export async function addCustomer(name: string): Promise<void> {
-  const data = readMockData();
-  if (!data.customers) data.customers = [];
   const trimmed = name.trim();
-  if (trimmed && !data.customers.includes(trimmed)) {
-    data.customers.push(trimmed);
-    data.customers.sort();
-    writeMockData(data);
+  if (!trimmed) return;
+
+  const customList = await getSystemValue<string[]>("SYSTEM_CUSTOMERS", []);
+  if (!customList.includes(trimmed)) {
+    customList.push(trimmed);
+    await setSystemValue("SYSTEM_CUSTOMERS", customList);
   }
 }
 
 export async function addStatus(name: string, color_code: string, sort_order: number): Promise<void> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    if (!data.statuses) data.statuses = [];
-    const newId = data.statuses.length > 0 ? Math.max(...data.statuses.map((s: any) => s.id)) + 1 : 1;
-    data.statuses.push({
+  const trimmed = name.trim();
+  if (!trimmed) return;
+
+  const allStatuses = await getStatuses();
+  const maxId = allStatuses.length > 0 ? Math.max(...allStatuses.map(s => s.id)) : 0;
+  const newId = Math.max(10000, maxId + 1);
+
+  const customStatuses = await getSystemValue<Status[]>("SYSTEM_STATUSES", []);
+  if (!customStatuses.some(s => s.name.toLowerCase() === trimmed.toLowerCase())) {
+    customStatuses.push({
       id: newId,
-      name: name.trim(),
+      name: trimmed,
       color_code,
       sort_order
     });
-    data.statuses.sort((a: any, b: any) => a.sort_order - b.sort_order);
-    writeMockData(data);
-    return;
-  }
-  try {
-    const { error } = await supabase.from("statuses").insert({
-      name: name.trim(),
-      color_code,
-      sort_order
-    });
-    if (error) throw error;
-    isDemo = false;
-  } catch (err: any) {
-    const errMsg = err?.message || String(err);
-    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
-      isDemo = true;
-      const data = readMockData();
-      if (!data.statuses) data.statuses = [];
-      const newId = data.statuses.length > 0 ? Math.max(...data.statuses.map((s: any) => s.id)) + 1 : 1;
-      data.statuses.push({
-        id: newId,
-        name: name.trim(),
-        color_code,
-        sort_order
-      });
-      data.statuses.sort((a: any, b: any) => a.sort_order - b.sort_order);
-      writeMockData(data);
-      return;
-    }
-    throw err;
+    await setSystemValue("SYSTEM_STATUSES", customStatuses);
   }
 }
 
 export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
-  let localNext = 1001;
-  try {
-    const data = readMockData();
-    if (data && data.config && data.config.next_shipment_id) {
-      localNext = Number(data.config.next_shipment_id);
-    }
-  } catch (e) {
-    // ignore
-  }
+  const defaultConfig = { next_shipment_id: 1001 };
+  const systemConfig = await getSystemValue<{ next_shipment_id: number }>("SYSTEM_CONFIG", defaultConfig);
 
   let maxId = 0;
   const isDefaultUrl = checkIsDefaultUrl();
@@ -1003,74 +1256,46 @@ export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
     }
   }
 
-  let nextId = 1001;
+  let nextId = systemConfig.next_shipment_id || 1001;
   if (maxId > 0) {
-    if (localNext === 1001) {
-      nextId = maxId + 1;
-    } else {
-      nextId = Math.max(localNext || 1, maxId + 1);
-    }
-  } else {
-    nextId = localNext || 1001;
+    nextId = Math.max(nextId, maxId + 1);
   }
   return { next_shipment_id: nextId };
 }
 
 export async function deleteStatus(id: number): Promise<void> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    if (data.statuses) {
-      data.statuses = data.statuses.filter((s: any) => s.id !== id);
-      if (data.shipments) {
-        data.shipments.forEach((s: any) => {
-          if (s.status_id === id) {
-            s.status_id = null;
-          }
-        });
-      }
-      writeMockData(data);
-    }
-    return;
-  }
-  try {
-    // 1. Clear status_id references on shipments to prevent foreign key constraint violations
-    const { error: updateError } = await supabase.from("shipments").update({ status_id: null }).eq("status_id", id);
-    if (updateError) throw updateError;
+  // 1. Remove from SYSTEM_STATUSES
+  const customStatuses = await getSystemValue<Status[]>("SYSTEM_STATUSES", []);
+  const updatedCustom = customStatuses.filter(s => s.id !== id);
+  await setSystemValue("SYSTEM_STATUSES", updatedCustom);
 
-    // 2. Delete the status
-    const { error } = await supabase.from("statuses").delete().eq("id", id);
-    if (error) throw error;
-  } catch (err: any) {
-    const errMsg = err?.message || String(err);
-    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
-      isDemo = true;
-      const data = readMockData();
-      if (data.statuses) {
-        data.statuses = data.statuses.filter((s: any) => s.id !== id);
-        if (data.shipments) {
-          data.shipments.forEach((s: any) => {
-            if (s.status_id === id) {
-              s.status_id = null;
-            }
-          });
-        }
-        writeMockData(data);
-      }
-      return;
+  // 2. Remove any mappings from SYSTEM_SHIPMENT_STATUSES
+  const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+  let mappingChanged = false;
+  for (const shipId in shipmentStatuses) {
+    if (shipmentStatuses[shipId] === id) {
+      delete shipmentStatuses[shipId];
+      mappingChanged = true;
     }
-    throw err;
+  }
+  if (mappingChanged) {
+    await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+  }
+
+  // 3. Clear standard status references on shipments
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (!isDemo && !isDefaultUrl) {
+    try {
+      await supabase.from("shipments").update({ status_id: null }).eq("status_id", id);
+    } catch (e) {
+      // ignore
+    }
   }
 }
 
 export async function updateAppConfig(config: { next_shipment_id: number }): Promise<void> {
-  const data = readMockData();
-  data.config = {
-    ...data.config,
-    next_shipment_id: Number(config.next_shipment_id)
-  };
-  writeMockData(data);
+  const systemConfig = { next_shipment_id: Number(config.next_shipment_id) };
+  await setSystemValue("SYSTEM_CONFIG", systemConfig);
 }
 
 export async function clearDatabase(): Promise<void> {
@@ -1320,6 +1545,24 @@ export async function updateShipment(
     aes?: string | null;
   }
 ): Promise<Shipment> {
+  const fieldsCopy = { ...fields };
+  
+  if (fieldsCopy.status_id !== undefined) {
+    const status_id = fieldsCopy.status_id;
+    const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+    
+    if (status_id !== null && status_id >= 10000) {
+      shipmentStatuses[id] = status_id;
+      await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+      (fieldsCopy as any).status_id = null;
+    } else {
+      if (shipmentStatuses[id] !== undefined) {
+        delete shipmentStatuses[id];
+        await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
+      }
+    }
+  }
+
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
@@ -1328,7 +1571,7 @@ export async function updateShipment(
     if (index === -1) throw new Error("Shipment not found");
     const updated = {
       ...data.shipments[index],
-      ...fields,
+      ...fieldsCopy,
       updated_at: new Date().toISOString()
     };
     data.shipments[index] = updated;
@@ -1339,7 +1582,7 @@ export async function updateShipment(
     const { data, error } = await supabase
       .from("shipments")
       .update({
-        ...fields,
+        ...fieldsCopy,
         updated_at: new Date().toISOString()
       })
       .eq("id", id)
@@ -1357,7 +1600,7 @@ export async function updateShipment(
       if (index === -1) throw new Error("Shipment not found");
       const updated = {
         ...data.shipments[index],
-        ...fields,
+        ...fieldsCopy,
         updated_at: new Date().toISOString()
       };
       data.shipments[index] = updated;
@@ -1369,106 +1612,32 @@ export async function updateShipment(
 }
 
 export async function getCarriers(): Promise<Carrier[]> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    if (!data.carriers) {
-      data.carriers = [
-        { id: 1, code: "001", name: "American Airlines" },
-        { id: 2, code: "023", name: "FedEx" },
-        { id: 3, code: "MAEU", name: "Maersk" }
-      ];
-      writeMockData(data);
-    }
-    return data.carriers;
-  }
-  try {
-    const { data, error } = await supabase.from("carriers").select("*").order("code", { ascending: true });
-    if (error) throw error;
-    isDemo = false;
-    return data as Carrier[];
-  } catch (err) {
-    const mockData = readMockData();
-    if (!mockData.carriers) {
-      mockData.carriers = [
-        { id: 1, code: "001", name: "American Airlines" },
-        { id: 2, code: "023", name: "FedEx" },
-        { id: 3, code: "MAEU", name: "Maersk" }
-      ];
-      writeMockData(mockData);
-    }
-    return mockData.carriers as Carrier[];
-  }
+  const defaults = [
+    { id: 1, code: "001", name: "American Airlines" },
+    { id: 2, code: "023", name: "FedEx" },
+    { id: 3, code: "MAEU", name: "Maersk" }
+  ];
+  return await getSystemValue<Carrier[]>("SYSTEM_CARRIERS", defaults);
 }
 
 export async function addCarrier(code: string, name: string): Promise<void> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    if (!data.carriers) data.carriers = [];
-    const newId = data.carriers.length > 0 ? Math.max(...data.carriers.map((c: any) => c.id)) + 1 : 1;
-    data.carriers.push({
-      id: newId,
-      code: code.trim().toUpperCase(),
-      name: name.trim()
-    });
-    writeMockData(data);
-    return;
-  }
-  try {
-    const { error } = await supabase.from("carriers").insert({
-      code: code.trim().toUpperCase(),
-      name: name.trim()
-    });
-    if (error) throw error;
-    isDemo = false;
-  } catch (err: any) {
-    const errMsg = err?.message || String(err);
-    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo") || errMsg.includes("relation")) {
-      const data = readMockData();
-      if (!data.carriers) data.carriers = [];
-      const newId = data.carriers.length > 0 ? Math.max(...data.carriers.map((c: any) => c.id)) + 1 : 1;
-      data.carriers.push({
-        id: newId,
-        code: code.trim().toUpperCase(),
-        name: name.trim()
-      });
-      writeMockData(data);
-      return;
-    }
-    throw err;
+  const trimmedCode = code.trim().toUpperCase();
+  const trimmedName = name.trim();
+  if (!trimmedCode || !trimmedName) return;
+
+  const carrierList = await getCarriers();
+  if (!carrierList.some(c => c.code === trimmedCode)) {
+    const newId = carrierList.length > 0 ? Math.max(...carrierList.map((c: any) => c.id)) + 1 : 1;
+    carrierList.push({ id: newId, code: trimmedCode, name: trimmedName });
+    carrierList.sort((a, b) => a.code.localeCompare(b.code));
+    await setSystemValue("SYSTEM_CARRIERS", carrierList);
   }
 }
 
 export async function deleteCarrier(id: number): Promise<void> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    if (data.carriers) {
-      data.carriers = data.carriers.filter((c: any) => c.id !== id);
-      writeMockData(data);
-    }
-    return;
-  }
-  try {
-    const { error } = await supabase.from("carriers").delete().eq("id", id);
-    if (error) throw error;
-    isDemo = false;
-  } catch (err: any) {
-    const errMsg = err?.message || String(err);
-    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo") || errMsg.includes("relation")) {
-      const data = readMockData();
-      if (data.carriers) {
-        data.carriers = data.carriers.filter((c: any) => c.id !== id);
-        writeMockData(data);
-      }
-      return;
-    }
-    throw err;
-  }
+  const carrierList = await getCarriers();
+  const updatedList = carrierList.filter((c: any) => c.id !== id);
+  await setSystemValue("SYSTEM_CARRIERS", updatedList);
 }
 
 

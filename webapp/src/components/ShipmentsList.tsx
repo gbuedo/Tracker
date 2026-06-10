@@ -593,7 +593,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <Settings className="w-3.5 h-3.5" />
             </DialogTrigger>
             
-            <DialogContent className="max-w-4xl w-full bg-slate-950 border-slate-900 text-slate-50 max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
+            <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-slate-950 border-slate-900 text-slate-50 max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
               <DialogHeader className="border-b border-slate-850 pb-4">
                 <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
                   <Settings className="w-5 h-5 text-sky-400 animate-spin" />

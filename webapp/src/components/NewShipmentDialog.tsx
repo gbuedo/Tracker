@@ -169,7 +169,7 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
         <span className="flex items-center"><Plus className="mr-1.5 h-4 w-4" /> New Shipment</span>
       </DialogTrigger>
       
-      <DialogContent className="max-w-5xl md:max-w-6xl w-full bg-slate-950 border-slate-900 text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
+      <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-slate-950 border-slate-900 text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
         <DialogHeader className="border-b border-slate-900 pb-6">
           <DialogTitle className="text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-mono tracking-widest">
             <Sparkles className="w-6 h-6 text-sky-400 animate-pulse" />
