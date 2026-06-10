@@ -83,14 +83,14 @@ async function getSystemValue<T>(key: string, defaultValue: T): Promise<T> {
     const systemShipmentId = await getOrCreateSystemShipmentId();
     const { data: logRow, error: logError } = await supabase
       .from("logs")
-      .select("amount_type")
+      .select("event_text")
       .eq("shipment_id", systemShipmentId)
-      .eq("event_text", key)
+      .eq("amount_type", key)
       .maybeSingle();
       
     if (logError) throw logError;
-    if (logRow && logRow.amount_type) {
-      return JSON.parse(logRow.amount_type) as T;
+    if (logRow && logRow.event_text) {
+      return JSON.parse(logRow.event_text) as T;
     }
   } catch (err) {
     console.error(`Error loading system key ${key} from logs:`, err);
@@ -134,7 +134,7 @@ async function setSystemValue<T>(key: string, value: T): Promise<void> {
       .from("logs")
       .select("id")
       .eq("shipment_id", systemShipmentId)
-      .eq("event_text", key)
+      .eq("amount_type", key)
       .maybeSingle();
       
     if (findLogError) throw findLogError;
@@ -142,7 +142,7 @@ async function setSystemValue<T>(key: string, value: T): Promise<void> {
     if (existingLog) {
       const { error: updateError } = await supabase
         .from("logs")
-        .update({ amount_type: updatedValue })
+        .update({ event_text: updatedValue })
         .eq("id", existingLog.id);
       if (updateError) throw updateError;
     } else {
@@ -150,16 +150,18 @@ async function setSystemValue<T>(key: string, value: T): Promise<void> {
         .from("logs")
         .insert({
           shipment_id: systemShipmentId,
-          event_text: key,
-          amount_type: updatedValue,
+          amount_type: key,
+          event_text: updatedValue,
           is_external: false
         });
       if (insertError) throw insertError;
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Error saving system key ${key} to logs:`, err);
-    // fallback to local mock data
-    isDemo = true;
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+    }
     const data = readMockData();
     if (!data.system_store) data.system_store = {};
     data.system_store[key] = value;
