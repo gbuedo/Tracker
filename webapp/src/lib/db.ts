@@ -1047,7 +1047,10 @@ export async function getStatuses(): Promise<Status[]> {
     }
   });
 
-  return merged.sort((a, b) => a.sort_order - b.sort_order);
+  const deletedStatuses = await getSystemValue<number[]>("SYSTEM_DELETED_STATUSES", []);
+  const filtered = merged.filter(st => !deletedStatuses.includes(st.id));
+
+  return filtered.sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export async function getBillableConcepts(): Promise<BillableConcept[]> {
@@ -1266,10 +1269,17 @@ export async function getAppConfig(): Promise<{ next_shipment_id: number }> {
 }
 
 export async function deleteStatus(id: number): Promise<void> {
-  // 1. Remove from SYSTEM_STATUSES
-  const customStatuses = await getSystemValue<Status[]>("SYSTEM_STATUSES", []);
-  const updatedCustom = customStatuses.filter(s => s.id !== id);
-  await setSystemValue("SYSTEM_STATUSES", updatedCustom);
+  if (id < 10000) {
+    const deletedStatuses = await getSystemValue<number[]>("SYSTEM_DELETED_STATUSES", []);
+    if (!deletedStatuses.includes(id)) {
+      deletedStatuses.push(id);
+      await setSystemValue("SYSTEM_DELETED_STATUSES", deletedStatuses);
+    }
+  } else {
+    const customStatuses = await getSystemValue<Status[]>("SYSTEM_STATUSES", []);
+    const updatedCustom = customStatuses.filter(s => s.id !== id);
+    await setSystemValue("SYSTEM_STATUSES", updatedCustom);
+  }
 
   // 2. Remove any mappings from SYSTEM_SHIPMENT_STATUSES
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
