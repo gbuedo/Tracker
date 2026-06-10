@@ -524,23 +524,35 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
     return null;
   }
 
-  // Post-process custom concepts for logs
+  // Post-process custom concepts and statuses for logs
   if (baseShipment.logs) {
     const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
     const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+    const logStatuses = await getSystemValue<Record<string, number>>("SYSTEM_LOG_STATUSES", {});
+    const allStatuses = await getStatuses();
+
     baseShipment.logs = baseShipment.logs.map((log: any) => {
+      let updatedLog = { ...log };
+
       const customConceptId = logConcepts[log.id];
       if (customConceptId !== undefined) {
         const concept = customConcepts.find(c => c.id === customConceptId);
         if (concept) {
-          return {
-            ...log,
-            billable_concept_id: customConceptId,
-            billable_concept: concept
-          };
+          updatedLog.billable_concept_id = customConceptId;
+          updatedLog.billable_concept = concept;
         }
       }
-      return log;
+
+      const logStatusId = logStatuses[log.id] || log.status_id;
+      if (logStatusId !== undefined && logStatusId !== null) {
+        const status = allStatuses.find(st => st.id === logStatusId);
+        if (status) {
+          updatedLog.status_id = logStatusId;
+          updatedLog.status = status;
+        }
+      }
+
+      return updatedLog;
     });
   }
 
@@ -752,7 +764,8 @@ export async function addLog(req: {
   is_external: boolean, 
   billable_concept_id?: number | null, 
   amount?: number | null,
-  amount_type?: 'cost' | 'selling' | null
+  amount_type?: 'cost' | 'selling' | null,
+  status_id?: number | null
 }): Promise<void> {
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
@@ -767,14 +780,18 @@ export async function addLog(req: {
       billable_concept_id: req.billable_concept_id || null,
       amount: req.amount || null,
       amount_type: req.amount_type || null,
+      status_id: req.status_id || null,
       created_at: new Date().toISOString()
     };
 
     data.logs.push(newLog);
     
-    // Also update parent shipment's updated_at
+    // Also update parent shipment's updated_at and status
     const shipment = data.shipments.find((s: any) => s.id === req.shipment_id);
     if (shipment) {
+      if (req.status_id) {
+        shipment.status_id = req.status_id;
+      }
       shipment.updated_at = new Date().toISOString();
     }
 
@@ -783,18 +800,28 @@ export async function addLog(req: {
   }
   try {
     const isCustomConcept = req.billable_concept_id && req.billable_concept_id >= 10000;
+    const { status_id, ...logPayload } = req;
     const dbReq = isCustomConcept 
-      ? { ...req, billable_concept_id: null }
-      : req;
+      ? { ...logPayload, billable_concept_id: null }
+      : logPayload;
 
     const { data: insertedRows, error } = await supabase.from("logs").insert(dbReq).select();
     if (error) throw error;
 
-    if (isCustomConcept && insertedRows && insertedRows.length > 0) {
+    if (insertedRows && insertedRows.length > 0) {
       const insertedRow = insertedRows[0];
-      const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
-      logConcepts[insertedRow.id] = req.billable_concept_id!;
-      await setSystemValue("SYSTEM_LOG_CONCEPTS", logConcepts);
+      if (isCustomConcept) {
+        const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+        logConcepts[insertedRow.id] = req.billable_concept_id!;
+        await setSystemValue("SYSTEM_LOG_CONCEPTS", logConcepts);
+      }
+      if (status_id) {
+        const logStatuses = await getSystemValue<Record<string, number>>("SYSTEM_LOG_STATUSES", {});
+        logStatuses[insertedRow.id] = status_id;
+        await setSystemValue("SYSTEM_LOG_STATUSES", logStatuses);
+        // Sync main shipment status
+        await updateShipmentStatus(req.shipment_id, status_id);
+      }
     }
     
     isDemo = false;
@@ -812,14 +839,18 @@ export async function addLog(req: {
         billable_concept_id: req.billable_concept_id || null,
         amount: req.amount || null,
         amount_type: req.amount_type || null,
+        status_id: req.status_id || null,
         created_at: new Date().toISOString()
       };
 
       data.logs.push(newLog);
       
-      // Also update parent shipment's updated_at
+      // Also update parent shipment's updated_at and status
       const shipment = data.shipments.find((s: any) => s.id === req.shipment_id);
       if (shipment) {
+        if (req.status_id) {
+          shipment.status_id = req.status_id;
+        }
         shipment.updated_at = new Date().toISOString();
       }
 
@@ -885,6 +916,12 @@ export async function deleteLog(id: string): Promise<void> {
     if (logConcepts[id] !== undefined) {
       delete logConcepts[id];
       await setSystemValue("SYSTEM_LOG_CONCEPTS", logConcepts);
+    }
+
+    const logStatuses = await getSystemValue<Record<string, number>>("SYSTEM_LOG_STATUSES", {});
+    if (logStatuses[id] !== undefined) {
+      delete logStatuses[id];
+      await setSystemValue("SYSTEM_LOG_STATUSES", logStatuses);
     }
 
     isDemo = false;
@@ -1233,23 +1270,35 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
     }
   }
 
-  // Post-process custom concepts for logs
+  // Post-process custom concepts and statuses for logs
   if (res.logs) {
     const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
     const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+    const logStatuses = await getSystemValue<Record<string, number>>("SYSTEM_LOG_STATUSES", {});
+    const allStatuses = await getStatuses();
+
     res.logs = res.logs.map((log: any) => {
+      let updatedLog = { ...log };
+
       const customConceptId = logConcepts[log.id];
       if (customConceptId !== undefined) {
         const concept = customConcepts.find(c => c.id === customConceptId);
         if (concept) {
-          return {
-            ...log,
-            billable_concept_id: customConceptId,
-            billable_concept: concept
-          };
+          updatedLog.billable_concept_id = customConceptId;
+          updatedLog.billable_concept = concept;
         }
       }
-      return log;
+
+      const logStatusId = logStatuses[log.id] || log.status_id;
+      if (logStatusId !== undefined && logStatusId !== null) {
+        const status = allStatuses.find(st => st.id === logStatusId);
+        if (status) {
+          updatedLog.status_id = logStatusId;
+          updatedLog.status = status;
+        }
+      }
+
+      return updatedLog;
     });
   }
 

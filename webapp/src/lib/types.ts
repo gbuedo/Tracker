@@ -28,6 +28,8 @@ export type Log = {
   created_at: string;
   // Included relations
   billable_concept?: BillableConcept;
+  status_id?: number | null;
+  status?: Status;
 };
 
 export type Shipment = {

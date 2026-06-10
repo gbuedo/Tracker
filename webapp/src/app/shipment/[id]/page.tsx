@@ -359,7 +359,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               <CardContent className="space-y-6 pt-6">
                 
                 {/* Form to submit updates */}
-                <AddLogForm shipmentId={shipment.id} billableConcepts={billableConcepts} />
+                <AddLogForm shipmentId={shipment.id} billableConcepts={billableConcepts} statuses={statuses} />
 
                 {/* Timeline graph */}
                 <div className="space-y-6 relative border-l border-slate-800/80 ml-4 pl-6 pt-2">

@@ -78,7 +78,8 @@ export async function addLog(req: {
   is_external: boolean, 
   billable_concept_id?: number | null, 
   amount?: number | null,
-  amount_type?: 'cost' | 'selling' | null
+  amount_type?: 'cost' | 'selling' | null,
+  status_id?: number | null
 }) {
   await db.addLog(req);
   revalidatePath(`/shipment/${req.shipment_id}`);

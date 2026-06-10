@@ -5,20 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addLog, createBillableConcept } from "@/actions/shipments";
-import { Eye, EyeOff, Send, DollarSign, Tag, FileText } from "lucide-react";
-import { BillableConcept } from "@/lib/types";
+import { Eye, EyeOff, Send, DollarSign, Tag, FileText, Activity } from "lucide-react";
+import { BillableConcept, Status } from "@/lib/types";
 
 interface AddLogFormProps {
   shipmentId: number;
   billableConcepts: BillableConcept[];
+  statuses: Status[];
 }
 
-export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
+export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFormProps) {
   const [isExternal, setIsExternal] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [selectedConcept, setSelectedConcept] = useState<string>("");
   const [customConceptName, setCustomConceptName] = useState("");
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
 
   const handleConceptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -38,6 +40,7 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
       const selling_amount = formData.get("selling_amount") ? Number(formData.get("selling_amount")) : null;
       
       let billable_concept_id = selectedConcept && selectedConcept !== "new_concept" ? Number(selectedConcept) : null;
+      const status_id = selectedStatus ? Number(selectedStatus) : null;
 
       // Handle custom concept creation if chosen
       if (selectedConcept === "new_concept" && customConceptName.trim()) {
@@ -53,7 +56,8 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
           is_external: isExternal,
           billable_concept_id,
           amount: cost_amount,
-          amount_type: "cost"
+          amount_type: "cost",
+          status_id
         });
         await addLog({
           shipment_id: shipmentId,
@@ -70,7 +74,8 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
           is_external: isExternal,
           billable_concept_id,
           amount: cost_amount,
-          amount_type: "cost"
+          amount_type: "cost",
+          status_id
         });
       } else if (selling_amount !== null) {
         await addLog({
@@ -79,7 +84,8 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
           is_external: isExternal,
           billable_concept_id,
           amount: selling_amount,
-          amount_type: "selling"
+          amount_type: "selling",
+          status_id
         });
       } else {
         // Log without amount
@@ -89,7 +95,8 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
           is_external: isExternal,
           billable_concept_id: null,
           amount: null,
-          amount_type: null
+          amount_type: null,
+          status_id
         });
       }
 
@@ -104,6 +111,7 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
       if (sellInput) sellInput.value = "";
       
       setSelectedConcept("");
+      setSelectedStatus("");
       setCustomConceptName("");
       setShowCustomInput(false);
       setIsExternal(false);
@@ -130,7 +138,30 @@ export function AddLogForm({ shipmentId, billableConcepts }: AddLogFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+        {/* Milestone Status dropdown */}
+        <div className="space-y-1 col-span-1">
+          <Label htmlFor="status_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
+            Milestone (Optional)
+          </Label>
+          <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
+            <Activity className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <select
+              id="status_id"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="bg-transparent text-slate-300 border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
+            >
+              <option value="" className="bg-slate-950 text-slate-500">None (No change)</option>
+              {statuses.map((st) => (
+                <option key={st.id} value={st.id} className="bg-slate-950 text-slate-300">
+                  {st.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* Billable Concept dropdown */}
         <div className="space-y-1 col-span-1">
           <Label htmlFor="billable_concept_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">

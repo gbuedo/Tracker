@@ -77,6 +77,20 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
           </time>
           
           <div className="flex items-center gap-2">
+            {log.status && (
+              <span 
+                className="inline-flex items-center gap-1.5 border px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono"
+                style={{ 
+                  color: log.status.color_code, 
+                  borderColor: `${log.status.color_code}40`, 
+                  backgroundColor: `${log.status.color_code}10` 
+                }}
+              >
+                <Circle className="w-1.5 h-1.5 fill-current" />
+                {log.status.name}
+              </span>
+            )}
+
             {log.billable_concept && (
               <span className="inline-flex items-center gap-1 bg-amber-950/40 text-amber-500 border border-amber-900/40 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
                 <Tag className="w-2.5 h-2.5" />
