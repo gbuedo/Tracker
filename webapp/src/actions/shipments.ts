@@ -151,5 +151,36 @@ export async function deleteShipment(id: number) {
   revalidatePath("/");
 }
 
+export async function updateLog(
+  id: string,
+  shipmentId: number,
+  fields: {
+    event_text?: string;
+    is_external?: boolean;
+    amount?: number | null;
+    amount_type?: 'cost' | 'selling' | null;
+  }
+) {
+  await db.updateLog(id, fields);
+  revalidatePath(`/shipment/${shipmentId}`);
+  revalidatePath("/");
+}
+
+export async function deleteLog(id: string, shipmentId: number) {
+  await db.deleteLog(id);
+  revalidatePath(`/shipment/${shipmentId}`);
+  revalidatePath("/");
+}
+
+export async function addCarrier(code: string, name: string) {
+  await db.addCarrier(code, name);
+  revalidatePath("/");
+}
+
+export async function deleteCarrier(id: number) {
+  await db.deleteCarrier(id);
+  revalidatePath("/");
+}
+
 
 

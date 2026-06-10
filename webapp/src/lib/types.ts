@@ -5,6 +5,12 @@ export type Status = {
   sort_order: number;
 };
 
+export type Carrier = {
+  id: number;
+  code: string;
+  name: string;
+};
+
 export type BillableConcept = {
   id: number;
   name: string;

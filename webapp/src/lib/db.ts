@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Shipment, Status, Log, BillableConcept } from "./types";
+import { Shipment, Status, Log, BillableConcept, Carrier } from "./types";
 import fs from "fs";
 import path from "path";
 
@@ -539,6 +539,71 @@ export async function addLog(req: {
     throw err;
   }
 }
+
+export async function updateLog(id: string, fields: { event_text?: string; is_external?: boolean; amount?: number | null; amount_type?: 'cost' | 'selling' | null }): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    const log = data.logs.find((l: any) => l.id === id);
+    if (log) {
+      if (fields.event_text !== undefined) log.event_text = fields.event_text;
+      if (fields.is_external !== undefined) log.is_external = fields.is_external;
+      if (fields.amount !== undefined) log.amount = fields.amount;
+      if (fields.amount_type !== undefined) log.amount_type = fields.amount_type;
+      writeMockData(data);
+    }
+    return;
+  }
+  try {
+    const { error } = await supabase.from("logs").update(fields).eq("id", id);
+    if (error) throw error;
+    isDemo = false;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+      const data = readMockData();
+      const log = data.logs.find((l: any) => l.id === id);
+      if (log) {
+        if (fields.event_text !== undefined) log.event_text = fields.event_text;
+        if (fields.is_external !== undefined) log.is_external = fields.is_external;
+        if (fields.amount !== undefined) log.amount = fields.amount;
+        if (fields.amount_type !== undefined) log.amount_type = fields.amount_type;
+        writeMockData(data);
+      }
+      return;
+    }
+    throw err;
+  }
+}
+
+export async function deleteLog(id: string): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    data.logs = data.logs.filter((l: any) => l.id !== id);
+    writeMockData(data);
+    return;
+  }
+  try {
+    const { error } = await supabase.from("logs").delete().eq("id", id);
+    if (error) throw error;
+    isDemo = false;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+      isDemo = true;
+      const data = readMockData();
+      data.logs = data.logs.filter((l: any) => l.id !== id);
+      writeMockData(data);
+      return;
+    }
+    throw err;
+  }
+}
+
 
 export async function updateShipmentStatus(shipment_id: number, status_id: number): Promise<void> {
   const isDefaultUrl = checkIsDefaultUrl();
@@ -1302,5 +1367,109 @@ export async function updateShipment(
     throw err;
   }
 }
+
+export async function getCarriers(): Promise<Carrier[]> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.carriers) {
+      data.carriers = [
+        { id: 1, code: "001", name: "American Airlines" },
+        { id: 2, code: "023", name: "FedEx" },
+        { id: 3, code: "MAEU", name: "Maersk" }
+      ];
+      writeMockData(data);
+    }
+    return data.carriers;
+  }
+  try {
+    const { data, error } = await supabase.from("carriers").select("*").order("code", { ascending: true });
+    if (error) throw error;
+    isDemo = false;
+    return data as Carrier[];
+  } catch (err) {
+    const mockData = readMockData();
+    if (!mockData.carriers) {
+      mockData.carriers = [
+        { id: 1, code: "001", name: "American Airlines" },
+        { id: 2, code: "023", name: "FedEx" },
+        { id: 3, code: "MAEU", name: "Maersk" }
+      ];
+      writeMockData(mockData);
+    }
+    return mockData.carriers as Carrier[];
+  }
+}
+
+export async function addCarrier(code: string, name: string): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.carriers) data.carriers = [];
+    const newId = data.carriers.length > 0 ? Math.max(...data.carriers.map((c: any) => c.id)) + 1 : 1;
+    data.carriers.push({
+      id: newId,
+      code: code.trim().toUpperCase(),
+      name: name.trim()
+    });
+    writeMockData(data);
+    return;
+  }
+  try {
+    const { error } = await supabase.from("carriers").insert({
+      code: code.trim().toUpperCase(),
+      name: name.trim()
+    });
+    if (error) throw error;
+    isDemo = false;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo") || errMsg.includes("relation")) {
+      const data = readMockData();
+      if (!data.carriers) data.carriers = [];
+      const newId = data.carriers.length > 0 ? Math.max(...data.carriers.map((c: any) => c.id)) + 1 : 1;
+      data.carriers.push({
+        id: newId,
+        code: code.trim().toUpperCase(),
+        name: name.trim()
+      });
+      writeMockData(data);
+      return;
+    }
+    throw err;
+  }
+}
+
+export async function deleteCarrier(id: number): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (data.carriers) {
+      data.carriers = data.carriers.filter((c: any) => c.id !== id);
+      writeMockData(data);
+    }
+    return;
+  }
+  try {
+    const { error } = await supabase.from("carriers").delete().eq("id", id);
+    if (error) throw error;
+    isDemo = false;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo") || errMsg.includes("relation")) {
+      const data = readMockData();
+      if (data.carriers) {
+        data.carriers = data.carriers.filter((c: any) => c.id !== id);
+        writeMockData(data);
+      }
+      return;
+    }
+    throw err;
+  }
+}
+
 
 

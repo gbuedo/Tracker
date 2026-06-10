@@ -3,6 +3,7 @@ import { Shipment, Log } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AddLogForm } from "@/components/AddLogForm";
+import { EditableLogItem } from "@/components/EditableLogItem";
 import { SplitCargoDialog } from "@/components/SplitCargoDialog";
 import { StatusSelector } from "@/components/StatusSelector";
 import { EmailQuoteParser } from "@/components/EmailQuoteParser";
@@ -369,71 +370,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                     </div>
                   ) : (
                     logs.map((log) => (
-                      <div key={log.id} className="relative group">
-                        
-                        {/* Timeline Icon Node indicator */}
-                        <div className={`absolute -left-[31px] top-1 w-4 h-4 rounded-full border bg-slate-950 flex items-center justify-center transition-all ${
-                          log.is_external 
-                            ? 'border-emerald-500 text-emerald-500 shadow-sm shadow-emerald-500/20' 
-                            : 'border-slate-700 text-slate-500'
-                        }`}>
-                          <Circle className="w-1.5 h-1.5 fill-current" />
-                        </div>
-
-                        {/* Activities feed Card */}
-                        <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-850/80 hover:border-slate-800 transition-all shadow-sm">
-                          <div className="flex items-center justify-between mb-2">
-                            <time className="text-xs font-mono font-semibold text-slate-500">
-                              {new Date(log.created_at).toLocaleString('en-US', {
-                                timeZone: 'America/New_York',
-                                month: 'short',
-                                day: '2-digit',
-                                year: 'numeric',
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                hour12: true
-                              }).replace(',', ' •')}
-                            </time>
-                            
-                            <div className="flex items-center gap-2">
-                              {log.billable_concept && (
-                                <span className="inline-flex items-center gap-1 bg-amber-950/40 text-amber-500 border border-amber-900/40 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                                  <Tag className="w-2.5 h-2.5" />
-                                  {log.billable_concept.name}
-                                </span>
-                              )}
-
-                              {log.is_external ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 px-2 py-0.5 rounded font-bold uppercase">
-                                  <Globe className="w-2.5 h-2.5" />
-                                  Visible to Client
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 text-[10px] bg-slate-900/60 text-slate-500 border border-slate-800 px-2 py-0.5 rounded font-bold uppercase">
-                                  <Lock className="w-2.5 h-2.5" />
-                                  Internal Only
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <p className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors leading-relaxed">
-                            {log.event_text}
-                          </p>
-
-                          {log.amount && (
-                            <div className={`mt-2.5 flex items-center gap-1 text-xs font-mono font-bold px-2.5 py-1 rounded-md w-max border ${
-                              log.amount_type === 'selling' 
-                                ? 'text-sky-400 bg-sky-950/20 border-sky-950/40' 
-                                : 'text-amber-500 bg-amber-950/20 border-amber-950/40'
-                            }`}>
-                              <DollarSign className="w-3.5 h-3.5" />
-                              {log.amount_type === 'selling' ? 'Selling' : 'Cost'}: +${Number(log.amount).toFixed(2)}
-                            </div>
-                          )}
-                        </div>
-
-                      </div>
+                      <EditableLogItem key={log.id} log={log} shipmentId={shipment.id} />
                     ))
                   )}
                 </div>

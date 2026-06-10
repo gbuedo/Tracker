@@ -12,6 +12,7 @@ export default async function Dashboard() {
   const shipments = await db.getShipments();
   const statuses = await db.getStatuses();
   const customers = await db.getCustomers();
+  const carriers = await db.getCarriers();
   const appConfig = await db.getAppConfig();
   const isDemoMode = db.checkIsDemoMode();
 
@@ -71,6 +72,7 @@ export default async function Dashboard() {
           initialShipments={shipments} 
           statuses={statuses} 
           initialCustomers={customers}
+          initialCarriers={carriers}
           initialConfig={appConfig}
         />
 
