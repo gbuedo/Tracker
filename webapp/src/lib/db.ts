@@ -524,6 +524,26 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
     return null;
   }
 
+  // Post-process custom concepts for logs
+  if (baseShipment.logs) {
+    const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
+    const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+    baseShipment.logs = baseShipment.logs.map((log: any) => {
+      const customConceptId = logConcepts[log.id];
+      if (customConceptId !== undefined) {
+        const concept = customConcepts.find(c => c.id === customConceptId);
+        if (concept) {
+          return {
+            ...log,
+            billable_concept_id: customConceptId,
+            billable_concept: concept
+          };
+        }
+      }
+      return log;
+    });
+  }
+
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const customStatusId = shipmentStatuses[id];
   if (customStatusId !== undefined) {
@@ -762,8 +782,21 @@ export async function addLog(req: {
     return;
   }
   try {
-    const { error } = await supabase.from("logs").insert(req);
+    const isCustomConcept = req.billable_concept_id && req.billable_concept_id >= 10000;
+    const dbReq = isCustomConcept 
+      ? { ...req, billable_concept_id: null }
+      : req;
+
+    const { data: insertedRows, error } = await supabase.from("logs").insert(dbReq).select();
     if (error) throw error;
+
+    if (isCustomConcept && insertedRows && insertedRows.length > 0) {
+      const insertedRow = insertedRows[0];
+      const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+      logConcepts[insertedRow.id] = req.billable_concept_id!;
+      await setSystemValue("SYSTEM_LOG_CONCEPTS", logConcepts);
+    }
+    
     isDemo = false;
   } catch (err: any) {
     const errMsg = err?.message || String(err);
@@ -847,6 +880,13 @@ export async function deleteLog(id: string): Promise<void> {
   try {
     const { error } = await supabase.from("logs").delete().eq("id", id);
     if (error) throw error;
+
+    const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+    if (logConcepts[id] !== undefined) {
+      delete logConcepts[id];
+      await setSystemValue("SYSTEM_LOG_CONCEPTS", logConcepts);
+    }
+
     isDemo = false;
   } catch (err: any) {
     const errMsg = err?.message || String(err);
@@ -1062,7 +1102,9 @@ export async function getBillableConcepts(): Promise<BillableConcept[]> {
       return readMockData().billable_concepts as BillableConcept[];
     }
   );
-  return list.filter(c => !c.name.startsWith("SYSTEM_"));
+  const filtered = list.filter(c => !c.name.startsWith("SYSTEM_"));
+  const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
+  return [...filtered, ...customConcepts];
 }
 
 export async function createBillableConcept(name: string, description?: string): Promise<BillableConcept> {
@@ -1082,13 +1124,20 @@ export async function createBillableConcept(name: string, description?: string):
     return newConcept as BillableConcept;
   }
   try {
-    const { data, error } = await supabase.from("billable_concepts").insert({
+    const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
+    const existing = customConcepts.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
+    if (existing) {
+      return existing;
+    }
+    const newId = customConcepts.length > 0 ? Math.max(...customConcepts.map(c => c.id)) + 1 : 10000;
+    const newConcept: BillableConcept = {
+      id: newId,
       name: name.trim(),
       description: description || ""
-    }).select().single();
-    if (error) throw error;
-    isDemo = false;
-    return data as BillableConcept;
+    };
+    customConcepts.push(newConcept);
+    await setSystemValue("SYSTEM_BILLABLE_CONCEPTS", customConcepts);
+    return newConcept;
   } catch (err: any) {
     const errMsg = err?.message || String(err);
     if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
@@ -1110,7 +1159,7 @@ export async function createBillableConcept(name: string, description?: string):
 }
 
 export async function searchPortalShipment(search: string): Promise<{ shipment: Shipment; logs: Log[] } | null> {
-  return queryWithFallback(
+  const res = await queryWithFallback<{ shipment: Shipment; logs: Log[] } | null>(
     async () => {
       // Try finding by Reference or ID (number)
       let query = supabase.from("shipments").select(`*, status:statuses(*)`).limit(1);
@@ -1169,6 +1218,42 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
       };
     }
   );
+
+  if (!res) return null;
+
+  // Post-process custom statuses
+  const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+  const customStatusId = shipmentStatuses[res.shipment.id];
+  if (customStatusId !== undefined) {
+    const allStatuses = await getStatuses();
+    const matched = allStatuses.find(st => st.id === customStatusId);
+    if (matched) {
+      res.shipment.status_id = customStatusId;
+      res.shipment.status = matched;
+    }
+  }
+
+  // Post-process custom concepts for logs
+  if (res.logs) {
+    const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
+    const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+    res.logs = res.logs.map((log: any) => {
+      const customConceptId = logConcepts[log.id];
+      if (customConceptId !== undefined) {
+        const concept = customConcepts.find(c => c.id === customConceptId);
+        if (concept) {
+          return {
+            ...log,
+            billable_concept_id: customConceptId,
+            billable_concept: concept
+          };
+        }
+      }
+      return log;
+    });
+  }
+
+  return res;
 }
 
 export async function getCustomers(): Promise<string[]> {
