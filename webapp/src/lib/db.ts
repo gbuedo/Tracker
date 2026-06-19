@@ -1542,6 +1542,28 @@ export async function seedDemoData(): Promise<void> {
     await supabase.from("logs").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     await supabase.from("shipments").delete().gt("id", 0);
 
+    // Force seed carriers
+    await setSystemValue("SYSTEM_CARRIERS", carriersSeed);
+
+    // Reset ratesheets to base ratesheet
+    await supabase.from("ratesheets").delete().gt("id", 0);
+    const baseSheet = {
+      name: "Base Ratesheet",
+      client_name: null,
+      markup_percent: 0,
+      rates: ratesSeed.reduce((acc: any[], category: any) => {
+        const list = category.rates.map((r: any) => ({
+          id: r.id,
+          category: category.category,
+          name: r.name,
+          rate: String(r.rate),
+          notes: r.notes || ""
+        }));
+        return [...acc, ...list];
+      }, [])
+    };
+    await supabase.from("ratesheets").insert(baseSheet);
+
     // Insert parent shipments
     const { data: parents, error: parentError } = await supabase.from("shipments").insert([
       {
@@ -1765,7 +1787,30 @@ export async function updateShipment(
 
 export async function getCarriers(): Promise<Carrier[]> {
   const defaults = carriersSeed as Carrier[];
-  return await getSystemValue<Carrier[]>("SYSTEM_CARRIERS", defaults);
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    return await getSystemValue<Carrier[]>("SYSTEM_CARRIERS", defaults);
+  }
+  try {
+    const systemShipmentId = await getOrCreateSystemShipmentId();
+    const { data: logRow } = await supabase
+      .from("logs")
+      .select("event_text")
+      .eq("shipment_id", systemShipmentId)
+      .eq("amount_type", "SYSTEM_CARRIERS")
+      .maybeSingle();
+      
+    if (logRow && logRow.event_text) {
+      return JSON.parse(logRow.event_text) as Carrier[];
+    } else {
+      // Proactively seed carriers to Supabase!
+      await setSystemValue("SYSTEM_CARRIERS", defaults);
+      return defaults;
+    }
+  } catch (err) {
+    console.error("Error loading carriers, falling back to defaults:", err);
+    return defaults;
+  }
 }
 
 export async function addCarrier(
@@ -1978,10 +2023,40 @@ export async function deleteTask(id: number): Promise<void> {
 export async function getRatesheets(): Promise<Ratesheet[]> {
   return await queryWithFallback<Ratesheet[]>(
     async () => {
-      return await supabase
+      const { data, error } = await supabase
         .from("ratesheets")
         .select("*")
         .order("created_at", { ascending: true });
+      if (error) throw error;
+      
+      // Auto seed if empty
+      if (!data || data.length === 0) {
+        const baseSheet = {
+          name: "Base Ratesheet",
+          client_name: null,
+          markup_percent: 0,
+          rates: ratesSeed.reduce((acc: RateConcept[], category: any) => {
+            const list = category.rates.map((r: any) => ({
+              id: r.id,
+              category: category.category,
+              name: r.name,
+              rate: String(r.rate),
+              notes: r.notes || ""
+            }));
+            return [...acc, ...list];
+          }, []),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        const { data: inserted, error: insertError } = await supabase
+          .from("ratesheets")
+          .insert(baseSheet)
+          .select();
+        if (!insertError && inserted) {
+          return inserted as Ratesheet[];
+        }
+      }
+      return data as Ratesheet[];
     },
     () => {
       const data = readMockData();
