@@ -2023,14 +2023,15 @@ export async function deleteTask(id: number): Promise<void> {
 export async function getRatesheets(): Promise<Ratesheet[]> {
   return await queryWithFallback<Ratesheet[]>(
     async () => {
-      const { data, error } = await supabase
+      const res = await supabase
         .from("ratesheets")
         .select("*")
         .order("created_at", { ascending: true });
-      if (error) throw error;
+      
+      if (res.error) return res;
       
       // Auto seed if empty
-      if (!data || data.length === 0) {
+      if (!res.data || res.data.length === 0) {
         const baseSheet = {
           name: "Base Ratesheet",
           client_name: null,
@@ -2048,15 +2049,13 @@ export async function getRatesheets(): Promise<Ratesheet[]> {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
-        const { data: inserted, error: insertError } = await supabase
+        const insertRes = await supabase
           .from("ratesheets")
           .insert(baseSheet)
           .select();
-        if (!insertError && inserted) {
-          return inserted as Ratesheet[];
-        }
+        return insertRes;
       }
-      return data as Ratesheet[];
+      return res;
     },
     () => {
       const data = readMockData();
