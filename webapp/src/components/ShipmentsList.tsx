@@ -624,7 +624,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           </div>
         </div>
 
-        {/* Right: Backup CSV & Configuration gear */}
+        {/* Right: Backup JSON & Import Backup & Configuration gear */}
         <div className="flex items-center gap-2 justify-end">
           <Button 
             onClick={exportFullBackup}
