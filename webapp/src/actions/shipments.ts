@@ -199,6 +199,7 @@ export async function getFullBackupData() {
   const tasks = await db.getTasks();
   const ratesheets = await db.getRatesheets();
   const config = await db.getAppConfig();
+  const logs = await db.getAllLogs();
   
   // Custom system settings from logs
   const system_store = {
@@ -225,6 +226,7 @@ export async function getFullBackupData() {
     tasks,
     ratesheets,
     config,
+    logs,
     system_store
   };
 }

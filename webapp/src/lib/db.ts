@@ -2204,6 +2204,25 @@ export async function deleteRatesheet(id: number): Promise<void> {
   }
 }
 
+export async function getAllLogs(): Promise<Log[]> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    const data = readMockData();
+    return (data.logs || []) as Log[];
+  }
+  try {
+    const { data, error } = await supabase
+      .from("logs")
+      .select("*")
+      .neq("shipment_id", 999999); // Exclude system config rows
+    if (error) throw error;
+    return data as Log[];
+  } catch (err) {
+    console.error("Error fetching all logs:", err);
+    return readMockData().logs as Log[];
+  }
+}
+
 export async function importFullBackup(backup: any): Promise<void> {
   const isDefaultUrl = checkIsDefaultUrl();
   
@@ -2217,6 +2236,7 @@ export async function importFullBackup(backup: any): Promise<void> {
     data.statuses = backup.statuses || data.statuses;
     data.customers = backup.customers || [];
     data.config = backup.config || data.config;
+    data.logs = backup.logs || [];
     data.system_store = backup.system_store || data.system_store || {};
     writeMockData(data);
   } catch (e) {
@@ -2292,6 +2312,24 @@ export async function importFullBackup(backup: any): Promise<void> {
       for (let i = 0; i < dbShipments.length; i += 50) {
         const chunk = dbShipments.slice(i, i + 50);
         const { error } = await supabase.from("shipments").insert(chunk);
+        if (error) throw error;
+      }
+
+      // Insert shipment activity logs
+      const dbLogs = (backup.logs || []).map((l: any) => ({
+        id: l.id,
+        shipment_id: l.shipment_id,
+        profile_id: l.profile_id,
+        event_text: l.event_text,
+        is_external: l.is_external,
+        billable_concept_id: l.billable_concept_id,
+        amount: l.amount,
+        amount_type: l.amount_type,
+        created_at: l.created_at
+      }));
+      for (let i = 0; i < dbLogs.length; i += 50) {
+        const chunk = dbLogs.slice(i, i + 50);
+        const { error } = await supabase.from("logs").insert(chunk);
         if (error) throw error;
       }
 
