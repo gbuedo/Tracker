@@ -1,0 +1,19 @@
+File ID,Parent File ID,Client Name,Reference,Type,Mode,Milestone Status,Pieces,Gross KGS,Chargeable CHW,CT File,Warehouse Receipt,AES Ref,MAWB,HAWB,ETD,ETA,Created At
+821,,"HLE Drones","933-34770116",Import,Air,Arrived,,,,,,,933-34770116,,,2026-06-06,2026-06-07T16:38:44.049158+00:00
+815,,"Continental","027-74695482",Transit,Air,Arrived,,,,,,,027-74695482,,,2026-06-07,2026-06-07T16:30:33.187731+00:00
+808,,"NewMaster","MAEU270080975",Export,Ocean,Arrived,,,,,,,MAEU270080975,,,2026-06-07,2026-06-07T16:26:44.915853+00:00
+823,,"Zanaya","176-28801920",Transit,Air,Arrived,,,,,,,176-28801920,,,2026-06-08,2026-06-07T16:40:46.076883+00:00
+816,,"Gravity","014-24353792",Transit,Air,On the Way,,,,,,,014-24353792,,,2026-06-08,2026-06-07T16:33:58.595907+00:00
+836,,"Vargos","176-61604421",Transit,Air,On the Way,7,2660,2660,,,,176-61604421,UNM2026-0005,2026-06-08,2026-06-09,2026-06-08T18:29:39.127096+00:00
+15,836,"Vargos","176-61604421 - SPLIT",Transit,Air,On the Way,1,500,500,,,,176-61604421,UNM2026-0005,2026-06-08,2026-06-08,2026-06-08T18:29:39.127096+00:00
+831,,"Gravity","180-77383574",Transit,Air,On the Way,,,,,,,180-77383574,,,2026-06-11,2026-06-07T20:58:40.104501+00:00
+828,,"Ahmad","001-23412244",Transit,Air,Coordinating,3,1197.5,1197.5,,,,001-23412244,15540555/00037,2026-06-11,2026-06-13,2026-06-07T20:57:26.277137+00:00
+835,,"Ahmad","ONEUPMFG",Transit,Land,Coordinating,,,,,,,,,,,2026-06-08T17:34:09.281111+00:00
+834,,"General Quote","HOUSTON- ASUNCION- RORO NM",Export,Ocean,Quoting,,,,,,,,,,,2026-06-08T17:32:25.992131+00:00
+833,,"General Quote","Scrap Tyres",Quote,Ocean,Quoted,,,,,,,,,,,2026-06-08T17:26:17.557018+00:00
+832,,"Natlex","Turkey shp",Quote,Ocean,Quoting,,,,,,,,,,,2026-06-08T16:26:54.565991+00:00
+830,,"General Quote","DAP inquiry - LAX to CA 92804 US // 66284138",Quote,Land,Quoting,,,,,,,,,,,2026-06-07T20:58:15.228828+00:00
+829,,"General Quote","Mochilas de cueroBolivia",Quote,Air,Quoting,,,,,,,,,,,2026-06-07T20:57:55.414046+00:00
+826,,"General Quote","AIR / USA TO ASUNCION",Quote,Air,Quoted,,,,,,,,,,,2026-06-07T16:43:37.419282+00:00
+825,,"General Quote","Houston hacia Asunción",Quote,Ocean,Quoted,,,,,,,,,,,2026-06-07T16:42:18.059929+00:00
+812,,"NewMaster","Carritos Golf",Export,Ocean,Coordinating,,,,,,,,,,,2026-06-07T16:29:04.707888+00:00

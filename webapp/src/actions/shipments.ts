@@ -138,16 +138,6 @@ export async function updateAppConfig(config: { next_shipment_id: number }) {
   revalidatePath("/");
 }
 
-export async function resetDatabase() {
-  await db.clearDatabase();
-  revalidatePath("/");
-}
-
-export async function seedDatabase() {
-  await db.seedDemoData();
-  revalidatePath("/");
-}
-
 export async function deleteShipment(id: number) {
   await db.deleteShipment(id);
   revalidatePath("/");

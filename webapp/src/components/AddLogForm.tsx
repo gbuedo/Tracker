@@ -222,22 +222,22 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
         </div>
 
         {/* Visibility toggler button */}
-        <div className="space-y-1 flex flex-col justify-end">
-          <Label className="opacity-0 select-none hidden sm:block text-[10px]">&nbsp;</Label>
+        <div className="space-y-1">
+          <Label className="opacity-0 select-none hidden sm:block text-slate-500 text-[10px] uppercase tracking-wider font-bold">&nbsp;</Label>
           <Button
             type="button"
             variant="outline"
-            className={`h-10 text-[10px] font-extrabold transition-all border rounded-lg uppercase ${
+            className={`h-10 text-[10px] font-extrabold transition-all border rounded-lg uppercase w-full ${
               isExternal 
                 ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' 
-                : 'border-slate-800 bg-slate-950/80 text-slate-500 hover:text-slate-300'
+                : 'border-slate-800 bg-slate-950/80 text-slate-500 hover:text-slate-350'
             }`}
             onClick={() => setIsExternal(!isExternal)}
           >
             {isExternal ? (
-              <span className="flex items-center gap-1.5"><Eye className="w-3.5 h-3.5 text-emerald-400" /> Client Visible</span>
+              <span className="flex items-center justify-center gap-1.5"><Eye className="w-3.5 h-3.5 text-emerald-400" /> Client Visible</span>
             ) : (
-              <span className="flex items-center gap-1.5"><EyeOff className="w-3.5 h-3.5 text-slate-500" /> Staff Only</span>
+              <span className="flex items-center justify-center gap-1.5"><EyeOff className="w-3.5 h-3.5 text-slate-500" /> Staff Only</span>
             )}
           </Button>
         </div>

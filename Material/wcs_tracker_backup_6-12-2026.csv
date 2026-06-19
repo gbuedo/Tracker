@@ -1,0 +1,17 @@
+File ID,Parent File ID,Client Name,Reference,Type,Mode,Milestone Status,Pieces,Gross KGS,Chargeable CHW,CT File,Warehouse Receipt,AES Ref,MAWB,HAWB,ETD,ETA,Created At
+845,,"HLE Drones","936-02708252",Import,Air,Coordinating,26,206,206,,,,936-02708252,,,,2026-06-12T12:51:06.803841+00:00
+844,,"NewCity","992-10739035",Import,Air,Quoting,10,100.95,100.95,,,,992-10739035,YTS-MIA022612,,,2026-06-10T23:07:14.668353+00:00
+843,,"NewMaster","BMW X7 | VB01 / MF",Export,Ocean,Quoting,,,,,,,,,,,2026-06-10T23:02:15.142727+00:00
+842,,"Continental","271621391",Import,Ocean,On the Way,,,,,,,MAEU271621391,,2026-06-04,2026-06-15,2026-06-10T15:44:09.210456+00:00
+840,,"General Quote","Garrafa",Export,Air,Quoted,,,,,,,,,,,2026-06-09T17:42:19.795834+00:00
+839,,"HLE Drones","933-34871572",Import,Air,On the Way,54,351,351,,,,933-34871572,,2026-06-10,2026-06-13,2026-06-09T16:14:14.394486+00:00
+838,,"HLE Drones","933-34770186",Import,Air,On the Way,36,313,313,,,,933-34770186,,2026-06-10,2026-06-13,2026-06-09T16:13:03.549546+00:00
+837,,"General Quote","USA to SOUTH AFRICA",Quote,Air,Quoted,,,,,,,,,,,2026-06-09T14:25:01.440017+00:00
+835,,"Ahmad","ONEUPMFG",Transit,Land,Pickup,12,4353.62,,,,,,,,,2026-06-08T17:34:09.281111+00:00
+834,,"General Quote","HOUSTON- ASUNCION- RORO NM",Export,Ocean,Quoting,,,,,,,,,,,2026-06-08T17:32:25.992131+00:00
+833,,"General Quote","Scrap Tyres",Quote,Ocean,Quoted,,,,,,,,,,,2026-06-08T17:26:17.557018+00:00
+832,,"Natlex","Turkey shp",Quote,Ocean,Quoting,,,,,,,,,,,2026-06-08T16:26:54.565991+00:00
+831,,"Gravity","180-77383574",Transit,Air,Pickup,,,,,,,180-77383574,,,2026-06-11,2026-06-07T20:58:40.104501+00:00
+828,,"Ahmad","001-23412244",Transit,Air,On the Way,3,1197.5,1197.5,,,,001-23412244,15540555/00037,2026-06-11,2026-06-13,2026-06-07T20:57:26.277137+00:00
+816,,"Gravity","014-24353792",Transit,Air,On the Way,,,,,,,014-24353792,,,2026-06-12,2026-06-07T16:33:58.595907+00:00
+812,,"NewMaster","Carritos Golf",Export,Ocean,Coordinating,,,,,,,,,,,2026-06-07T16:29:04.707888+00:00

@@ -1,0 +1,15 @@
+File ID,Parent File ID,Client Name,Reference,Type,Mode,Milestone Status,Pieces,Gross KGS,Chargeable CHW,CT File,Warehouse Receipt,AES Ref,MAWB,HAWB,ETD,ETA,Created At
+838,,"HLE Drones","933-34770186",Import,Air,Pickup,36,313,313,,,,933-34770186,,2026-06-10,2026-06-13,2026-06-09T16:13:03.549546+00:00
+848,,"Zanaya","176-28801990",Transit,Air,Pickup,6,1585,1585,,,,176-28801990,MIA-86,2026-06-13,2026-06-15,2026-06-15T14:08:14.677583+00:00
+19,848,"Zanaya","176-28801990 - SPLIT",Transit,Air,Pickup,1,284,284,,,,176-28801990,MIA-86,2026-06-13,2026-06-15,2026-06-15T14:08:14.677583+00:00
+846,,"Gravity","180-77385803",Transit,Air,Pickup,84,1476,1476,,,,180-77385803,,2026-06-13,2026-06-15,2026-06-12T13:19:38.061133+00:00
+845,,"HLE Drones","936-02708252",Import,Air,On the Way,26,206,206,,,,936-02708252,,2026-06-15,2026-06-16,2026-06-12T12:51:06.803841+00:00
+854,,"NewMaster","Korea-Cosmeticos",Import,Air,Quoted,,,,,,,,,,,2026-06-15T20:46:07.898108+00:00
+853,,"General Quote","Cotizacion a nuestra bodega",Transit,Land,Pickup,,,,,,,,,,,2026-06-15T16:54:42.942231+00:00
+843,,"General Quote","BMW X7 | VB01 / MF",Export,Ocean,Quoting,,,,,,,,,,,2026-06-10T23:02:15.142727+00:00
+840,,"General Quote","Garrafa",Export,Air,Quoted,,,,,,,,,,,2026-06-09T17:42:19.795834+00:00
+837,,"General Quote","USA to SOUTH AFRICA",Quote,Air,Quoted,,,,,,,,,,,2026-06-09T14:25:01.440017+00:00
+834,,"General Quote","HOUSTON- ASUNCION- RORO NM",Export,Ocean,Quoting,,,,,,,,,,,2026-06-08T17:32:25.992131+00:00
+833,,"General Quote","Scrap Tyres",Quote,Ocean,Quoted,,,,,,,,,,,2026-06-08T17:26:17.557018+00:00
+832,,"Natlex","Turkey shp",Quote,Ocean,Quoted,,,,,,,,,,,2026-06-08T16:26:54.565991+00:00
+812,,"NewMaster","Carritos Golf",Export,Ocean,Coordinating,,,,,,,,,,,2026-06-07T16:29:04.707888+00:00
