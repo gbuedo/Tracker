@@ -911,40 +911,22 @@
     ]
   },
   {
-    "category": "PURCHASE AGENT",
+    "category": "PURCHASE AGENT ",
     "rates": [
       {
-        "id": "purchase_agent_7",
-        "name": "PURCHASE AGENT",
-        "rate": "",
-        "notes": ""
-      },
-      {
-        "id": "purchase_agent_12",
-        "name": "PRE PAID SERVICES : 10% OVER THE FINAL PAYMENT",
-        "rate": "",
-        "notes": ""
-      },
-      {
-        "id": "purchase_agent_14",
-        "name": "DESCRIPTION",
-        "rate": "RATE",
-        "notes": "DESCRIPTION SPANISH"
-      },
-      {
-        "id": "purchase_agent_15",
+        "id": "purchase_agent__15",
         "name": "PURCHASING",
         "rate": "10% Over",
         "notes": "Agente de Compra"
       },
       {
-        "id": "purchase_agent_16",
+        "id": "purchase_agent__16",
         "name": "HANDLING",
         "rate": "Payment",
         "notes": "*Compra mediante link"
       },
       {
-        "id": "purchase_agent_17",
+        "id": "purchase_agent__17",
         "name": "FEE",
         "rate": "",
         "notes": ""

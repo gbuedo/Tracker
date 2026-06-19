@@ -1203,11 +1203,11 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
       // Try finding by Reference or ID (number)
       let query = supabase.from("shipments").select(`*, status:statuses(*)`).limit(1);
       
-      const isNum = !isNaN(Number(search));
+      const isNum = !isNaN(Number(search.trim())) && search.trim() !== "";
       if (isNum) {
-        query = query.or(`id.eq.${search},reference.ilike.%${search}%`);
+        query = query.or(`id.eq.${search.trim()},reference.ilike.%${search.trim()}%,ct_file.ilike.%${search.trim()}%,warehouse_receipt.ilike.%${search.trim()}%,expo_mawb.ilike.%${search.trim()}%,expo_hawb.ilike.%${search.trim()}%`);
       } else {
-        query = query.ilike("reference", `%${search}%`);
+        query = query.or(`reference.ilike.%${search.trim()}%,ct_file.ilike.%${search.trim()}%,warehouse_receipt.ilike.%${search.trim()}%,expo_mawb.ilike.%${search.trim()}%,expo_hawb.ilike.%${search.trim()}%`);
       }
       
       const { data: shipments, error: sError } = await query;
@@ -1231,17 +1231,21 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
     },
     () => {
       const data = readMockData();
-      const isNum = !isNaN(Number(search));
+      const cleanSearch = search.trim().toLowerCase();
+      const isNum = !isNaN(Number(cleanSearch)) && cleanSearch !== "";
       
       let s = null;
       if (isNum) {
-        s = data.shipments.find((sh: any) => sh.id === Number(search));
+        s = data.shipments.find((sh: any) => sh.id === Number(cleanSearch));
       }
       if (!s) {
-        s = data.shipments.find((sh: any) => sh.reference && sh.reference.toLowerCase() === search.toLowerCase());
-      }
-      if (!s) {
-        s = data.shipments.find((sh: any) => sh.reference && sh.reference.toLowerCase().includes(search.toLowerCase()));
+        s = data.shipments.find((sh: any) => 
+          (sh.reference && sh.reference.toLowerCase().includes(cleanSearch)) ||
+          (sh.ct_file && sh.ct_file.toLowerCase().includes(cleanSearch)) ||
+          (sh.warehouse_receipt && sh.warehouse_receipt.toLowerCase().includes(cleanSearch)) ||
+          (sh.expo_mawb && sh.expo_mawb.toLowerCase().includes(cleanSearch)) ||
+          (sh.expo_hawb && sh.expo_hawb.toLowerCase().includes(cleanSearch))
+        );
       }
       
       if (!s) return null;

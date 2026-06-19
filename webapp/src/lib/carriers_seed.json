@@ -1,6 +1,6 @@
 [
   {
-    "id": 2,
+    "id": 1,
     "code": "172",
     "name": "CARGOLUX",
     "handling_agent": "ALLIANCE GROUND",
@@ -14,7 +14,7 @@
     "notes": null
   },
   {
-    "id": 3,
+    "id": 2,
     "code": "006",
     "name": "DELTA",
     "handling_agent": "ALLIANCE GROUND",
@@ -28,7 +28,7 @@
     "notes": null
   },
   {
-    "id": 4,
+    "id": 3,
     "code": "047",
     "name": "TAP Air Portugal",
     "handling_agent": "ALLIANCE GROUND",
@@ -42,8 +42,22 @@
     "notes": "If AWB arrives on a KL/MP flight firms code is O419\nIf AWB arrives on a AF flight firms code is M659\nAWB prefixes 057,074 can fly on either."
   },
   {
+    "id": 4,
+    "code": "202",
+    "name": "AVIANCA CARO",
+    "handling_agent": "ALLIANCE GROUND",
+    "phone": null,
+    "email": "agiavmiaimp@agi.aero",
+    "address": "Miami, FL 33166 (Doors 41–65",
+    "firms_code": "M704",
+    "import_fee": 60,
+    "payment_method": "PAYCARGO / CARGO SPRINT",
+    "storage": "24 hrs / $0.15 per kilo, min $50",
+    "notes": null
+  },
+  {
     "id": 5,
-    "code": "202 / 729 / 133",
+    "code": "729",
     "name": "AVIANCA CARO",
     "handling_agent": "ALLIANCE GROUND",
     "phone": null,
@@ -57,6 +71,20 @@
   },
   {
     "id": 6,
+    "code": "133",
+    "name": "AVIANCA CARO",
+    "handling_agent": "ALLIANCE GROUND",
+    "phone": null,
+    "email": "agiavmiaimp@agi.aero",
+    "address": "Miami, FL 33166 (Doors 41–65",
+    "firms_code": "M704",
+    "import_fee": 60,
+    "payment_method": "PAYCARGO / CARGO SPRINT",
+    "storage": "24 hrs / $0.15 per kilo, min $50",
+    "notes": null
+  },
+  {
+    "id": 7,
     "code": "932",
     "name": "VIRGIN ATLANTIC",
     "handling_agent": "ALLIANCE GROUND",
@@ -70,7 +98,7 @@
     "notes": null
   },
   {
-    "id": 7,
+    "id": 8,
     "code": "001",
     "name": "AMERICAN AIRLINES",
     "handling_agent": "AMERICAN AIRLINES",
@@ -84,7 +112,7 @@
     "notes": null
   },
   {
-    "id": 8,
+    "id": 9,
     "code": "810",
     "name": "AMERIJET",
     "handling_agent": "ALLIANCE GROUND",
@@ -98,7 +126,7 @@
     "notes": "This address will be used by Amerijet until 01/06"
   },
   {
-    "id": 9,
+    "id": 10,
     "code": "873",
     "name": "AEROUNION",
     "handling_agent": "AVIANCA",
@@ -112,7 +140,7 @@
     "notes": null
   },
   {
-    "id": 10,
+    "id": 11,
     "code": "272",
     "name": "KALITTA (VIA CHICAGO)",
     "handling_agent": "CARGO EXPRESS",
@@ -126,7 +154,7 @@
     "notes": "Atlas will move to this new location on 06/23/25"
   },
   {
-    "id": 11,
+    "id": 12,
     "code": "784",
     "name": "CHINA SOUTHERN",
     "handling_agent": "Forward Air",
@@ -140,7 +168,7 @@
     "notes": null
   },
   {
-    "id": 12,
+    "id": 13,
     "code": "131",
     "name": "JAPAN AIRLINE",
     "handling_agent": "Forward Air",
@@ -154,7 +182,7 @@
     "notes": null
   },
   {
-    "id": 13,
+    "id": 14,
     "code": "618",
     "name": "Singapore Airlines",
     "handling_agent": "Forward Air",
@@ -168,7 +196,7 @@
     "notes": null
   },
   {
-    "id": 14,
+    "id": 15,
     "code": "695",
     "name": "EVA",
     "handling_agent": "Forward Air",
@@ -182,7 +210,7 @@
     "notes": null
   },
   {
-    "id": 15,
+    "id": 16,
     "code": "933",
     "name": "Nippon Cargo Airlines",
     "handling_agent": "Forward Air",
@@ -196,7 +224,7 @@
     "notes": null
   },
   {
-    "id": 16,
+    "id": 17,
     "code": "205",
     "name": "ANA",
     "handling_agent": "GLOBAL FREIGHT SYSTEM",
@@ -210,7 +238,7 @@
     "notes": null
   },
   {
-    "id": 17,
+    "id": 18,
     "code": "157",
     "name": "QATAR AIRWAYS",
     "handling_agent": "LAN CARGO",
@@ -224,7 +252,7 @@
     "notes": null
   },
   {
-    "id": 18,
+    "id": 19,
     "code": "160",
     "name": "CATHAY PACIFIC",
     "handling_agent": "LAN CARGO",
@@ -238,7 +266,7 @@
     "notes": null
   },
   {
-    "id": 19,
+    "id": 20,
     "code": "297",
     "name": "CHINA AIRLINES",
     "handling_agent": "LAN CARGO",
@@ -252,8 +280,8 @@
     "notes": null
   },
   {
-    "id": 20,
-    "code": "045 / 145",
+    "id": 21,
+    "code": "045",
     "name": "LATAM",
     "handling_agent": "LAN CARGO",
     "phone": null,
@@ -266,7 +294,21 @@
     "notes": "Import fee will be $75 starting 01/01/2026"
   },
   {
-    "id": 21,
+    "id": 22,
+    "code": "145",
+    "name": "LATAM",
+    "handling_agent": "LAN CARGO",
+    "phone": null,
+    "email": "SuperImportDocMIAa@lancargo.com / counterimport@latam.com\nFor AMS: AMS@latam.com",
+    "address": "1901 NW 66TH AVE BLDG 709, MIAMI FL 33126",
+    "firms_code": "M652",
+    "import_fee": 60,
+    "payment_method": "PAYCARGO",
+    "storage": "24 hrs, $0.35 x kg, min $50. \n$0.55 x kg, min $100 after 48 hrs",
+    "notes": "Import fee will be $75 starting 01/01/2026"
+  },
+  {
+    "id": 23,
     "code": "114",
     "name": "El Al",
     "handling_agent": "NATIONAL AIRPORT SERVICES",
@@ -280,8 +322,8 @@
     "notes": "Pay import fee to \"United Cargo (MIA)\""
   },
   {
-    "id": 22,
-    "code": "946 / 992 / 936",
+    "id": 24,
+    "code": "946",
     "name": "DHL",
     "handling_agent": "NATIONAL AIRPORT SERVICES",
     "phone": null,
@@ -294,7 +336,35 @@
     "notes": null
   },
   {
-    "id": 23,
+    "id": 25,
+    "code": "992",
+    "name": "DHL",
+    "handling_agent": "NATIONAL AIRPORT SERVICES",
+    "phone": null,
+    "email": "nastraffic@nashandling.aero",
+    "address": "6025 NW 18TH ST, BLDG 716E, MIAMI FL 33126",
+    "firms_code": "LAI0",
+    "import_fee": 120,
+    "payment_method": "CARGO SPRINT",
+    "storage": "24 hrs",
+    "notes": null
+  },
+  {
+    "id": 26,
+    "code": "936",
+    "name": "DHL",
+    "handling_agent": "NATIONAL AIRPORT SERVICES",
+    "phone": null,
+    "email": "nastraffic@nashandling.aero",
+    "address": "6025 NW 18TH ST, BLDG 716E, MIAMI FL 33126",
+    "firms_code": "LAI0",
+    "import_fee": 120,
+    "payment_method": "CARGO SPRINT",
+    "storage": "24 hrs",
+    "notes": null
+  },
+  {
+    "id": 27,
     "code": "871",
     "name": "HNA CARGO",
     "handling_agent": "PTS LOGISTICS",
@@ -308,7 +378,7 @@
     "notes": null
   },
   {
-    "id": 24,
+    "id": 28,
     "code": "576",
     "name": "SKYLEASE",
     "handling_agent": "SKYLEASE",
@@ -322,7 +392,7 @@
     "notes": null
   },
   {
-    "id": 25,
+    "id": 29,
     "code": "086",
     "name": "NEW ZEALAND",
     "handling_agent": "STERLING",
@@ -336,7 +406,7 @@
     "notes": null
   },
   {
-    "id": 26,
+    "id": 30,
     "code": "345",
     "name": "Northen Air Cargo",
     "handling_agent": "STRAT AIR",
@@ -350,7 +420,7 @@
     "notes": null
   },
   {
-    "id": 27,
+    "id": 31,
     "code": "658",
     "name": "Airmax",
     "handling_agent": "STRAT AIR",
@@ -364,7 +434,7 @@
     "notes": null
   },
   {
-    "id": 28,
+    "id": 32,
     "code": "016",
     "name": "UNITED CARGO",
     "handling_agent": "SWISSPORT",
@@ -378,7 +448,7 @@
     "notes": null
   },
   {
-    "id": 29,
+    "id": 33,
     "code": "055",
     "name": "ALITALIA",
     "handling_agent": "SWISSPORT",
@@ -392,7 +462,7 @@
     "notes": null
   },
   {
-    "id": 30,
+    "id": 34,
     "code": "080",
     "name": "POLISH AIRLINES",
     "handling_agent": "SWISSPORT",
@@ -406,7 +476,7 @@
     "notes": "If AWB arrives on a KL/MP flight firms code is O419\nIf AWB arrives on a AF flight firms code is M659\nAWB prefixes 057,074 can fly on either."
   },
   {
-    "id": 31,
+    "id": 35,
     "code": "105",
     "name": "FINNAIR",
     "handling_agent": "SWISSPORT",
@@ -420,7 +490,7 @@
     "notes": null
   },
   {
-    "id": 32,
+    "id": 36,
     "code": "111",
     "name": "Bahamas",
     "handling_agent": "SWISSPORT",
@@ -434,7 +504,7 @@
     "notes": null
   },
   {
-    "id": 33,
+    "id": 37,
     "code": "230",
     "name": "COPA",
     "handling_agent": "TRISTAR",
@@ -448,7 +518,7 @@
     "notes": null
   },
   {
-    "id": 34,
+    "id": 38,
     "code": "724",
     "name": "SWISS WORLD",
     "handling_agent": "TRISTAR",
@@ -462,7 +532,7 @@
     "notes": null
   },
   {
-    "id": 35,
+    "id": 39,
     "code": "014",
     "name": "AIR CANADA",
     "handling_agent": "TRISTAR",
@@ -476,7 +546,7 @@
     "notes": null
   },
   {
-    "id": 36,
+    "id": 40,
     "code": "020",
     "name": "LUFTHANSA",
     "handling_agent": "TRISTAR",
@@ -490,7 +560,7 @@
     "notes": null
   },
   {
-    "id": 37,
+    "id": 41,
     "code": "536",
     "name": "NORSE",
     "handling_agent": "TRISTAR",
@@ -504,7 +574,7 @@
     "notes": null
   },
   {
-    "id": 38,
+    "id": 42,
     "code": "577",
     "name": "Azul",
     "handling_agent": "TRISTAR",
@@ -518,7 +588,7 @@
     "notes": "Polar will move to this new location on 06/23/25"
   },
   {
-    "id": 39,
+    "id": 43,
     "code": "406",
     "name": "UPS",
     "handling_agent": "UPS",
@@ -532,7 +602,7 @@
     "notes": null
   },
   {
-    "id": 40,
+    "id": 44,
     "code": "125",
     "name": "BRITISH AIRWAYS",
     "handling_agent": "WFS",
@@ -546,7 +616,7 @@
     "notes": null
   },
   {
-    "id": 41,
+    "id": 45,
     "code": "176",
     "name": "EMIRATES",
     "handling_agent": "WFS",
@@ -560,7 +630,7 @@
     "notes": null
   },
   {
-    "id": 42,
+    "id": 46,
     "code": "180",
     "name": "KOREAN",
     "handling_agent": "WFS",
@@ -574,7 +644,7 @@
     "notes": null
   },
   {
-    "id": 43,
+    "id": 47,
     "code": "235",
     "name": "TURKISH",
     "handling_agent": "WFS",
@@ -588,7 +658,7 @@
     "notes": null
   },
   {
-    "id": 44,
+    "id": 48,
     "code": "369",
     "name": "ATLAS",
     "handling_agent": "WFS",
@@ -602,7 +672,7 @@
     "notes": null
   },
   {
-    "id": 45,
+    "id": 49,
     "code": "403",
     "name": "POLAR",
     "handling_agent": "WFS",
@@ -616,7 +686,7 @@
     "notes": null
   },
   {
-    "id": 46,
+    "id": 50,
     "code": "057",
     "name": "AIR FRANCE",
     "handling_agent": "WFS",
@@ -630,7 +700,7 @@
     "notes": null
   },
   {
-    "id": 47,
+    "id": 51,
     "code": "074",
     "name": "KLM ROYAL",
     "handling_agent": "WFS",
@@ -644,7 +714,7 @@
     "notes": null
   },
   {
-    "id": 48,
+    "id": 52,
     "code": "075",
     "name": "IBERIA",
     "handling_agent": "WFS",

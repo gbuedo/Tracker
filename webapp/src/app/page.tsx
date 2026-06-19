@@ -64,7 +64,7 @@ export default async function LandingHub() {
             WCS Control Hub Middleware
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 font-mono uppercase">
-            WORLD CLASS SYSTEMS
+            WORLD CLASS SOLUTIONS
           </h1>
           <p className="text-sm text-slate-450 font-medium leading-relaxed">
             Welcome to the integrated cargo middleware terminal. Select an application module below to manage cargo logistics, tasks workflows, or billing sheets.
