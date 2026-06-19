@@ -2,6 +2,7 @@
 
 import * as db from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { supabase } from "@/lib/supabase";
 
 export async function createShipment(formData: FormData) {
   const client_name = formData.get("client_name") as string;
@@ -207,7 +208,7 @@ export async function getFullBackupData() {
     SYSTEM_STATUSES: await db.getStatuses(),
     SYSTEM_CUSTOMERS: customers,
     SYSTEM_CONFIG: config,
-    SYSTEM_SHIPMENT_STATUSES: await db.supabase
+    SYSTEM_SHIPMENT_STATUSES: await supabase
       .from("logs")
       .select("event_text")
       .eq("shipment_id", 999999)

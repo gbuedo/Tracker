@@ -223,6 +223,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
 
         {/* Visibility toggler button */}
         <div className="space-y-1 flex flex-col justify-end">
+          <Label className="opacity-0 select-none hidden sm:block text-[10px]">&nbsp;</Label>
           <Button
             type="button"
             variant="outline"

@@ -456,46 +456,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
     }
   };
 
-  const handleResetDatabase = async () => {
-    setWipingDb(true);
-    try {
-      await resetDatabase();
-      setSaveSuccessMsg("🗑️ Database successfully wiped and reset to scratch!");
-      setNewCustomer("");
-      setNewStatusName("");
-      setShowConfirmReset(false);
-      
-      setTimeout(() => {
-        setDialogOpen(false);
-        setSaveSuccessMsg("");
-      }, 2500);
-
-      router.refresh();
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setWipingDb(false);
-    }
-  };
-
-  const handleSeedDatabase = async () => {
-    setSeedingDb(true);
-    try {
-      await seedDatabase();
-      setSaveSuccessMsg("🌱 Database successfully seeded with demo cargo!");
-      setNewCustomer("");
-      setNewStatusName("");
-      setTimeout(() => {
-        setDialogOpen(false);
-        setSaveSuccessMsg("");
-      }, 2500);
-      router.refresh();
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setSeedingDb(false);
-    }
-  };
+    // Removed handleResetDatabase & handleSeedDatabase functions
 
 
   return (
@@ -715,68 +676,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                       </div>
                     </div>
 
-                    {/* Initial Setup/Seed */}
-                    <div className="space-y-3 border-t border-slate-850 pt-4">
-                      <Label className="text-sky-400 flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-black">
-                        🌱 Initial Demo Setup
-                      </Label>
-                      <p className="text-[10px] text-slate-500 font-medium">
-                        Populate your Supabase tables with sample parent/split shipments and tracking activity logs to test the terminal.
-                      </p>
-                      <Button 
-                        type="button" 
-                        onClick={handleSeedDatabase}
-                        disabled={seedingDb || wipingDb}
-                        className="w-full bg-sky-600/10 hover:bg-sky-600/20 border border-sky-500/30 text-sky-400 hover:text-sky-300 font-bold text-[11px] h-9 transition-all"
-                      >
-                        {seedingDb ? "Seeding Demo Data..." : "Seed Database with Demo Data"}
-                      </Button>
-                    </div>
-
-                    {/* Danger Zone: reset database */}
-                    <div className="space-y-3 border-t border-rose-950/40 pt-4">
-                      <Label className="text-rose-450 flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-black">
-                        ⚠️ Danger Zone
-                      </Label>
-                      <p className="text-[10px] text-slate-550 font-medium">
-                        Permanently delete all shipment files, client logs, custom milestones, and start a fresh database.
-                      </p>
-                      
-                      {!showConfirmReset ? (
-                        <Button 
-                          type="button" 
-                          variant="destructive" 
-                          onClick={() => setShowConfirmReset(true)}
-                          className="w-full bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/30 text-rose-400 hover:text-rose-300 font-bold text-[11px] h-9 transition-all"
-                        >
-                          Wipe Database & Start Scratch
-                        </Button>
-                      ) : (
-                        <div className="space-y-2 border border-rose-500/30 bg-rose-950/20 p-3 rounded-xl animate-pulse">
-                          <p className="text-[9px] text-rose-300 font-extrabold uppercase tracking-wide text-center">
-                            Are you sure? This deletes ALL operational data!
-                          </p>
-                          <div className="flex gap-2">
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              onClick={() => setShowConfirmReset(false)}
-                              className="flex-1 bg-transparent border-slate-800 text-slate-400 hover:text-white text-[10px] h-8"
-                            >
-                              Cancel
-                            </Button>
-                            <Button 
-                              type="button" 
-                              onClick={handleResetDatabase}
-                              disabled={wipingDb}
-                              className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] h-8"
-                            >
-                              {wipingDb ? "Wiping..." : "Yes, Wipe All"}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* Removed Initial Demo Setup & Danger Zone */}
                   </div>
 
                   {/* --- RIGHT COLUMN --- */}
