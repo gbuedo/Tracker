@@ -1,0 +1,954 @@
+[
+  {
+    "category": "WAREHOUSING",
+    "rates": [
+      {
+        "id": "warehousing_8",
+        "name": "FUMIGATED PALLET",
+        "rate": "25",
+        "notes": "No se permite el uso de pallet que no sean fumigados"
+      },
+      {
+        "id": "warehousing_10",
+        "name": "PLASTIC PALLET",
+        "rate": "35",
+        "notes": "Solicitar con anticipacion"
+      },
+      {
+        "id": "warehousing_12",
+        "name": "WRAP",
+        "rate": "35",
+        "notes": "Proteccion adicional de mercaderia en pallet."
+      },
+      {
+        "id": "warehousing_14",
+        "name": "WRAP + STRAPS",
+        "rate": "45",
+        "notes": "Proteccion adicional de mercaderia en pallet."
+      },
+      {
+        "id": "warehousing_16",
+        "name": "INVENTORY/INSPECTION/",
+        "rate": "$30.00XH MIN 2 HS",
+        "notes": "Cliente provee pack list/invoice para la verificacion"
+      },
+      {
+        "id": "warehousing_17",
+        "name": "SEGREGATION",
+        "rate": "***",
+        "notes": "de compras."
+      },
+      {
+        "id": "warehousing_18",
+        "name": "LABELING FEE",
+        "rate": "$25.00 x shipment / Up to 10 labels",
+        "notes": "Solicitud de Etiquetas con marcas especificas"
+      },
+      {
+        "id": "warehousing_19",
+        "name": "",
+        "rate": "Additional label $1.00 x Label",
+        "notes": "requeridas."
+      },
+      {
+        "id": "warehousing_20",
+        "name": "PICTURES",
+        "rate": "$5.00 per photo",
+        "notes": "Envio de fotos via Wsp o Emial"
+      },
+      {
+        "id": "warehousing_22",
+        "name": "D CONTAINER RPK",
+        "rate": "85",
+        "notes": "Reempaque en D Container Box"
+      },
+      {
+        "id": "warehousing_24",
+        "name": "EH CONTAINER RPK",
+        "rate": "65",
+        "notes": "Reempaque en EH Container Box"
+      },
+      {
+        "id": "warehousing_26",
+        "name": "COURIER BAGS RPK",
+        "rate": "$35.00 X BAG",
+        "notes": "Reempaque en Bolsa Courier - Incluye: Labor - Bolsa"
+      },
+      {
+        "id": "warehousing_28",
+        "name": "Couirier (DHL/UPS/USPS/FEDEX)",
+        "rate": "HANDLING LABEL FEE :",
+        "notes": "Impresion de etiqueta"
+      },
+      {
+        "id": "warehousing_29",
+        "name": "Handling Fee",
+        "rate": "RPK BOX MAX 20KG : $35.00",
+        "notes": "Reempaque dentro de caja 20x20 - Incluye Insumos"
+      },
+      {
+        "id": "warehousing_30",
+        "name": "SATURDAY HANDLING FEE",
+        "rate": "250",
+        "notes": "Servicio  dias Sabados"
+      },
+      {
+        "id": "warehousing_31",
+        "name": "Storage Rack able Cargo",
+        "rate": "$ 0.1 x CFT / 0.01 x Lbs x day",
+        "notes": "21 Days Free/ Min $ 200.00 per month x wh"
+      },
+      {
+        "id": "warehousing_32",
+        "name": "Storage non- Rack able Cargo",
+        "rate": "$ 0.1 x CFT / 0.01 x Lbs x day",
+        "notes": "15 Days Free/ Min $ 230.00 per month x wh (over 70'' length  and/or 84'' height)"
+      },
+      {
+        "id": "warehousing_33",
+        "name": "Over-Weight Fee",
+        "rate": "170",
+        "notes": "Any piece over 5,000 lbs to 7,500 lbs. - Min $170.00 - Max $340.00 x Wh"
+      },
+      {
+        "id": "warehousing_34",
+        "name": "Forklift Special Cargo -Chains-Special Equipment",
+        "rate": "300",
+        "notes": "Any piece over 7,500 lbs. - Min $300.00 - Case B Case- Please quote"
+      },
+      {
+        "id": "warehousing_35",
+        "name": "WH Over-Length",
+        "rate": "12",
+        "notes": "Per Extra Lineal Feet over 12 lineal feet, Min $ 20, Max $400 per Wh"
+      },
+      {
+        "id": "warehousing_36",
+        "name": "Labeling",
+        "rate": "10",
+        "notes": "Min $10.00 (includes 5 pieces) $ 1.00 per piece + 35 hh"
+      },
+      {
+        "id": "warehousing_37",
+        "name": "Unification",
+        "rate": "$35.00 x hs(hh) + pallet $15.00 + wrap $15.00",
+        "notes": "Per Bkg .Min $65.00 until 25 boxes. From 26 to 50 bxs apply $90.00 for 51 and Up apply $135.00"
+      },
+      {
+        "id": "warehousing_38",
+        "name": "Loading/Unloading  Trucks - OverSize Cargo",
+        "rate": "100",
+        "notes": "Bajar o subir de camiones Carga sobredimensionada (over 70'' length  and/or 84'' height)"
+      },
+      {
+        "id": "warehousing_39",
+        "name": "IN/OUT air shipments",
+        "rate": "$0.10/KG Min $25.00",
+        "notes": "Recepcion y salida de carga de bodega"
+      },
+      {
+        "id": "warehousing_41",
+        "name": "In/Out OX ocean shipments",
+        "rate": "$0.40 Per Cubic Foot",
+        "notes": "Per Cubic Foot - Min $50.00 x wh"
+      },
+      {
+        "id": "warehousing_42",
+        "name": "In/Out CFS/ BONDED  OX ocean shipments",
+        "rate": "$ 0.55 Per Cubic Foot",
+        "notes": "Per Cubic Foot - Min $50.00 x wh"
+      },
+      {
+        "id": "warehousing_43",
+        "name": "IN/OUT  FCL ocean shipments",
+        "rate": "$ 250.00 X 40HC",
+        "notes": "Recepcion y salida de carga de bodega"
+      },
+      {
+        "id": "warehousing_44",
+        "name": "20 DAYS MAX STAY",
+        "rate": "$150.00 X 20STD",
+        "notes": "Confeccion de Wh receipt, peso medias"
+      },
+      {
+        "id": "warehousing_45",
+        "name": "IN/OUT BONDED/CFS",
+        "rate": "0.15/KG Min 50.00",
+        "notes": "Recepcion de cargas en transito en bodega"
+      }
+    ]
+  },
+  {
+    "category": "FTZ -  Free Trade Zone",
+    "rates": [
+      {
+        "id": "ftz_-__free_trade_zone_2",
+        "name": "Warehouse Storage",
+        "rate": "$ 0.55 CFT / MIN $50.00 per WH receipt",
+        "notes": "Billed on the last day of\nthe month and\napplicable for all cargo\non hand on that date."
+      },
+      {
+        "id": "ftz_-__free_trade_zone_3",
+        "name": "Handling Charges (IN)",
+        "rate": "$0.55 CFT / MIN $50.00",
+        "notes": ""
+      },
+      {
+        "id": "ftz_-__free_trade_zone_4",
+        "name": "Handling Charges (OUT)",
+        "rate": "$0.55 CFT / MIN $50.00",
+        "notes": ""
+      },
+      {
+        "id": "ftz_-__free_trade_zone_5",
+        "name": "Order Processing",
+        "rate": "50",
+        "notes": "Per Order"
+      },
+      {
+        "id": "ftz_-__free_trade_zone_6",
+        "name": "Rush Order",
+        "rate": "75",
+        "notes": "Same day Order\n*If applicable*"
+      },
+      {
+        "id": "ftz_-__free_trade_zone_7",
+        "name": "CF214 Zone Admission 2 Lines",
+        "rate": "90",
+        "notes": "each additional lines $4"
+      },
+      {
+        "id": "ftz_-__free_trade_zone_8",
+        "name": "CF7512 Zone Withdrawal",
+        "rate": "175",
+        "notes": ""
+      },
+      {
+        "id": "ftz_-__free_trade_zone_9",
+        "name": "Local Distribution",
+        "rate": "As per request - Quote",
+        "notes": ""
+      },
+      {
+        "id": "ftz_-__free_trade_zone_10",
+        "name": "Re export air / ocean",
+        "rate": "As per Request  - Quote",
+        "notes": ""
+      },
+      {
+        "id": "ftz_-__free_trade_zone_11",
+        "name": "Activity / Manipulation (216)",
+        "rate": "90",
+        "notes": "per 216 doc"
+      },
+      {
+        "id": "ftz_-__free_trade_zone_12",
+        "name": "Tally Out",
+        "rate": "50",
+        "notes": ""
+      },
+      {
+        "id": "ftz_-__free_trade_zone_13",
+        "name": "OTR",
+        "rate": "As per Request  - Quote",
+        "notes": "Over the Road, National Distribution"
+      },
+      {
+        "id": "ftz_-__free_trade_zone_14",
+        "name": "1F",
+        "rate": "$35.00",
+        "notes": ""
+      }
+    ]
+  },
+  {
+    "category": "AIR FEES",
+    "rates": [
+      {
+        "id": "air_fees_8",
+        "name": "INTERNATIONAL",
+        "rate": "CASE BY CASE",
+        "notes": "Flete Aereo consultar"
+      },
+      {
+        "id": "air_fees_9",
+        "name": "AIRFREIGHT",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "air_fees_10",
+        "name": "IN/OUT",
+        "rate": "$0.10/KG Min $25.00",
+        "notes": "Recepcion y salida de carga de bodega"
+      },
+      {
+        "id": "air_fees_12",
+        "name": "AWB FEE",
+        "rate": "50",
+        "notes": "Documentos de exportacion aerea"
+      },
+      {
+        "id": "air_fees_14",
+        "name": "AIRPORT TRANSFER FEE",
+        "rate": "Min $85.00 Up to 2 Pallets or 500kg",
+        "notes": "Entrega de carga al aeropuerta de Miami Fl"
+      },
+      {
+        "id": "air_fees_15",
+        "name": "",
+        "rate": "or 0.10/kg",
+        "notes": ""
+      },
+      {
+        "id": "air_fees_16",
+        "name": "AIPORT WAITTING TIME",
+        "rate": "45 Minutes  Free $65.00 x hour",
+        "notes": "Tiempo de entrega en el aeropuerto"
+      },
+      {
+        "id": "air_fees_17",
+        "name": "IF APPLIES",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "air_fees_18",
+        "name": "UN FEE",
+        "rate": "$100.00 X UN",
+        "notes": "Carga Peligrosa Aerea paga un adicional a la aerolinea"
+      },
+      {
+        "id": "air_fees_19",
+        "name": "IF APPLIES",
+        "rate": "",
+        "notes": "por cada UN #"
+      },
+      {
+        "id": "air_fees_20",
+        "name": "SED",
+        "rate": "$75.00  x Invoice",
+        "notes": "Shipper's export declaration."
+      },
+      {
+        "id": "air_fees_21",
+        "name": "IF APPLIES",
+        "rate": "",
+        "notes": "Mandatorio opara cargas que superen los $2500 de valor"
+      },
+      {
+        "id": "air_fees_22",
+        "name": "DRY ICE",
+        "rate": "UN FEE 100.00 - AF Same as Gral cargo",
+        "notes": "Se paga 100.00 x UN a la aerolinea - no afecta el costo de flete"
+      },
+      {
+        "id": "air_fees_23",
+        "name": "HADLING",
+        "rate": "HANDLING 75.00",
+        "notes": "Manejo de recarga de Hielo seco"
+      },
+      {
+        "id": "air_fees_24",
+        "name": "Refrigerated cargo",
+        "rate": "3.50/LB",
+        "notes": "3.50 x libra de hielo seco  por compra"
+      },
+      {
+        "id": "air_fees_25",
+        "name": "Cargo Insurance",
+        "rate": "Upon Request",
+        "notes": "Seguro de craga caso x caso"
+      },
+      {
+        "id": "air_fees_27",
+        "name": "DG CERTIFICATE",
+        "rate": "$250.00 Per Certificate",
+        "notes": "Certificado de material peligroso"
+      },
+      {
+        "id": "air_fees_28",
+        "name": "IF APPLIES",
+        "rate": "",
+        "notes": "para exportacion"
+      },
+      {
+        "id": "air_fees_29",
+        "name": "SATURDAY HANDLING FEE",
+        "rate": "250",
+        "notes": "Servicio  dias Sabados"
+      },
+      {
+        "id": "air_fees_39",
+        "name": "***Si se desarman pallets para inspeccion se debera de adicionar cobro por wrap/strap segun aplique",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "air_fees_40",
+        "name": "**** Oversize Pallet please check with your sales rep/Pallets sobredimensionados favor cotizar con su asesor de cuenta.",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "air_fees_41",
+        "name": "**** Warehousing Services in a diferent chart",
+        "rate": "",
+        "notes": ""
+      }
+    ]
+  },
+  {
+    "category": "OCEAN FEES",
+    "rates": [
+      {
+        "id": "ocean_fees_8",
+        "name": "INTERNATIONAL",
+        "rate": "CASE BY CASE",
+        "notes": "consultar"
+      },
+      {
+        "id": "ocean_fees_9",
+        "name": "OCEAN FREIGHT LCL - FCL",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_10",
+        "name": "IN/OUT",
+        "rate": "$ 250.00 X 40HC",
+        "notes": "Recepcion y salida de carga de bodega"
+      },
+      {
+        "id": "ocean_fees_11",
+        "name": "20 DAYS MAX STAY",
+        "rate": "$150.00 X 20STD",
+        "notes": "Confeccion de Wh receipt, peso medias"
+      },
+      {
+        "id": "ocean_fees_12",
+        "name": "BL  FEE",
+        "rate": "85",
+        "notes": "Documentos de exportacion maritima"
+      },
+      {
+        "id": "ocean_fees_13",
+        "name": "LOCAL DRAYAGE IMO CARGO",
+        "rate": "770",
+        "notes": "Recoger contenedor vacio + entrega de contendor a puerto"
+      },
+      {
+        "id": "ocean_fees_14",
+        "name": "DORAL AREA",
+        "rate": "",
+        "notes": "IMO"
+      },
+      {
+        "id": "ocean_fees_15",
+        "name": "LOCAL DRAYAGE GRAL CARGO",
+        "rate": "690",
+        "notes": "Recoger contenedor vacio + entrega de contendor a puerto"
+      },
+      {
+        "id": "ocean_fees_16",
+        "name": "DORAL AREA",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_17",
+        "name": "WAITTING TIME",
+        "rate": "45 minutes Free - 75.00 x hour",
+        "notes": "Espera en puerto para entrega de containers"
+      },
+      {
+        "id": "ocean_fees_18",
+        "name": "IF apply",
+        "rate": "",
+        "notes": "Se cobrara sin previo aviso"
+      },
+      {
+        "id": "ocean_fees_19",
+        "name": "PORT CONGESTION FEE",
+        "rate": "250",
+        "notes": "Congestion en puerto segun temporada"
+      },
+      {
+        "id": "ocean_fees_20",
+        "name": "IF apply",
+        "rate": "",
+        "notes": "Se cobrara sin previo aviso"
+      },
+      {
+        "id": "ocean_fees_21",
+        "name": "SED",
+        "rate": "75",
+        "notes": "Shipper's export declaration."
+      },
+      {
+        "id": "ocean_fees_22",
+        "name": "IF apply",
+        "rate": "",
+        "notes": "Mandatorio opara cargas que superen los $2500 de valor"
+      },
+      {
+        "id": "ocean_fees_23",
+        "name": "LOADING/UNLOADING",
+        "rate": "350",
+        "notes": "Cargado/descargado  de contenedor de 20 pies paletizado"
+      },
+      {
+        "id": "ocean_fees_24",
+        "name": "1 X 20ST PALLETIZED CARGO",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_25",
+        "name": "LOADING/UNLOADING",
+        "rate": "450",
+        "notes": "Cargado/descargado  de contodor de 40 pies paletizado"
+      },
+      {
+        "id": "ocean_fees_26",
+        "name": "1 X 40 PALLETIZED CARGO",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_27",
+        "name": "LOADING/UNLOADING",
+        "rate": "750",
+        "notes": "Cargado/descargado  de contenedor de 20 pies carga suelta"
+      },
+      {
+        "id": "ocean_fees_28",
+        "name": "1 X 20ST LOOSE CARGO",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_29",
+        "name": "LOADING/UNLOADING",
+        "rate": "850",
+        "notes": "Cargado/descargado  de contenedor de 40 pies carga suelta"
+      },
+      {
+        "id": "ocean_fees_30",
+        "name": "1 X 40 LOOSE CARGO",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_31",
+        "name": "LOADING/UNLOADING",
+        "rate": "$500 X UNIT",
+        "notes": "Cargado de Vehiculos Incluye : 4 Straps de seguridad"
+      },
+      {
+        "id": "ocean_fees_32",
+        "name": "CARS-SUV-PICK UP",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_33",
+        "name": "FLORIDA US CUSTOMS VALIDATION",
+        "rate": "250",
+        "notes": "Validacion de titulos de vehiculos para exportacion en fl"
+      },
+      {
+        "id": "ocean_fees_34",
+        "name": "(VEHICLES-SELF PROPEL EQUIPMENT)",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_35",
+        "name": "OVER WEIGHT FEE",
+        "rate": "125",
+        "notes": "Exceso de peso en bascula de DOT // Max peso 30tons"
+      },
+      {
+        "id": "ocean_fees_37",
+        "name": "IMO CERTIFICATE + PLACARDS",
+        "rate": "$300.00 Per Certificate Up to 4 lines",
+        "notes": "Certificado de material peligroso"
+      },
+      {
+        "id": "ocean_fees_38",
+        "name": "IF APPLIES",
+        "rate": "15.00 x aditional Line",
+        "notes": ""
+      },
+      {
+        "id": "ocean_fees_39",
+        "name": "In/Out OX",
+        "rate": "$0.40 Per Cubic Foot",
+        "notes": "Per Cubic Foot - Min $50.00 x wh"
+      },
+      {
+        "id": "ocean_fees_40",
+        "name": "In/Out CFS/ BONDED  OX",
+        "rate": "$ 0.55 Per Cubic Foot",
+        "notes": "Per Cubic Foot - Min $50.00 x wh"
+      },
+      {
+        "id": "ocean_fees_41",
+        "name": "LCL Consolidation Fee",
+        "rate": "$5.00 w/m",
+        "notes": "Per Shipment"
+      }
+    ]
+  },
+  {
+    "category": "IMPORT BONDED CFS FEES",
+    "rates": [
+      {
+        "id": "import_bonded_cfs_fees_8",
+        "name": "BROKERAGE FEE",
+        "rate": "250",
+        "notes": "Servicio de Broker para importacion"
+      },
+      {
+        "id": "import_bonded_cfs_fees_10",
+        "name": "IMPORT FEE",
+        "rate": "Case By case",
+        "notes": "Gastos de manejo de Aeroliena de importacion"
+      },
+      {
+        "id": "import_bonded_cfs_fees_12",
+        "name": "I.T - I.E. / 7512 // PPT",
+        "rate": "165 per IT - 330 for in and out",
+        "notes": "Permiso de reexportacion para carga en transito Airline-Airline"
+      },
+      {
+        "id": "import_bonded_cfs_fees_13",
+        "name": "Bonded Electronic Filling",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "import_bonded_cfs_fees_15",
+        "name": "ISF BOND",
+        "rate": "85",
+        "notes": "Registro de importacion bonded"
+      },
+      {
+        "id": "import_bonded_cfs_fees_17",
+        "name": "ISF",
+        "rate": "75",
+        "notes": "Registro de importacion"
+      },
+      {
+        "id": "import_bonded_cfs_fees_19",
+        "name": "SINGLE ENTRY BOND",
+        "rate": "*Depends on the value, Min $125.00",
+        "notes": ""
+      },
+      {
+        "id": "import_bonded_cfs_fees_21",
+        "name": "ANNUAL BOND",
+        "rate": "950",
+        "notes": "Permiso corporativo de importacion annual"
+      },
+      {
+        "id": "import_bonded_cfs_fees_23",
+        "name": "SINGLE BOND",
+        "rate": "550",
+        "notes": "Permiso empresarial de importacion solo para 1 importacion"
+      },
+      {
+        "id": "import_bonded_cfs_fees_25",
+        "name": "BONDED TRUCK",
+        "rate": "$85.00 Min + 45.00 Bonded Fee",
+        "notes": "recogida de carga de aeropuerto (Impo) a aeropuerto (expo)"
+      },
+      {
+        "id": "import_bonded_cfs_fees_26",
+        "name": "PUA/DEL FROM AND TO",
+        "rate": "Up to 3 Pallets or 500kg or",
+        "notes": "*Camion Us Bonded"
+      },
+      {
+        "id": "import_bonded_cfs_fees_27",
+        "name": "THE AIRPORT",
+        "rate": "0.15/kg + 45.00 Bonded fee",
+        "notes": ""
+      },
+      {
+        "id": "import_bonded_cfs_fees_28",
+        "name": "AWB/CARGO RELEASE FEE",
+        "rate": "150",
+        "notes": "Entrega de documentacion a otro agente"
+      },
+      {
+        "id": "import_bonded_cfs_fees_30",
+        "name": "IN/OUT BONDED/CFS",
+        "rate": "0.15/KG Min 50.00",
+        "notes": "Recepcion de cargas en transito en bodega"
+      },
+      {
+        "id": "import_bonded_cfs_fees_32",
+        "name": "SATURDAY HANDLING FEE",
+        "rate": "250",
+        "notes": "Servicio  dias Sabados -- 9 am a 2pm"
+      },
+      {
+        "id": "import_bonded_cfs_fees_34",
+        "name": "Storage Rack able Cargo",
+        "rate": "$ 0.1 x CFT / 0.01 x Lbs x day",
+        "notes": "21 Days Free/ Min $ 200.00 per month x wh"
+      },
+      {
+        "id": "import_bonded_cfs_fees_35",
+        "name": "Storage non- Rack able Cargo",
+        "rate": "$ 0.1 x CFT / 0.01 x Lbs x day",
+        "notes": "15 Days Free/ Min $ 230.00 per month x wh (over 92'' length  and/or 84'' height)"
+      },
+      {
+        "id": "import_bonded_cfs_fees_36",
+        "name": "Over-Weight Fee",
+        "rate": "170",
+        "notes": "Any piece over 5,000 lbs to 7,500 lbs. - Min $170.00 - Max $340.00 x Wh"
+      },
+      {
+        "id": "import_bonded_cfs_fees_37",
+        "name": "Forklift Special Cargo",
+        "rate": "300",
+        "notes": "Any piece over 7,500 lbs. - Min $300.00 - Case B Case- Please quote"
+      },
+      {
+        "id": "import_bonded_cfs_fees_38",
+        "name": "WH Over-Length",
+        "rate": "12",
+        "notes": "Per Extra Lineal Feet over 12 lineal feet, Min $ 20, Max $400 per Wh"
+      },
+      {
+        "id": "import_bonded_cfs_fees_39",
+        "name": "Labeling",
+        "rate": "10",
+        "notes": "Min $10.00 (includes 5 pieces) $ 1.00 per piece + 35 hh"
+      },
+      {
+        "id": "import_bonded_cfs_fees_40",
+        "name": "Unification",
+        "rate": "$35.00 x hs(hh) + pallet $15.00 + wrap $15.00",
+        "notes": "Per Bkg .Min $65.00 until 25 boxes. From 26 to 50 bxs apply $90.00 for 51 and Up apply $135.00"
+      },
+      {
+        "id": "import_bonded_cfs_fees_41",
+        "name": "USDA PERMIT (SI REQUIERE)",
+        "rate": "150",
+        "notes": "POR PERMISO"
+      },
+      {
+        "id": "import_bonded_cfs_fees_42",
+        "name": "MENSAJERIA/COURIER",
+        "rate": "75",
+        "notes": "PER ENTRY"
+      },
+      {
+        "id": "import_bonded_cfs_fees_43",
+        "name": "INVOICE ADICIONAL",
+        "rate": "25",
+        "notes": "POR INVOICE"
+      },
+      {
+        "id": "import_bonded_cfs_fees_44",
+        "name": "USDA EXAM COORDINATION FEE",
+        "rate": "150",
+        "notes": "PRIMERAS 2 HRS-MINIMO. EXTRA HORA 25/HORA"
+      },
+      {
+        "id": "import_bonded_cfs_fees_45",
+        "name": "PGA ELECTRONIC TRANSMITION FEE",
+        "rate": "45",
+        "notes": "MINIMO O $3 POR LINEA"
+      },
+      {
+        "id": "import_bonded_cfs_fees_46",
+        "name": "PGA NON ELECTRONIC",
+        "rate": "85",
+        "notes": "POR SUBMISSION"
+      }
+    ]
+  },
+  {
+    "category": "COURIER FEES",
+    "rates": [
+      {
+        "id": "courier_fees_8",
+        "name": "COURIER HANDLING FEE",
+        "rate": "2.50 USD x Kilo",
+        "notes": "****"
+      },
+      {
+        "id": "courier_fees_11",
+        "name": "PICTURES",
+        "rate": "$5.00 per photo",
+        "notes": "Envio de fotos via Wsp"
+      },
+      {
+        "id": "courier_fees_14",
+        "name": "*****",
+        "rate": "",
+        "notes": ""
+      }
+    ]
+  },
+  {
+    "category": "Pick & Pack - Fulfillment-3PL",
+    "rates": [
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_9",
+        "name": "Set Up account - A one time Flat Fee",
+        "rate": "250",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_10",
+        "name": "Inventory by  qty Boxes/Pallets . based on Pack list provided by client",
+        "rate": "$40.00 x hs- Min 1 Hs",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_11",
+        "name": "Inventory by product- Based on a pack list provided by client",
+        "rate": "$10.00 x Carton Open + 0.20 x unit",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_12",
+        "name": "Storage / Almacenaje",
+        "rate": "0.95 / FT x Mes - Min 150.00",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_13",
+        "name": "Storage / Almacenaje",
+        "rate": "0.95 / FT x Mes - Min 95.00",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_14",
+        "name": "Storage / Almacenaje",
+        "rate": "1.25/FT  x Mes - Min 250.00",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_15",
+        "name": "Min $ 230.00 per month x wh (over 70'' length  and/or 84'' height)",
+        "rate": "$ 0.1 x CFT / 0.01 x Lbs x day",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_16",
+        "name": "Any piece over 5,000 lbs to 7,500 lbs. - Min $170.00 - Max $340.00 x Wh",
+        "rate": "170",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_17",
+        "name": "Any piece over 7,500 lbs. - Min $300.00 - Case B Case- Please quote",
+        "rate": "300",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_18",
+        "name": "Aditional (Third product or more  to the same order) $1.00 x product added it",
+        "rate": "$3.25 x Order *Up to 3 Products",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_19",
+        "name": "Same Day Order",
+        "rate": "25",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_20",
+        "name": "Box-Label *  0.70 Aditional Bubble Wrap",
+        "rate": "$1.00 x order",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_21",
+        "name": "Return/Devoluciones",
+        "rate": "$4.00 x product",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_22",
+        "name": "Wooden Pallet + Wrap + Labor",
+        "rate": "45",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_23",
+        "name": "Plastic Pallet + Wrap + Labor",
+        "rate": "65",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_24",
+        "name": "Wooden Pallet + wrap + straps+labor",
+        "rate": "65",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_25",
+        "name": "Max 10 Packages Small - Aditional Packages $2.00",
+        "rate": "45",
+        "notes": ""
+      },
+      {
+        "id": "pick_&_pack_-_fulfillment-3pl_26",
+        "name": "UP to 3 standard Pallets - $30.00 Aditional Pallets",
+        "rate": "75",
+        "notes": ""
+      }
+    ]
+  },
+  {
+    "category": "PURCHASE AGENT",
+    "rates": [
+      {
+        "id": "purchase_agent_7",
+        "name": "PURCHASE AGENT",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "purchase_agent_12",
+        "name": "PRE PAID SERVICES : 10% OVER THE FINAL PAYMENT",
+        "rate": "",
+        "notes": ""
+      },
+      {
+        "id": "purchase_agent_14",
+        "name": "DESCRIPTION",
+        "rate": "RATE",
+        "notes": "DESCRIPTION SPANISH"
+      },
+      {
+        "id": "purchase_agent_15",
+        "name": "PURCHASING",
+        "rate": "10% Over",
+        "notes": "Agente de Compra"
+      },
+      {
+        "id": "purchase_agent_16",
+        "name": "HANDLING",
+        "rate": "Payment",
+        "notes": "*Compra mediante link"
+      },
+      {
+        "id": "purchase_agent_17",
+        "name": "FEE",
+        "rate": "",
+        "notes": ""
+      }
+    ]
+  }
+]

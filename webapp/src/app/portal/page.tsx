@@ -73,7 +73,7 @@ export default function Portal() {
       {/* Header Bar */}
       <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md py-4 px-6 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <Link href="/" className="inline-flex items-center text-xs font-bold text-slate-400 hover:text-white transition-colors group">
+          <Link href="/operations" className="inline-flex items-center text-xs font-bold text-slate-400 hover:text-white transition-colors group">
             <ArrowLeft className="w-3.5 h-3.5 mr-1.5 group-hover:-translate-x-0.5 transition-transform" />
             Operations Center
           </Link>

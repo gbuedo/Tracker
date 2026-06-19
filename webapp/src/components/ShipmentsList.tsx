@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { 
   Search, Ship, Plane, Truck, Filter, ArrowUpRight, Calendar, 
   FileText, CheckCircle2, User, Settings, Sparkles, Plus, 
-  ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink, Trash2, Download 
+  ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink, Trash2, Download,
+  Mail, Phone
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -15,6 +16,8 @@ import { useRouter } from "next/navigation";
 import { Shipment, Status, Carrier } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
+import { CarrierDirectoryDialog } from "@/components/CarrierDirectoryDialog";
 import { Label } from "@/components/ui/label";
 import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase, deleteShipment, deleteStatus, addCarrier, deleteCarrier } from "@/actions/shipments";
 
@@ -173,6 +176,35 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
       }
     }
     return "-";
+  };
+
+  const getCarrierObject = (mawb: string | null): Carrier | null => {
+    if (!mawb) return null;
+    const cleanMawb = mawb.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    
+    // 1. Match 4-letter SCAC code
+    const letterMatch = cleanMawb.match(/^[A-Z]{4}/);
+    if (letterMatch) {
+      const scac = letterMatch[0];
+      const match = carriersState.find(c => c.code.toUpperCase() === scac);
+      if (match) return match;
+    }
+    
+    // 2. Match 3-digit prefix
+    const digitMatch = cleanMawb.match(/^[0-9]{3}/);
+    if (digitMatch) {
+      const prefix = digitMatch[0];
+      const match = carriersState.find(c => c.code === prefix);
+      if (match) return match;
+    }
+
+    // 3. Match generic prefix match
+    for (const carrier of carriersState) {
+      if (cleanMawb.startsWith(carrier.code.toUpperCase())) {
+        return carrier;
+      }
+    }
+    return null;
   };
 
   const handleAddCustomer = async () => {
@@ -512,15 +544,18 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         </div>
       </div>
 
-      {/* --- SEARCH BAR (LINE 1) --- */}
-      <div className="relative w-full">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search Client, Reference, CT File, Airway Bill (MAWB/HAWB) or ID..."
-          className="pl-10 h-10 bg-slate-900/60 border-slate-800 text-slate-200 placeholder:text-slate-505 focus-visible:ring-sky-500/50 focus-visible:border-sky-500/80 transition-all rounded-xl w-full text-xs font-semibold"
-        />
+      {/* --- SEARCH BAR & CARRIERS DIRECTORY BUTTON --- */}
+      <div className="flex gap-3 items-center">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search Client, Reference, CT File, Airway Bill (MAWB/HAWB) or ID..."
+            className="pl-10 h-10 bg-slate-900/60 border-slate-800 text-slate-200 placeholder:text-slate-505 focus-visible:ring-sky-500/50 focus-visible:border-sky-500/80 transition-all rounded-xl w-full text-xs font-semibold"
+          />
+        </div>
+        <CarrierDirectoryDialog carriers={carriersState} />
       </div>
 
       {/* --- CONTROLS & UTILITIES ROW (LINE 2) --- */}
@@ -940,12 +975,22 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                 ) : (
                   shipmentsList.map((ship) => {
                     const isExpanded = !!expandedRows[ship.id];
+                    const isToday = (dateStr: string | null) => {
+                      if (!dateStr) return false;
+                      const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+                      return dateStr === todayStr;
+                    };
+                    const hasTodayEtaEtd = isToday(ship.eta) || isToday(ship.etd);
                     return (
                       <div key={ship.id} style={{ display: 'contents' }}>
                         <TableRow
                           onClick={(e) => toggleRow(ship.id, e)}
                           className={`border-slate-900 hover:bg-slate-900/50 cursor-pointer transition-all duration-200 group text-slate-350 ${
-                            ship.parent_shipment_id ? "bg-[#0b0c10]" : ""
+                            hasTodayEtaEtd 
+                              ? "bg-rose-950/20 hover:bg-rose-950/30 text-rose-200 border-l-2 border-l-rose-500" 
+                              : ship.parent_shipment_id 
+                              ? "bg-[#0b0c10]" 
+                              : ""
                           }`}
                         >
                           <TableCell className="font-bold text-yellow-500 py-1.5 relative">
@@ -954,6 +999,12 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                 <span className="text-indigo-550 mr-0.5 text-[11px] font-black font-sans">↳</span>
                               )}
                               <span>{ship.id}</span>
+                              {hasTodayEtaEtd && (
+                                <span className="relative flex h-2.5 w-2.5 shrink-0 ml-1" title="Priority: ETA/ETD Today">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                                </span>
+                              )}
                             </div>
                             {ship.parent_shipment_id && (
                               <span className="text-[8px] bg-indigo-950/70 text-indigo-350 border border-indigo-900/30 px-1 py-0.25 rounded font-mono block mt-0.5 w-max">
@@ -994,9 +1045,66 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                               )}
                             </div>
                           </TableCell>
-
-                          <TableCell className="text-slate-350 font-sans text-xs hidden md:table-cell max-w-[100px] truncate" title={getCarrierName(ship.expo_mawb)}>
-                            <span className="font-bold text-slate-400">{getCarrierName(ship.expo_mawb)}</span>
+ 
+                          <TableCell className="text-slate-350 font-sans text-xs hidden md:table-cell max-w-[100px] truncate">
+                            {(() => {
+                              const carrier = getCarrierObject(ship.expo_mawb);
+                              if (carrier) {
+                                return (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger
+                                      onClick={(e) => e.stopPropagation()} 
+                                      className="font-bold text-yellow-500 hover:text-yellow-450 hover:underline cursor-pointer text-left outline-none shrink-0"
+                                    >
+                                      {carrier.name}
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-64 bg-slate-950 border border-slate-900 text-slate-100 p-4 space-y-2.5 rounded-xl shadow-2xl z-50">
+                                      <div className="border-b border-slate-900 pb-2 space-y-1">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="font-mono bg-slate-900 text-yellow-500 px-1 py-0.25 rounded border border-slate-800 text-[9px] font-black shrink-0">
+                                            {carrier.code}
+                                          </span>
+                                          <span className="font-extrabold text-xs text-white truncate">{carrier.name}</span>
+                                        </div>
+                                        {carrier.handling_agent && (
+                                          <p className="text-[10px] text-slate-500">Handling Agent: {carrier.handling_agent}</p>
+                                        )}
+                                      </div>
+                                      
+                                      <div className="space-y-2 text-[11px] font-semibold text-slate-400">
+                                        {carrier.phone && (
+                                          <div className="flex items-center gap-1.5">
+                                            <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                            <a href={`tel:${carrier.phone}`} className="text-slate-200 hover:text-yellow-500 font-mono">
+                                              {carrier.phone}
+                                            </a>
+                                          </div>
+                                        )}
+                                        {carrier.email && (
+                                          <div className="flex items-center gap-1.5">
+                                            <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                            <a href={`mailto:${carrier.email}`} className="text-slate-200 hover:text-yellow-500 font-mono truncate block max-w-[200px]" title={carrier.email}>
+                                              {carrier.email}
+                                            </a>
+                                          </div>
+                                        )}
+                                        {carrier.firms_code && (
+                                          <div className="text-[10px] font-mono text-slate-500">
+                                            FIRMS Code: <span className="text-slate-350 font-bold">{carrier.firms_code}</span>
+                                          </div>
+                                        )}
+                                        {carrier.address && (
+                                          <p className="text-[10px] text-slate-550 leading-snug pt-1.5 border-t border-slate-900/40">
+                                            {carrier.address}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                );
+                              }
+                              return <span className="font-bold text-slate-400">{getCarrierName(ship.expo_mawb)}</span>;
+                            })()}
                           </TableCell>
 
                           <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">

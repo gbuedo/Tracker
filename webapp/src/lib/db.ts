@@ -1,5 +1,7 @@
 import { supabase } from "./supabase";
-import { Shipment, Status, Log, BillableConcept, Carrier } from "./types";
+import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept } from "./types";
+import carriersSeed from "./carriers_seed.json";
+import ratesSeed from "./rates_seed.json";
 import fs from "fs";
 import path from "path";
 
@@ -1758,15 +1760,15 @@ export async function updateShipment(
 }
 
 export async function getCarriers(): Promise<Carrier[]> {
-  const defaults = [
-    { id: 1, code: "001", name: "American Airlines" },
-    { id: 2, code: "023", name: "FedEx" },
-    { id: 3, code: "MAEU", name: "Maersk" }
-  ];
+  const defaults = carriersSeed as Carrier[];
   return await getSystemValue<Carrier[]>("SYSTEM_CARRIERS", defaults);
 }
 
-export async function addCarrier(code: string, name: string): Promise<void> {
+export async function addCarrier(
+  code: string,
+  name: string,
+  extraFields: Partial<Carrier> = {}
+): Promise<void> {
   const trimmedCode = code.trim().toUpperCase();
   const trimmedName = name.trim();
   if (!trimmedCode || !trimmedName) return;
@@ -1774,8 +1776,22 @@ export async function addCarrier(code: string, name: string): Promise<void> {
   const carrierList = await getCarriers();
   if (!carrierList.some(c => c.code === trimmedCode)) {
     const newId = carrierList.length > 0 ? Math.max(...carrierList.map((c: any) => c.id)) + 1 : 1;
-    carrierList.push({ id: newId, code: trimmedCode, name: trimmedName });
+    carrierList.push({ 
+      id: newId, 
+      code: trimmedCode, 
+      name: trimmedName,
+      ...extraFields
+    });
     carrierList.sort((a, b) => a.code.localeCompare(b.code));
+    await setSystemValue("SYSTEM_CARRIERS", carrierList);
+  }
+}
+
+export async function updateCarrier(id: number, fields: Partial<Carrier>): Promise<void> {
+  const carrierList = await getCarriers();
+  const index = carrierList.findIndex((c: any) => c.id === id);
+  if (index !== -1) {
+    carrierList[index] = { ...carrierList[index], ...fields };
     await setSystemValue("SYSTEM_CARRIERS", carrierList);
   }
 }
@@ -1785,6 +1801,331 @@ export async function deleteCarrier(id: number): Promise<void> {
   const updatedList = carrierList.filter((c: any) => c.id !== id);
   await setSystemValue("SYSTEM_CARRIERS", updatedList);
 }
+
+// ----------------------------------------------------
+// TASK TRACKER MODULE METHODS
+// ----------------------------------------------------
+
+export async function getTasks(): Promise<Task[]> {
+  return await queryWithFallback<Task[]>(
+    async () => {
+      return await supabase
+        .from("tasks")
+        .select("*")
+        .order("created_at", { ascending: false });
+    },
+    () => {
+      const data = readMockData();
+      if (!data.tasks) {
+        data.tasks = [
+          {
+            id: 1,
+            title: "Coordinate booking with American Airlines",
+            description: "Flight AA-991 needs booking confirmation for Global Logistics Inc. cargo.",
+            assignee: "John Doe",
+            start_date: new Date().toISOString().split("T")[0],
+            deadline: new Date(Date.now() + 86400000 * 2).toISOString().split("T")[0],
+            status: "In Progress",
+            subtasks: [
+              { id: "sub-1", title: "Call AA Cargo desk", completed: true },
+              { id: "sub-2", title: "Submit AWB reference to portal", completed: false }
+            ],
+            created_at: new Date().toISOString()
+          },
+          {
+            id: 2,
+            title: "Inspect Customs clearance delay in Miami",
+            description: "Check HAWB-8812 clearance status with Alliance Ground.",
+            assignee: "Alice Smith",
+            start_date: new Date().toISOString().split("T")[0],
+            deadline: new Date().toISOString().split("T")[0],
+            status: "Pending",
+            subtasks: [],
+            created_at: new Date().toISOString()
+          }
+        ];
+        writeMockData(data);
+      }
+      return data.tasks as Task[];
+    }
+  );
+}
+
+export async function createTask(
+  title: string,
+  description: string | null,
+  assignee: string | null,
+  start_date: string | null,
+  deadline: string | null,
+  subtasks: Subtask[] = []
+): Promise<Task> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.tasks) data.tasks = [];
+    const newId = data.tasks.length > 0 ? Math.max(...data.tasks.map((t: any) => t.id)) + 1 : 1;
+    const newTask: Task = {
+      id: newId,
+      title,
+      description,
+      assignee,
+      start_date,
+      deadline,
+      status: "Pending",
+      subtasks,
+      created_at: new Date().toISOString()
+    };
+    data.tasks.push(newTask);
+    writeMockData(data);
+    return newTask;
+  }
+  try {
+    const { data, error } = await supabase.from("tasks").insert({
+      title,
+      description,
+      assignee,
+      start_date,
+      deadline,
+      status: "Pending",
+      subtasks
+    }).select().single();
+    if (error) throw error;
+    return data as Task;
+  } catch (err: any) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.tasks) data.tasks = [];
+    const newId = data.tasks.length > 0 ? Math.max(...data.tasks.map((t: any) => t.id)) + 1 : 1;
+    const newTask: Task = {
+      id: newId,
+      title,
+      description,
+      assignee,
+      start_date,
+      deadline,
+      status: "Pending",
+      subtasks,
+      created_at: new Date().toISOString()
+    };
+    data.tasks.push(newTask);
+    writeMockData(data);
+    return newTask;
+  }
+}
+
+export async function updateTask(id: number, fields: Partial<Task>): Promise<Task> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    const idx = data.tasks.findIndex((t: any) => t.id === id);
+    if (idx === -1) throw new Error("Task not found");
+    const updated = { ...data.tasks[idx], ...fields };
+    data.tasks[idx] = updated;
+    writeMockData(data);
+    return updated as Task;
+  }
+  try {
+    const { data, error } = await supabase
+      .from("tasks")
+      .update(fields)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Task;
+  } catch (err: any) {
+    isDemo = true;
+    const data = readMockData();
+    const idx = data.tasks.findIndex((t: any) => t.id === id);
+    if (idx === -1) throw new Error("Task not found");
+    const updated = { ...data.tasks[idx], ...fields };
+    data.tasks[idx] = updated;
+    writeMockData(data);
+    return updated as Task;
+  }
+}
+
+export async function deleteTask(id: number): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    data.tasks = (data.tasks || []).filter((t: any) => t.id !== id);
+    writeMockData(data);
+    return;
+  }
+  try {
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) throw error;
+  } catch (err: any) {
+    isDemo = true;
+    const data = readMockData();
+    data.tasks = (data.tasks || []).filter((t: any) => t.id !== id);
+    writeMockData(data);
+  }
+}
+
+// ----------------------------------------------------
+// RATESHEET TRACKER MODULE METHODS
+// ----------------------------------------------------
+
+export async function getRatesheets(): Promise<Ratesheet[]> {
+  return await queryWithFallback<Ratesheet[]>(
+    async () => {
+      return await supabase
+        .from("ratesheets")
+        .select("*")
+        .order("created_at", { ascending: true });
+    },
+    () => {
+      const data = readMockData();
+      if (!data.ratesheets || data.ratesheets.length === 0) {
+        const baseSheet: Ratesheet = {
+          id: 1,
+          name: "Base Ratesheet",
+          client_name: null,
+          markup_percent: 0,
+          rates: ratesSeed.reduce((acc: RateConcept[], category: any) => {
+            const list = category.rates.map((r: any) => ({
+              id: r.id,
+              category: category.category,
+              name: r.name,
+              rate: String(r.rate),
+              notes: r.notes || ""
+            }));
+            return [...acc, ...list];
+          }, []),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        data.ratesheets = [baseSheet];
+        writeMockData(data);
+      }
+      return data.ratesheets as Ratesheet[];
+    }
+  );
+}
+
+export async function saveRatesheet(
+  name: string,
+  client_name: string | null,
+  markup_percent: number,
+  rates: any[]
+): Promise<Ratesheet> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.ratesheets) data.ratesheets = [];
+    const newId = data.ratesheets.length > 0 ? Math.max(...data.ratesheets.map((r: any) => r.id)) + 1 : 1;
+    const newSheet: Ratesheet = {
+      id: newId,
+      name,
+      client_name,
+      markup_percent,
+      rates,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    data.ratesheets.push(newSheet);
+    writeMockData(data);
+    return newSheet;
+  }
+  try {
+    const { data, error } = await supabase.from("ratesheets").insert({
+      name,
+      client_name,
+      markup_percent,
+      rates
+    }).select().single();
+    if (error) throw error;
+    return data as Ratesheet;
+  } catch (err: any) {
+    isDemo = true;
+    const data = readMockData();
+    if (!data.ratesheets) data.ratesheets = [];
+    const newId = data.ratesheets.length > 0 ? Math.max(...data.ratesheets.map((r: any) => r.id)) + 1 : 1;
+    const newSheet: Ratesheet = {
+      id: newId,
+      name,
+      client_name,
+      markup_percent,
+      rates,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    data.ratesheets.push(newSheet);
+    writeMockData(data);
+    return newSheet;
+  }
+}
+
+export async function updateRatesheet(id: number, fields: Partial<Ratesheet>): Promise<Ratesheet> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    const idx = data.ratesheets.findIndex((r: any) => r.id === id);
+    if (idx === -1) throw new Error("Ratesheet not found");
+    const updated = { 
+      ...data.ratesheets[idx], 
+      ...fields, 
+      updated_at: new Date().toISOString() 
+    };
+    data.ratesheets[idx] = updated;
+    writeMockData(data);
+    return updated as Ratesheet;
+  }
+  try {
+    const { data, error } = await supabase
+      .from("ratesheets")
+      .update({
+        ...fields,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Ratesheet;
+  } catch (err: any) {
+    isDemo = true;
+    const data = readMockData();
+    const idx = data.ratesheets.findIndex((r: any) => r.id === id);
+    if (idx === -1) throw new Error("Ratesheet not found");
+    const updated = { 
+      ...data.ratesheets[idx], 
+      ...fields, 
+      updated_at: new Date().toISOString() 
+    };
+    data.ratesheets[idx] = updated;
+    writeMockData(data);
+    return updated as Ratesheet;
+  }
+}
+
+export async function deleteRatesheet(id: number): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    data.ratesheets = (data.ratesheets || []).filter((r: any) => r.id !== id);
+    writeMockData(data);
+    return;
+  }
+  try {
+    const { error } = await supabase.from("ratesheets").delete().eq("id", id);
+    if (error) throw error;
+  } catch (err: any) {
+    isDemo = true;
+    const data = readMockData();
+    data.ratesheets = (data.ratesheets || []).filter((r: any) => r.id !== id);
+    writeMockData(data);
+  }
+}
+
 
 
 

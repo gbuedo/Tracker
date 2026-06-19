@@ -9,6 +9,51 @@ export type Carrier = {
   id: number;
   code: string;
   name: string;
+  handling_agent?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  firms_code?: string | null;
+  import_fee?: string | number | null;
+  payment_method?: string | null;
+  storage?: string | null;
+  notes?: string | null;
+};
+
+export type Subtask = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
+export type Task = {
+  id: number;
+  title: string;
+  description: string | null;
+  assignee: string | null;
+  start_date: string | null;
+  deadline: string | null;
+  status: 'Pending' | 'In Progress' | 'Completed';
+  subtasks: Subtask[];
+  created_at: string;
+};
+
+export type RateConcept = {
+  id: string;
+  category?: string;
+  name: string;
+  rate: string;
+  notes: string;
+};
+
+export type Ratesheet = {
+  id: number;
+  name: string;
+  client_name: string | null;
+  markup_percent: number;
+  rates: RateConcept[];
+  created_at: string;
+  updated_at: string;
 };
 
 export type BillableConcept = {

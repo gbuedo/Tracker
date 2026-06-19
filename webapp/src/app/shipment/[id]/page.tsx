@@ -35,7 +35,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
           <p className="text-slate-400 text-sm">
             The shipment you are looking for (File #{shipmentId}) could not be resolved in the database.
           </p>
-          <Link href="/" className="inline-flex items-center text-sky-400 hover:text-white mt-4 font-semibold text-sm">
+          <Link href="/operations" className="inline-flex items-center text-sky-400 hover:text-white mt-4 font-semibold text-sm">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Operations Center
           </Link>
         </div>
@@ -74,7 +74,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
         
         {/* Navigation Breadcrumb */}
         <div className="flex justify-between items-center">
-          <Link href="/" className="inline-flex items-center text-slate-400 hover:text-white transition-colors group text-sm font-semibold">
+          <Link href="/operations" className="inline-flex items-center text-slate-400 hover:text-white transition-colors group text-sm font-semibold">
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Terminal Board
           </Link>
           <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">

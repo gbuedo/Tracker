@@ -185,21 +185,20 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
             </select>
           </div>
         </div>
-
         {/* Cost Amount input */}
         <div className="space-y-1">
           <Label htmlFor="cost_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
             Cost Amount ($)
           </Label>
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-            <Input 
+          <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
+            <DollarSign className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <input 
               id="cost_amount"
               name="cost_amount" 
               type="number"
               step="any"
               placeholder="0.00" 
-              className="pl-8 bg-slate-950/80 border-slate-800 text-slate-300 placeholder:text-slate-650 h-10 rounded-lg font-mono text-xs font-semibold" 
+              className="bg-transparent text-slate-300 placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
             />
           </div>
         </div>
@@ -209,15 +208,15 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
           <Label htmlFor="selling_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
             Selling Amount ($)
           </Label>
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-            <Input 
+          <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
+            <DollarSign className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <input 
               id="selling_amount"
               name="selling_amount" 
               type="number"
               step="any"
               placeholder="0.00" 
-              className="pl-8 bg-slate-950/80 border-slate-800 text-slate-300 placeholder:text-slate-650 h-10 rounded-lg font-mono text-xs font-semibold" 
+              className="bg-transparent text-slate-300 placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
             />
           </div>
         </div>

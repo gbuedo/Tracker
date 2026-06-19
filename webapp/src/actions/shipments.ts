@@ -173,14 +173,22 @@ export async function deleteLog(id: string, shipmentId: number) {
   revalidatePath("/");
 }
 
-export async function addCarrier(code: string, name: string) {
-  await db.addCarrier(code, name);
+export async function addCarrier(code: string, name: string, extraFields: any = {}) {
+  await db.addCarrier(code, name, extraFields);
   revalidatePath("/");
+  revalidatePath("/operations");
+}
+
+export async function updateCarrier(id: number, fields: any) {
+  await db.updateCarrier(id, fields);
+  revalidatePath("/");
+  revalidatePath("/operations");
 }
 
 export async function deleteCarrier(id: number) {
   await db.deleteCarrier(id);
   revalidatePath("/");
+  revalidatePath("/operations");
 }
 
 

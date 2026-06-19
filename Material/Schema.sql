@@ -117,3 +117,36 @@ CREATE POLICY "Enable read/write access for all users on shipments" ON public.sh
 CREATE POLICY "Enable read/write access for all users on logs" ON public.logs FOR ALL USING (true);
 CREATE POLICY "Enable read access for all users on statuses" ON public.statuses FOR SELECT USING (true);
 CREATE POLICY "Enable read access for all users on billable_concepts" ON public.billable_concepts FOR SELECT USING (true);
+
+-- 4. Tasks and Ratesheets Modules
+DROP TABLE IF EXISTS public.tasks CASCADE;
+DROP TABLE IF EXISTS public.ratesheets CASCADE;
+
+CREATE TABLE public.tasks (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    assignee VARCHAR(255),
+    start_date DATE,
+    deadline DATE,
+    status VARCHAR(50) DEFAULT 'Pending', -- 'Pending', 'In Progress', 'Completed'
+    subtasks JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+CREATE TABLE public.ratesheets (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    client_name VARCHAR(255), -- Null for base ratesheet
+    markup_percent NUMERIC(5,2) DEFAULT 0,
+    rates JSONB DEFAULT '[]'::jsonb, -- Array of { id, name, rate, notes }
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ratesheets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable read/write access for all users on tasks" ON public.tasks FOR ALL USING (true);
+CREATE POLICY "Enable read/write access for all users on ratesheets" ON public.ratesheets FOR ALL USING (true);
+
