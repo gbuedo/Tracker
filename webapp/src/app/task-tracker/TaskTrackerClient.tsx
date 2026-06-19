@@ -40,6 +40,10 @@ export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
   const [subtasksList, setSubtasksList] = useState<string[]>([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   
+  // Task Log States
+  const [newLogAuthor, setNewLogAuthor] = useState("");
+  const [newLogMessage, setNewLogMessage] = useState("");
+  
   const [isPending, startTransition] = useTransition();
   const [copySuccessId, setCopySuccessId] = useState<number | null>(null);
 
@@ -143,6 +147,27 @@ Please review and update this task as soon as possible!`;
     navigator.clipboard.writeText(text);
     setCopySuccessId(task.id);
     setTimeout(() => setCopySuccessId(null), 2500);
+  };
+
+  const handleAddTaskLog = async (taskId: number) => {
+    if (!newLogMessage.trim()) return;
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const authorName = newLogAuthor.trim() || task.assignee || "Staff";
+    const newLog = {
+      timestamp: new Date().toISOString(),
+      author: authorName,
+      message: newLogMessage.trim()
+    };
+
+    const updatedLogs = [...(task.logs || []), newLog];
+
+    // Optimistic Update
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, logs: updatedLogs } : t));
+    setNewLogMessage("");
+
+    await updateTaskAction(taskId, { logs: updatedLogs });
   };
 
   const getDeadlineColor = (task: Task) => {
@@ -531,7 +556,7 @@ Please review and update this task as soon as possible!`;
                           <div className="bg-[#050507] border-t border-slate-900 p-4 pl-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-450 animate-in slide-in-from-top-2 duration-155">
                             
                             {/* Left description */}
-                            <div className="md:col-span-2 space-y-2">
+                            <div className="space-y-2">
                               <h4 className="text-[10px] font-mono font-black uppercase text-indigo-400 tracking-wider">Instructions / Description</h4>
                               <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
                                 {t.description || <span className="italic text-slate-600">No description provided for this task. Click Edit to add details.</span>}
@@ -571,6 +596,68 @@ Please review and update this task as soon as possible!`;
                                   ))}
                                 </div>
                               )}
+                            </div>
+
+                            {/* Task History Logs */}
+                            <div className="space-y-3 bg-[#0a0a0c] border border-slate-900 rounded-xl p-3.5">
+                              <h4 className="text-[10px] font-mono font-black uppercase text-indigo-400 tracking-wider">
+                                Task Evolution History ({t.logs?.length || 0})
+                              </h4>
+                              
+                              {/* Logs Feed List */}
+                              <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                                {!t.logs || t.logs.length === 0 ? (
+                                  <p className="italic text-slate-600 text-[10px] py-1">No updates logged yet.</p>
+                                ) : (
+                                  [...t.logs].reverse().map((log, idx) => (
+                                    <div key={idx} className="p-2 bg-slate-950/80 border border-slate-900 rounded-lg space-y-1">
+                                      <div className="flex justify-between items-center text-[8px] font-mono text-slate-500">
+                                        <span className="font-bold text-indigo-400">👤 {log.author}</span>
+                                        <span>{new Date(log.timestamp).toLocaleString('en-US', {
+                                          timeZone: 'America/New_York',
+                                          month: 'short',
+                                          day: '2-digit',
+                                          hour: 'numeric',
+                                          minute: '2-digit',
+                                          hour12: true
+                                        }).replace(',', '')}</span>
+                                      </div>
+                                      <p className="text-[10.5px] text-slate-350 leading-snug font-semibold">{log.message}</p>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+
+                              {/* Add Log Form */}
+                              <div className="space-y-2 pt-2 border-t border-slate-900/60">
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={newLogAuthor}
+                                    onChange={(e) => setNewLogAuthor(e.target.value)}
+                                    placeholder="Name"
+                                    className="bg-slate-950 border-slate-850 text-slate-200 h-7 text-[10px] font-bold w-1/3 shrink-0"
+                                  />
+                                  <Input
+                                    value={newLogMessage}
+                                    onChange={(e) => setNewLogMessage(e.target.value)}
+                                    placeholder="Add progress log..."
+                                    className="bg-slate-950 border-slate-850 text-slate-200 h-7 text-[10px] font-medium flex-grow"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddTaskLog(t.id);
+                                      }
+                                    }}
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    onClick={() => handleAddTaskLog(t.id)}
+                                    className="bg-indigo-650 hover:bg-indigo-700 text-white font-bold h-7 text-[10px] px-2.5 shrink-0"
+                                  >
+                                    Log
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
 
                           </div>
@@ -710,6 +797,64 @@ Please review and update this task as soon as possible!`;
                                     ))}
                                   </div>
                                 )}
+                              </div>
+
+                              {/* Task History Logs */}
+                              <div className="space-y-2 pt-2 border-t border-slate-900/60">
+                                <h5 className="text-[9px] font-mono font-black uppercase text-indigo-400 tracking-wider">
+                                  Evolution History ({t.logs?.length || 0})
+                                </h5>
+                                
+                                <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                                  {!t.logs || t.logs.length === 0 ? (
+                                    <p className="italic text-slate-655 text-[10px]">No logs added.</p>
+                                  ) : (
+                                    [...t.logs].reverse().map((log, idx) => (
+                                      <div key={idx} className="p-1.5 bg-slate-950/80 border border-slate-900 rounded-lg space-y-0.5">
+                                        <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-500">
+                                          <span className="font-bold text-indigo-455">👤 {log.author}</span>
+                                          <span>{new Date(log.timestamp).toLocaleString('en-US', {
+                                            timeZone: 'America/New_York',
+                                            month: 'short',
+                                            day: '2-digit',
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                            hour12: true
+                                          }).replace(',', '')}</span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-350 leading-snug font-semibold">{log.message}</p>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+
+                                <div className="flex gap-1.5 pt-1.5 border-t border-slate-900/40">
+                                  <Input
+                                    value={newLogAuthor}
+                                    onChange={(e) => setNewLogAuthor(e.target.value)}
+                                    placeholder="Name"
+                                    className="bg-slate-950 border-slate-850 text-slate-200 h-6.5 text-[9px] font-bold w-1/4 shrink-0 px-1.5"
+                                  />
+                                  <Input
+                                    value={newLogMessage}
+                                    onChange={(e) => setNewLogMessage(e.target.value)}
+                                    placeholder="Add progress update..."
+                                    className="bg-slate-950 border-slate-850 text-slate-200 h-6.5 text-[9px] font-medium flex-grow px-1.5"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddTaskLog(t.id);
+                                      }
+                                    }}
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    onClick={() => handleAddTaskLog(t.id)}
+                                    className="bg-indigo-650 hover:bg-indigo-700 text-white font-bold h-6.5 text-[9px] px-2 shrink-0"
+                                  >
+                                    Log
+                                  </Button>
+                                </div>
                               </div>
 
                               {/* Quick Move Action buttons inside expanded card */}

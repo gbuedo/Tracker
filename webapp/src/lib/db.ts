@@ -1638,6 +1638,9 @@ export async function getTasks(): Promise<Task[]> {
               { id: "sub-1", title: "Call AA Cargo desk", completed: true },
               { id: "sub-2", title: "Submit AWB reference to portal", completed: false }
             ],
+            logs: [
+              { timestamp: new Date(Date.now() - 3600000).toISOString(), author: "System", message: "Task initialized by automated operational flow." }
+            ],
             created_at: new Date().toISOString()
           },
           {
@@ -1649,6 +1652,7 @@ export async function getTasks(): Promise<Task[]> {
             deadline: new Date().toISOString().split("T")[0],
             status: "Pending",
             subtasks: [],
+            logs: [],
             created_at: new Date().toISOString()
           }
         ];
@@ -1682,6 +1686,7 @@ export async function createTask(
       deadline,
       status: "Pending",
       subtasks,
+      logs: [],
       created_at: new Date().toISOString()
     };
     data.tasks.push(newTask);
@@ -1696,7 +1701,8 @@ export async function createTask(
       start_date,
       deadline,
       status: "Pending",
-      subtasks
+      subtasks,
+      logs: []
     }).select().single();
     if (error) throw error;
     return data as Task;
@@ -1714,6 +1720,7 @@ export async function createTask(
       deadline,
       status: "Pending",
       subtasks,
+      logs: [],
       created_at: new Date().toISOString()
     };
     data.tasks.push(newTask);
@@ -2101,7 +2108,8 @@ export async function importFullBackup(backup: any): Promise<void> {
         start_date: t.start_date,
         deadline: t.deadline,
         status: t.status,
-        subtasks: t.subtasks
+        subtasks: t.subtasks,
+        logs: t.logs || []
       }));
       for (let i = 0; i < dbTasks.length; i += 50) {
         const chunk = dbTasks.slice(i, i + 50);

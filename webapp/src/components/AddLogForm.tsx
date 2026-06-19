@@ -141,7 +141,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
         {/* Milestone Status dropdown */}
         <div className="space-y-1 col-span-1">
-          <Label htmlFor="status_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
+          <Label htmlFor="status_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Milestone (Optional)
           </Label>
           <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
@@ -164,7 +164,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
 
         {/* Billable Concept dropdown */}
         <div className="space-y-1 col-span-1">
-          <Label htmlFor="billable_concept_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
+          <Label htmlFor="billable_concept_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Concept (Optional)
           </Label>
           <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
@@ -187,7 +187,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
         </div>
         {/* Cost Amount input */}
         <div className="space-y-1">
-          <Label htmlFor="cost_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
+          <Label htmlFor="cost_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Cost Amount ($)
           </Label>
           <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
@@ -205,7 +205,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
 
         {/* Selling Amount input */}
         <div className="space-y-1">
-          <Label htmlFor="selling_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">
+          <Label htmlFor="selling_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Selling Amount ($)
           </Label>
           <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
@@ -223,7 +223,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
 
         {/* Visibility toggler button */}
         <div className="space-y-1">
-          <Label className="opacity-0 select-none hidden sm:block text-slate-500 text-[10px] uppercase tracking-wider font-bold">&nbsp;</Label>
+          <Label className="opacity-0 select-none hidden sm:flex text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] items-end pb-1">&nbsp;</Label>
           <Button
             type="button"
             variant="outline"

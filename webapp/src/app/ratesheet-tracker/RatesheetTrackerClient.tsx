@@ -29,6 +29,16 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
   // Selected Concepts for clipboard copy
   const [selectedConceptIds, setSelectedConceptIds] = useState<Set<string>>(new Set());
 
+  // Collapsed categories state
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+
+  const toggleCategoryCollapse = (catName: string) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [catName]: !prev[catName]
+    }));
+  };
+
   // Form edit states
   const [editRates, setEditRates] = useState<Record<string, { rate: string; notes: string }>>({});
 
@@ -470,12 +480,16 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
         ) : (
           Object.entries(filteredRatesGrouped).map(([catName, list]) => {
             const allSelectedInCat = list.every(r => selectedConceptIds.has(r.id));
+            const isCollapsed = !!collapsedCategories[catName];
             
             return (
               <div key={catName} className="space-y-3">
                 {/* Category Header */}
-                <div className="flex justify-between items-center bg-[#07080a] border border-slate-900 px-4 py-2.5 rounded-xl">
-                  <div className="flex items-center gap-3">
+                <div 
+                  onClick={() => toggleCategoryCollapse(catName)}
+                  className="flex justify-between items-center bg-[#07080a] border border-slate-900 px-4 py-2.5 rounded-xl cursor-pointer hover:bg-slate-900/40 select-none transition-colors"
+                >
+                  <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                     {/* Checkbox select all in category */}
                     {!isEditing && (
                       <input 
@@ -485,86 +499,92 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                         className="rounded border-slate-800 bg-slate-950 text-emerald-650 focus:ring-0 focus:ring-offset-0 cursor-pointer h-4 w-4 shrink-0"
                       />
                     )}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleCategoryCollapse(catName)}>
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
                       <h3 className="text-xs font-mono font-black uppercase tracking-wider text-slate-200">
                         {catName}
                       </h3>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-slate-950 text-emerald-400 border border-slate-850 rounded">
-                    {list.length} Concepts
-                  </span>
+                  
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-slate-950 text-emerald-400 border border-slate-850 rounded">
+                      {list.length} Concepts
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isCollapsed ? "-rotate-90 text-slate-400" : ""}`} />
+                  </div>
                 </div>
 
                 {/* Table list */}
-                <div className="bg-[#020203] border border-slate-900 rounded-xl overflow-hidden shadow-lg">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-[#0a0a0c] border-b border-slate-900 text-slate-500 font-mono text-[9px] uppercase tracking-wider">
-                      <tr>
-                        {!isEditing && <th className="p-3 w-10 text-center">Select</th>}
-                        <th className="p-3">Service Description</th>
-                        <th className="p-3 w-48">Rate Cost ($)</th>
-                        <th className="p-3">Notes & Remarks</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-950 text-slate-350">
-                      {list.map(r => {
-                        const isRowSelected = selectedConceptIds.has(r.id);
-                        
-                        return (
-                          <tr 
-                            key={r.id} 
-                            onClick={() => !isEditing && handleToggleSelectRow(r.id)}
-                            className={`hover:bg-slate-900/10 transition-all ${
-                              isRowSelected ? "bg-emerald-950/5 text-emerald-100/90" : ""
-                            }`}
-                          >
-                            {!isEditing && (
-                              <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
-                                <input 
-                                  type="checkbox"
-                                  checked={isRowSelected}
-                                  onChange={() => handleToggleSelectRow(r.id)}
-                                  className="rounded border-slate-800 bg-slate-950 text-emerald-650 focus:ring-0 focus:ring-offset-0 cursor-pointer h-4 w-4 shrink-0"
-                                />
+                {!isCollapsed && (
+                  <div className="bg-[#020203] border border-slate-900 rounded-xl overflow-hidden shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-[#0a0a0c] border-b border-slate-900 text-slate-500 font-mono text-[9px] uppercase tracking-wider">
+                        <tr>
+                          {!isEditing && <th className="p-3 w-10 text-center">Select</th>}
+                          <th className="p-3">Service Description</th>
+                          <th className="p-3 w-48">Rate Cost ($)</th>
+                          <th className="p-3">Notes & Remarks</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-950 text-slate-350">
+                        {list.map(r => {
+                          const isRowSelected = selectedConceptIds.has(r.id);
+                          
+                          return (
+                            <tr 
+                              key={r.id} 
+                              onClick={() => !isEditing && handleToggleSelectRow(r.id)}
+                              className={`hover:bg-slate-900/10 transition-all ${
+                                isRowSelected ? "bg-emerald-950/5 text-emerald-100/90" : ""
+                              }`}
+                            >
+                              {!isEditing && (
+                                <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                  <input 
+                                    type="checkbox"
+                                    checked={isRowSelected}
+                                    onChange={() => handleToggleSelectRow(r.id)}
+                                    className="rounded border-slate-800 bg-slate-950 text-emerald-650 focus:ring-0 focus:ring-offset-0 cursor-pointer h-4 w-4 shrink-0"
+                                  />
+                                </td>
+                              )}
+
+                              {/* Concept Name */}
+                              <td className="p-3 font-extrabold max-w-sm leading-relaxed">{r.name}</td>
+                              
+                              {/* Rate Cost cell */}
+                              <td className="p-3" onClick={(e) => isEditing && e.stopPropagation()}>
+                                {isEditing ? (
+                                  <Input
+                                    value={editRates[r.id]?.rate || ""}
+                                    onChange={(e) => handleRateInputChange(r.id, 'rate', e.target.value)}
+                                    className="bg-slate-950 border-slate-800 text-slate-200 h-8 font-mono text-xs font-bold"
+                                  />
+                                ) : (
+                                  <span className="font-bold font-mono text-emerald-450 text-sm">{r.rate}</span>
+                                )}
                               </td>
-                            )}
 
-                            {/* Concept Name */}
-                            <td className="p-3 font-extrabold max-w-sm leading-relaxed">{r.name}</td>
-                            
-                            {/* Rate Cost cell */}
-                            <td className="p-3" onClick={(e) => isEditing && e.stopPropagation()}>
-                              {isEditing ? (
-                                <Input
-                                  value={editRates[r.id]?.rate || ""}
-                                  onChange={(e) => handleRateInputChange(r.id, 'rate', e.target.value)}
-                                  className="bg-slate-950 border-slate-800 text-slate-200 h-8 font-mono text-xs font-bold"
-                                />
-                              ) : (
-                                <span className="font-bold font-mono text-emerald-450 text-sm">{r.rate}</span>
-                              )}
-                            </td>
-
-                            {/* Concept Notes cell */}
-                            <td className="p-3 text-slate-450 leading-relaxed font-semibold" onClick={(e) => isEditing && e.stopPropagation()}>
-                              {isEditing ? (
-                                <Input
-                                  value={editRates[r.id]?.notes || ""}
-                                  onChange={(e) => handleRateInputChange(r.id, 'notes', e.target.value)}
-                                  className="bg-slate-950 border-slate-800 text-slate-300 h-8 text-xs font-medium"
-                                />
-                              ) : (
-                                r.notes || <span className="text-slate-655 italic font-medium">-</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                              {/* Concept Notes cell */}
+                              <td className="p-3 text-slate-450 leading-relaxed font-semibold" onClick={(e) => isEditing && e.stopPropagation()}>
+                                {isEditing ? (
+                                  <Input
+                                    value={editRates[r.id]?.notes || ""}
+                                    onChange={(e) => handleRateInputChange(r.id, 'notes', e.target.value)}
+                                    className="bg-slate-950 border-slate-800 text-slate-300 h-8 text-xs font-medium"
+                                  />
+                                ) : (
+                                  r.notes || <span className="text-slate-655 italic font-medium">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
               </div>
             );

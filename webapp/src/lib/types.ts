@@ -26,6 +26,12 @@ export type Subtask = {
   completed: boolean;
 };
 
+export type TaskLog = {
+  timestamp: string;
+  author: string;
+  message: string;
+};
+
 export type Task = {
   id: number;
   title: string;
@@ -35,6 +41,7 @@ export type Task = {
   deadline: string | null;
   status: 'Pending' | 'In Progress' | 'Completed';
   subtasks: Subtask[];
+  logs?: TaskLog[];
   created_at: string;
 };
 
