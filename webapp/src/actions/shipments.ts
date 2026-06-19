@@ -191,5 +191,52 @@ export async function deleteCarrier(id: number) {
   revalidatePath("/operations");
 }
 
+export async function getFullBackupData() {
+  const shipments = await db.getShipments();
+  const carriers = await db.getCarriers();
+  const statuses = await db.getStatuses();
+  const customers = await db.getCustomers();
+  const tasks = await db.getTasks();
+  const ratesheets = await db.getRatesheets();
+  const config = await db.getAppConfig();
+  
+  // Custom system settings from logs
+  const system_store = {
+    SYSTEM_CARRIERS: carriers,
+    SYSTEM_STATUSES: await db.getStatuses(),
+    SYSTEM_CUSTOMERS: customers,
+    SYSTEM_CONFIG: config,
+    SYSTEM_SHIPMENT_STATUSES: await db.supabase
+      .from("logs")
+      .select("event_text")
+      .eq("shipment_id", 999999)
+      .eq("amount_type", "SYSTEM_SHIPMENT_STATUSES")
+      .maybeSingle()
+      .then(res => res.data && res.data.event_text ? JSON.parse(res.data.event_text) : {})
+  };
+
+  return {
+    version: "1.0",
+    backup_date: new Date().toISOString(),
+    shipments,
+    carriers,
+    statuses,
+    customers,
+    tasks,
+    ratesheets,
+    config,
+    system_store
+  };
+}
+
+export async function importFullBackupAction(backup: any) {
+  await db.importFullBackup(backup);
+  revalidatePath("/");
+  revalidatePath("/operations");
+  revalidatePath("/task-tracker");
+  revalidatePath("/ratesheet-tracker");
+}
+
+
 
 

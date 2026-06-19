@@ -2204,6 +2204,136 @@ export async function deleteRatesheet(id: number): Promise<void> {
   }
 }
 
+export async function importFullBackup(backup: any): Promise<void> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  
+  // 1. Update mock_db.json first
+  try {
+    const data = readMockData();
+    data.shipments = backup.shipments || [];
+    data.carriers = backup.carriers || [];
+    data.tasks = backup.tasks || [];
+    data.ratesheets = backup.ratesheets || [];
+    data.statuses = backup.statuses || data.statuses;
+    data.customers = backup.customers || [];
+    data.config = backup.config || data.config;
+    data.system_store = backup.system_store || data.system_store || {};
+    writeMockData(data);
+  } catch (e) {
+    console.error("Failed to update mock_db.json during import:", e);
+  }
+
+  // 2. If online, update Supabase
+  if (!isDemo && !isDefaultUrl) {
+    try {
+      // Clear logs first to avoid foreign key failures
+      await supabase.from("logs").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      // Clear all shipments, tasks, and ratesheets
+      await supabase.from("shipments").delete().gt("id", 0);
+      await supabase.from("tasks").delete().gt("id", 0);
+      await supabase.from("ratesheets").delete().gt("id", 0);
+
+      // Recreate SYSTEM_DATA_STORE shipment
+      const { data: systemShip, error: sysErr } = await supabase.from("shipments").insert({
+        id: 999999,
+        client_name: "SYSTEM_DATA_STORE",
+        reference: "System Configuration Store"
+      }).select().single();
+      if (sysErr) throw sysErr;
+      const systemId = systemShip.id;
+
+      // Restore system configurations in logs
+      if (backup.carriers) {
+        await supabase.from("logs").insert({
+          shipment_id: systemId,
+          amount_type: "SYSTEM_CARRIERS",
+          event_text: JSON.stringify(backup.carriers),
+          is_external: false
+        });
+      }
+      if (backup.system_store) {
+        for (const key in backup.system_store) {
+          await supabase.from("logs").insert({
+            shipment_id: systemId,
+            amount_type: key,
+            event_text: JSON.stringify(backup.system_store[key]),
+            is_external: false
+          });
+        }
+      }
+
+      // Sort shipments: roots (parent_shipment_id is null) first, then children
+      const sortedShipments = [...(backup.shipments || [])].sort(
+        (a, b) => (a.parent_shipment_id ? 1 : 0) - (b.parent_shipment_id ? 1 : 0)
+      );
+
+      // Clean shipments for DB insert
+      const dbShipments = sortedShipments.map(s => ({
+        id: s.id,
+        parent_shipment_id: s.parent_shipment_id,
+        client_name: s.client_name,
+        reference: s.reference,
+        status_id: s.status_id >= 10000 ? null : s.status_id, // Map custom statuses to null
+        shipment_type: s.shipment_type,
+        transport_mode: s.transport_mode,
+        eta: s.eta,
+        etd: s.etd,
+        ct_file: s.ct_file,
+        warehouse_receipt: s.warehouse_receipt,
+        expo_mawb: s.expo_mawb,
+        expo_hawb: s.expo_hawb,
+        pcs: s.pcs,
+        kgs: s.kgs,
+        chw: s.chw,
+        aes: s.aes
+      }));
+
+      // Insert shipments in chunks of 50
+      for (let i = 0; i < dbShipments.length; i += 50) {
+        const chunk = dbShipments.slice(i, i + 50);
+        const { error } = await supabase.from("shipments").insert(chunk);
+        if (error) throw error;
+      }
+
+      // Insert tasks
+      const dbTasks = (backup.tasks || []).map((t: any) => ({
+        id: t.id,
+        title: t.title,
+        description: t.description,
+        assignee: t.assignee,
+        start_date: t.start_date,
+        deadline: t.deadline,
+        status: t.status,
+        subtasks: t.subtasks
+      }));
+      for (let i = 0; i < dbTasks.length; i += 50) {
+        const chunk = dbTasks.slice(i, i + 50);
+        const { error } = await supabase.from("tasks").insert(chunk);
+        if (error) throw error;
+      }
+
+      // Insert ratesheets
+      const dbRatesheets = (backup.ratesheets || []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        client_name: r.client_name,
+        markup_percent: r.markup_percent,
+        rates: r.rates
+      }));
+      for (let i = 0; i < dbRatesheets.length; i += 50) {
+        const chunk = dbRatesheets.slice(i, i + 50);
+        const { error } = await supabase.from("ratesheets").insert(chunk);
+        if (error) throw error;
+      }
+
+    } catch (err) {
+      console.error("Failed to restore Supabase during full backup import:", err);
+      throw err;
+    }
+  }
+}
+
+
 
 
 

@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { CarrierDirectoryDialog } from "@/components/CarrierDirectoryDialog";
 import { Label } from "@/components/ui/label";
-import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase, deleteShipment, deleteStatus, addCarrier, deleteCarrier } from "@/actions/shipments";
+import { addCustomer, addStatus, updateAppConfig, resetDatabase, seedDatabase, deleteShipment, deleteStatus, addCarrier, deleteCarrier, getFullBackupData, importFullBackupAction } from "@/actions/shipments";
 
 interface ShipmentsListProps {
   initialShipments: Shipment[];
@@ -32,50 +32,62 @@ interface ShipmentsListProps {
 export function ShipmentsList({ initialShipments, statuses, initialCustomers, initialCarriers = [], initialConfig }: ShipmentsListProps) {
   const router = useRouter();
 
-  // CSV backup exporter
-  const exportToCSV = () => {
-    const headers = [
-      "File ID", "Parent File ID", "Client Name", "Reference", 
-      "Type", "Mode", "Milestone Status", "Pieces", "Gross KGS", 
-      "Chargeable CHW", "CT File", "Warehouse Receipt", "AES Ref", 
-      "MAWB", "HAWB", "ETD", "ETA", "Created At"
-    ];
+  const [backingUp, setBackingUp] = useState(false);
+  const [importing, setImporting] = useState(false);
 
-    const rows = sortedShipments.map((ship) => [
-      ship.id,
-      ship.parent_shipment_id || "",
-      `"${(ship.client_name || "").replace(/"/g, '""')}"`,
-      `"${(ship.reference || "").replace(/"/g, '""')}"`,
-      ship.shipment_type || "",
-      ship.transport_mode || "",
-      ship.status?.name || "In Progress",
-      ship.pcs || "",
-      ship.kgs || "",
-      ship.chw || "",
-      ship.ct_file || "",
-      ship.warehouse_receipt || "",
-      ship.aes || "",
-      ship.expo_mawb || "",
-      ship.expo_hawb || "",
-      ship.etd || "",
-      ship.eta || "",
-      ship.created_at || ""
-    ]);
+  const exportFullBackup = async () => {
+    setBackingUp(true);
+    try {
+      const data = await getFullBackupData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      const miamiTime = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' }).replace(/\//g, "-");
+      link.setAttribute("download", `wcs_tracker_full_backup_${miamiTime}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error(err);
+      alert("Backup failed to download.");
+    } finally {
+      setBackingUp(false);
+    }
+  };
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(e => e.join(","))
-    ].join("\n");
+  const handleImportBackupFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    const miamiTime = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' }).replace(/\//g, "-");
-    link.setAttribute("download", `wcs_tracker_backup_${miamiTime}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const confirmImport = confirm("WARNING: Importing a backup will overwrite all current database tables (shipments, tasks, ratesheets, carrier agenda, status tags, configurations). Are you sure you want to proceed?");
+    if (!confirmImport) {
+      e.target.value = "";
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const json = JSON.parse(event.target?.result as string);
+          await importFullBackupAction(json);
+          alert("Backup successfully imported and database restored!");
+          router.refresh();
+        } catch (parseErr) {
+          console.error(parseErr);
+          alert("Invalid backup file format.");
+        } finally {
+          setImporting(false);
+        }
+      };
+      reader.readAsText(file);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to read backup file.");
+      setImporting(false);
+    }
   };
 
   // Search & Type Filters
@@ -615,13 +627,26 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         {/* Right: Backup CSV & Configuration gear */}
         <div className="flex items-center gap-2 justify-end">
           <Button 
-            onClick={exportToCSV}
+            onClick={exportFullBackup}
+            disabled={backingUp}
             className="h-8 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30 text-[10px] font-bold gap-1.5 px-3"
-            title="Download CSV Backup"
+            title="Download Full Database Backup (JSON)"
           >
             <Download className="w-3.5 h-3.5 text-emerald-500" />
-            Backup CSV
+            {backingUp ? "Backing up..." : "Backup Data"}
           </Button>
+
+          <label className="h-8 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30 text-[10px] font-bold gap-1.5 px-3 flex items-center cursor-pointer justify-center select-none">
+            <RefreshCw className={`w-3.5 h-3.5 text-sky-500 ${importing ? "animate-spin" : ""}`} />
+            {importing ? "Importing..." : "Import Backup"}
+            <input 
+              type="file" 
+              accept=".json" 
+              onChange={handleImportBackupFile} 
+              disabled={importing}
+              className="hidden" 
+            />
+          </label>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger render={<Button className="h-8 w-8 p-0 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30" />}>
