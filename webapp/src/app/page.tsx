@@ -123,7 +123,7 @@ export default async function LandingHub() {
           {/* CARD 2: TASK TRACKER */}
           <div className="group bg-[#0a0a0c] border border-slate-900 rounded-2xl overflow-hidden hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-300 flex flex-col relative h-[380px]">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
-            <div className="h-2 bg-indigo-550" />
+            <div className="h-2 bg-indigo-500" />
             <div className="p-6 flex flex-col flex-grow">
               <div className="space-y-1 mb-4">
                 <span className="text-[10px] font-mono text-indigo-400 font-bold uppercase tracking-widest">Workflow Management</span>

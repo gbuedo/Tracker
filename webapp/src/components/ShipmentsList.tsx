@@ -921,7 +921,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                           <TableCell className="font-bold text-yellow-500 py-1.5 relative">
                             <div className="flex items-center space-x-1.5 font-mono">
                               {ship.parent_shipment_id && (
-                                <span className="text-indigo-550 mr-0.5 text-[11px] font-black font-sans">↳</span>
+                                <span className="text-indigo-500 mr-0.5 text-[11px] font-black font-sans">↳</span>
                               )}
                               <span>{ship.id}</span>
                               {hasTodayEtaEtd && (
@@ -1065,7 +1065,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         
                         {/* Expanded details container */}
                         {isExpanded && (
-                          <TableRow className="bg-[#040406]/60 border-slate-900 hover:bg-transparent">
+                          <TableRow className="bg-[#0e1017] border-y border-slate-900 hover:bg-transparent">
                             <TableCell colSpan={7} className="p-4">
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-400">
                                 

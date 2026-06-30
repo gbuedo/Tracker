@@ -34,7 +34,7 @@ export default async function TaskTrackerPage() {
         
         {/* Terminal Header (Airport Board Style) */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0a0a0c] border-t-4 border-indigo-500 border-x border-b border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-lg">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-550/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="space-y-2 flex-grow">
             <div className="flex flex-wrap items-center gap-3">

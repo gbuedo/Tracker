@@ -11,7 +11,7 @@ import {
 import { 
   Search, Plus, List, Kanban, ArrowUpDown, Layers, Clipboard, 
   Trash2, ChevronDown, ChevronUp, Clock, CheckCircle2, User, 
-  Calendar, Check, Copy, AlertTriangle, ExternalLink, CheckSquare
+  Calendar, Check, Copy, AlertTriangle, ExternalLink, CheckSquare, Edit
 } from "lucide-react";
 import { 
   createTaskAction, updateTaskAction, deleteTaskAction, toggleSubtaskAction 
@@ -43,6 +43,18 @@ export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
   // Task Log States
   const [newLogAuthor, setNewLogAuthor] = useState("");
   const [newLogMessage, setNewLogMessage] = useState("");
+
+  // Edit Task Dialog States
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTaskId, setEditTaskId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editAssignee, setEditAssignee] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
+  const [editSubtasks, setEditSubtasks] = useState<Subtask[]>([]);
+  const [newEditSubtaskTitle, setNewEditSubtaskTitle] = useState("");
+  const [editLogAuthor, setEditLogAuthor] = useState("");
   
   const [isPending, startTransition] = useTransition();
   const [copySuccessId, setCopySuccessId] = useState<number | null>(null);
@@ -103,24 +115,51 @@ export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
 
   const handleToggleSubtask = async (taskId: number, subtaskId: string, currentCompleted: boolean) => {
     const nextCompleted = !currentCompleted;
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const sub = task.subtasks.find(s => s.id === subtaskId);
+    const subTitle = sub ? sub.title : "Unknown Subtask";
+
+    const newLog = {
+      timestamp: new Date().toISOString(),
+      author: "System",
+      message: `Subtask '${subTitle}' marked as ${nextCompleted ? "completed" : "incomplete"}`
+    };
+    const updatedLogs = [...(task.logs || []), newLog];
+    const updatedSubtasks = task.subtasks.map(s => s.id === subtaskId ? { ...s, completed: nextCompleted } : s);
     
     // Optimistic Update
     setTasks(prev => prev.map(t => {
       if (t.id === taskId) {
         return {
           ...t,
-          subtasks: t.subtasks.map(s => s.id === subtaskId ? { ...s, completed: nextCompleted } : s)
+          subtasks: updatedSubtasks,
+          logs: updatedLogs
         };
       }
       return t;
     }));
 
-    await toggleSubtaskAction(taskId, subtaskId, nextCompleted);
+    await updateTaskAction(taskId, { subtasks: updatedSubtasks, logs: updatedLogs });
   };
 
   const handleUpdateStatus = async (taskId: number, nextStatus: 'Pending' | 'In Progress' | 'Completed') => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: nextStatus } : t));
-    await updateTaskAction(taskId, { status: nextStatus });
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const oldStatus = task.status;
+    if (oldStatus === nextStatus) return;
+
+    const newLog = {
+      timestamp: new Date().toISOString(),
+      author: "System",
+      message: `Status changed from '${oldStatus}' to '${nextStatus}'`
+    };
+    const updatedLogs = [...(task.logs || []), newLog];
+
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: nextStatus, logs: updatedLogs } : t));
+    await updateTaskAction(taskId, { status: nextStatus, logs: updatedLogs });
   };
 
   const handleDeleteTask = async (id: number) => {
@@ -168,6 +207,99 @@ Please review and update this task as soon as possible!`;
     setNewLogMessage("");
 
     await updateTaskAction(taskId, { logs: updatedLogs });
+  };
+
+  const handleOpenEditDialog = (task: Task) => {
+    setEditTaskId(task.id);
+    setEditTitle(task.title);
+    setEditDescription(task.description || "");
+    setEditAssignee(task.assignee || "");
+    setEditStartDate(task.start_date || "");
+    setEditDeadline(task.deadline || "");
+    setEditSubtasks(task.subtasks || []);
+    setNewEditSubtaskTitle("");
+    setEditLogAuthor("");
+    setEditDialogOpen(true);
+  };
+
+  const handleAddEditSubtaskField = () => {
+    if (newEditSubtaskTitle.trim()) {
+      const newSub: Subtask = {
+        id: `edit-sub-${Date.now()}`,
+        title: newEditSubtaskTitle.trim(),
+        completed: false
+      };
+      setEditSubtasks(prev => [...prev, newSub]);
+      setNewEditSubtaskTitle("");
+    }
+  };
+
+  const handleRemoveEditSubtaskField = (id: string) => {
+    setEditSubtasks(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleSaveTaskEdits = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTaskId) return;
+    const task = tasks.find(t => t.id === editTaskId);
+    if (!task) return;
+
+    const author = editLogAuthor.trim() || task.assignee || "Staff";
+    const changesLogs: string[] = [];
+
+    if (editTitle.trim() !== task.title) {
+      changesLogs.push(`Title changed from '${task.title}' to '${editTitle.trim()}'`);
+    }
+    if (editDescription.trim() !== (task.description || "")) {
+      changesLogs.push(`Description updated`);
+    }
+    if (editAssignee.trim() !== (task.assignee || "")) {
+      changesLogs.push(`Assignee changed from '${task.assignee || "None"}' to '${editAssignee.trim() || "None"}'`);
+    }
+    if (editStartDate !== (task.start_date || "")) {
+      changesLogs.push(`Start date changed from '${task.start_date || "None"}' to '${editStartDate || "None"}'`);
+    }
+    if (editDeadline !== (task.deadline || "")) {
+      changesLogs.push(`Deadline changed from '${task.deadline || "None"}' to '${editDeadline || "None"}'`);
+    }
+
+    // Check subtasks changes
+    const oldSubtaskIds = new Set(task.subtasks.map(s => s.id));
+    editSubtasks.forEach(s => {
+      if (!oldSubtaskIds.has(s.id)) {
+        changesLogs.push(`Subtask '${s.title}' added`);
+      }
+    });
+    const newSubtaskIds = new Set(editSubtasks.map(s => s.id));
+    task.subtasks.forEach(s => {
+      if (!newSubtaskIds.has(s.id)) {
+        changesLogs.push(`Subtask '${s.title}' removed`);
+      }
+    });
+
+    const newLogs = [...(task.logs || [])];
+    changesLogs.forEach(msg => {
+      newLogs.push({
+        timestamp: new Date().toISOString(),
+        author: author,
+        message: msg
+      });
+    });
+
+    const updatedFields = {
+      title: editTitle.trim(),
+      description: editDescription.trim() || null,
+      assignee: editAssignee.trim() || null,
+      start_date: editStartDate || null,
+      deadline: editDeadline || null,
+      subtasks: editSubtasks,
+      logs: newLogs
+    };
+
+    setTasks(prev => prev.map(t => t.id === editTaskId ? { ...t, ...updatedFields } : t));
+    setEditDialogOpen(false);
+
+    await updateTaskAction(editTaskId, updatedFields);
   };
 
   const getDeadlineColor = (task: Task) => {
@@ -457,6 +589,156 @@ Please review and update this task as soon as possible!`;
               </form>
             </DialogContent>
           </Dialog>
+ 
+          {/* Edit Task dialog */}
+          <Dialog open={editDialogOpen} onOpenChange={(v) => { setEditDialogOpen(v); }}>
+            <DialogContent className="sm:max-w-2xl w-full bg-slate-950 border-slate-900 text-slate-100 rounded-2xl shadow-2xl p-6">
+              <DialogHeader className="border-b border-slate-850 pb-4">
+                <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-mono">
+                  <Edit className="w-5 h-5 text-yellow-500 animate-pulse" />
+                  EDIT TASK DETAILS
+                </DialogTitle>
+                <DialogDescription className="text-slate-450 text-xs">
+                  Update task info and timelines. Modifying any field will automatically log the change in the history log.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleSaveTaskEdits} className="space-y-4 pt-4 text-xs font-semibold text-slate-300">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="edit_task_title" className="text-slate-200 uppercase text-[10px] tracking-wider">Task Title*</Label>
+                  <Input 
+                    id="edit_task_title"
+                    required
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Enter task objective..."
+                    className="bg-slate-900 border-slate-800 text-slate-200 h-10"
+                  />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="edit_task_desc" className="text-slate-200 uppercase text-[10px] tracking-wider">Task Details / Description</Label>
+                  <textarea
+                    id="edit_task_desc"
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="Enter comprehensive scope of work..."
+                    className="flex w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-slate-200 placeholder:text-slate-550 focus-visible:outline-none min-h-[90px] text-xs font-semibold"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="edit_task_assignee" className="text-slate-200 uppercase text-[10px] tracking-wider">Assignee / Owner</Label>
+                    <Input 
+                      id="edit_task_assignee"
+                      value={editAssignee}
+                      onChange={(e) => setEditAssignee(e.target.value)}
+                      placeholder="e.g. Gaston B."
+                      className="bg-slate-900 border-slate-800 text-slate-200 h-10"
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="edit_task_start" className="text-slate-200 uppercase text-[10px] tracking-wider">Start Date</Label>
+                    <Input 
+                      id="edit_task_start"
+                      type="date"
+                      value={editStartDate}
+                      onChange={(e) => setEditStartDate(e.target.value)}
+                      className="bg-slate-900 border-slate-800 text-slate-200 h-10 font-mono"
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="edit_task_due" className="text-slate-200 uppercase text-[10px] tracking-wider">Deadline Date</Label>
+                    <Input 
+                      id="edit_task_due"
+                      type="date"
+                      value={editDeadline}
+                      onChange={(e) => setEditDeadline(e.target.value)}
+                      className="bg-slate-900 border-slate-800 text-slate-200 h-10 font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Subtask checklist manager */}
+                <div className="border-t border-slate-900 pt-4 space-y-3">
+                  <Label className="text-slate-200 uppercase text-[10px] tracking-wider block">Manage Subtasks Checklist</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newEditSubtaskTitle}
+                      onChange={(e) => setNewEditSubtaskTitle(e.target.value)}
+                      placeholder="Add subtask checklist item..."
+                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                    />
+                    <Button 
+                      type="button" 
+                      onClick={handleAddEditSubtaskField}
+                      className="bg-indigo-650 hover:bg-indigo-700 text-white font-bold h-9"
+                    >
+                      Add
+                    </Button>
+                  </div>
+
+                  {editSubtasks.length > 0 && (
+                    <div className="bg-slate-900/40 p-2.5 rounded-lg border border-slate-900 max-h-36 overflow-y-auto space-y-1 font-mono text-[10px] text-slate-400">
+                      {editSubtasks.map((st) => (
+                        <div key={st.id} className="flex justify-between items-center py-0.5 border-b border-slate-950/20 last:border-b-0">
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="checkbox"
+                              checked={st.completed}
+                              onChange={() => {
+                                setEditSubtasks(prev => prev.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s));
+                              }}
+                              className="rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0"
+                            />
+                            <span className={st.completed ? "line-through text-slate-600" : ""}>{st.title}</span>
+                          </div>
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveEditSubtaskField(st.id)}
+                            className="text-rose-500 hover:text-rose-450 hover:bg-rose-950/20 p-1 rounded text-[9px]"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Optional Operator name to attribute logs */}
+                <div className="border-t border-slate-900 pt-4 grid gap-1.5">
+                  <Label htmlFor="edit_log_author" className="text-slate-200 uppercase text-[10px] tracking-wider">Your Name / Operator Name (For Logs)</Label>
+                  <Input 
+                    id="edit_log_author"
+                    value={editLogAuthor}
+                    onChange={(e) => setEditLogAuthor(e.target.value)}
+                    placeholder="Defaults to Staff..."
+                    className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-2 border-t border-slate-850 pt-4 mt-6">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => { setEditDialogOpen(false); }}
+                    className="bg-transparent border-slate-800 text-slate-400 hover:text-white rounded-xl h-10"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-black rounded-xl h-10 px-6"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
         </div>
       </div>
@@ -527,7 +809,14 @@ Please review and update this task as soon as possible!`;
                             </select>
                           </div>
 
-                          <div className="w-24 flex items-center justify-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <div className="w-32 flex items-center justify-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => handleOpenEditDialog(t)}
+                              className="p-1.5 bg-slate-950 border border-slate-855 rounded-lg text-slate-400 hover:text-white hover:border-slate-700 transition-all"
+                              title="Edit Task"
+                            >
+                              <Edit className="w-3.5 h-3.5 text-yellow-500" />
+                            </button>
                             <button
                               onClick={() => handleCopyTaskReminder(t)}
                               className="p-1.5 bg-slate-950 border border-slate-855 rounded-lg text-slate-400 hover:text-white hover:border-slate-700 transition-all relative"
@@ -714,6 +1003,13 @@ Please review and update this task as soon as possible!`;
                             <div className="flex justify-between items-start gap-1">
                               <span className="font-mono text-[9px] text-slate-600 font-extrabold">#{t.id}</span>
                               <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => handleOpenEditDialog(t)}
+                                  className="text-slate-500 hover:text-white p-1 hover:bg-slate-900 rounded"
+                                  title="Edit Task"
+                                >
+                                  <Edit className="w-3 h-3 text-yellow-500" />
+                                </button>
                                 <button
                                   onClick={() => handleCopyTaskReminder(t)}
                                   className="text-slate-500 hover:text-white p-1 hover:bg-slate-900 rounded"
