@@ -32,6 +32,20 @@ interface ShipmentsListProps {
 export function ShipmentsList({ initialShipments, statuses, initialCustomers, initialCarriers = [], initialConfig }: ShipmentsListProps) {
   const router = useRouter();
 
+  const getHoursSinceLastUpdate = (ship: Shipment) => {
+    const dates = [new Date(ship.created_at).getTime()];
+    if (ship.logs && ship.logs.length > 0) {
+      ship.logs.forEach(log => {
+        if (log.created_at) {
+          dates.push(new Date(log.created_at).getTime());
+        }
+      });
+    }
+    const maxTime = Math.max(...dates);
+    const diffMs = Date.now() - maxTime;
+    return diffMs / (1000 * 60 * 60);
+  };
+
   const [backingUp, setBackingUp] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -340,6 +354,12 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         if (!b.etd) return -1;
         return new Date(b.etd).getTime() - new Date(a.etd).getTime();
       }
+      if (sortBy === "update_hours_desc") {
+        return getHoursSinceLastUpdate(b) - getHoursSinceLastUpdate(a);
+      }
+      if (sortBy === "update_hours_asc") {
+        return getHoursSinceLastUpdate(a) - getHoursSinceLastUpdate(b);
+      }
       // Default created_at desc (newest files first)
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     };
@@ -566,6 +586,8 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <option value="eta_desc" className="bg-slate-950">Sort: Latest ETA (Arrival)</option>
               <option value="etd_asc" className="bg-slate-950">Sort: First ETD (Departure)</option>
               <option value="etd_desc" className="bg-slate-950">Sort: Latest ETD (Departure)</option>
+              <option value="update_hours_desc" className="bg-slate-950">Sort: Longest Since Update</option>
+              <option value="update_hours_asc" className="bg-slate-950">Sort: Most Recently Updated</option>
             </select>
           </div>
 
@@ -886,6 +908,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[130px] whitespace-normal leading-tight hidden md:table-cell">Type & Mode</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden md:table-cell">Carrier</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">ETD / ETA</TableHead>
+                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Last Update</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-center w-[80px]">Expand</TableHead>
                 </TableRow>
@@ -893,7 +916,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <TableBody>
                 {shipmentsList.length === 0 ? (
                   <TableRow className="border-slate-850 hover:bg-transparent">
-                    <TableCell colSpan={7} className="text-center py-8 text-slate-500 font-medium">
+                    <TableCell colSpan={9} className="text-center py-8 text-slate-500 font-medium">
                       No shipments found in this group.
                     </TableCell>
                   </TableRow>
@@ -1039,6 +1062,17 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                             </div>
                           </TableCell>
                           
+                          <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
+                            {(() => {
+                              const hours = getHoursSinceLastUpdate(ship);
+                              if (hours < 1) return <span className="text-emerald-400 font-extrabold animate-pulse">Just now</span>;
+                              if (hours < 24) return <span className="text-emerald-455 font-bold">{Math.floor(hours)}h ago</span>;
+                              const days = Math.floor(hours / 24);
+                              if (days < 3) return <span className="text-slate-300 font-semibold">{days}d {Math.floor(hours % 24)}h ago</span>;
+                              return <span className="text-slate-500">{days}d ago</span>;
+                            })()}
+                          </TableCell>
+                          
                           <TableCell className="text-right">
                             <span 
                               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-extrabold uppercase font-sans"
@@ -1066,7 +1100,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         {/* Expanded details container */}
                         {isExpanded && (
                           <TableRow className="bg-[#0e1017] border-y border-slate-900 hover:bg-transparent">
-                            <TableCell colSpan={7} className="p-4">
+                            <TableCell colSpan={9} className="p-4">
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-400">
                                 
                                 {/* Airbills & Documentation */}
