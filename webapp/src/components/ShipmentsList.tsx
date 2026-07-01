@@ -33,17 +33,17 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
   const router = useRouter();
 
   const getHoursSinceLastUpdate = (ship: Shipment) => {
-    const dates = [new Date(ship.created_at).getTime()];
     if (ship.logs && ship.logs.length > 0) {
-      ship.logs.forEach(log => {
-        if (log.created_at) {
-          dates.push(new Date(log.created_at).getTime());
-        }
-      });
+      const dates = ship.logs
+        .filter(log => log.created_at)
+        .map(log => new Date(log.created_at).getTime());
+      if (dates.length > 0) {
+        const maxTime = Math.max(...dates);
+        return (Date.now() - maxTime) / (1000 * 60 * 60);
+      }
     }
-    const maxTime = Math.max(...dates);
-    const diffMs = Date.now() - maxTime;
-    return diffMs / (1000 * 60 * 60);
+    const createdTime = new Date(ship.created_at).getTime();
+    return (Date.now() - createdTime) / (1000 * 60 * 60);
   };
 
   const [backingUp, setBackingUp] = useState(false);

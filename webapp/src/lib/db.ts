@@ -453,14 +453,15 @@ export async function getShipments(): Promise<Shipment[]> {
     async () => {
       return await supabase
         .from("shipments")
-        .select("*, status:statuses(*)")
+        .select("*, status:statuses(*), logs:logs(*)")
         .order("created_at", { ascending: false });
     },
     () => {
       const data = readMockData();
       return data.shipments.map((s: any) => ({
         ...s,
-        status: data.statuses.find((st: any) => st.id === s.status_id)
+        status: data.statuses.find((st: any) => st.id === s.status_id),
+        logs: data.logs.filter((l: any) => l.shipment_id === s.id)
       })) as Shipment[];
     }
   );
