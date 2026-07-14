@@ -10,11 +10,16 @@ export async function createTaskAction(
   assignee: string | null,
   start_date: string | null,
   deadline: string | null,
-  subtasks: Subtask[] = []
+  subtasks: Subtask[] = [],
+  shipment_id: number | null = null,
+  shipment_reference: string | null = null
 ) {
-  const data = await db.createTask(title, description, assignee, start_date, deadline, subtasks);
+  const data = await db.createTask(title, description, assignee, start_date, deadline, subtasks, shipment_id, shipment_reference);
   revalidatePath("/task-tracker");
   revalidatePath("/");
+  if (shipment_id) {
+    revalidatePath(`/shipment/${shipment_id}`);
+  }
   return data;
 }
 

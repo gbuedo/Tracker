@@ -20,9 +20,12 @@ interface SplitCargoDialogProps {
   parentPcs: number | null;
   parentKgs: number | null;
   parentChw: number | null;
+  suggestedPcs?: number;
+  suggestedKgs?: number;
+  suggestedChw?: number;
 }
 
-export function SplitCargoDialog({ shipmentId, parentPcs, parentKgs, parentChw }: SplitCargoDialogProps) {
+export function SplitCargoDialog({ shipmentId, parentPcs, parentKgs, parentChw, suggestedPcs, suggestedKgs, suggestedChw }: SplitCargoDialogProps) {
   const [open, setOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
@@ -44,15 +47,15 @@ export function SplitCargoDialog({ shipmentId, parentPcs, parentKgs, parentChw }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" className="flex items-center border-slate-700 hover:border-slate-600 bg-slate-800 text-slate-200" />}>
-        <span className="flex items-center"><Split className="w-4 h-4 mr-2 text-indigo-400" /> Split Cargo</span>
+      <DialogTrigger render={<Button variant="outline" className="flex items-center border-slate-350 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200" />}>
+        <span className="flex items-center"><Split className="w-4 h-4 mr-2 text-indigo-500 dark:text-indigo-400" /> Split Cargo</span>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-700 text-white">
+      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Split className="w-5 h-5 text-indigo-400" /> Split Shipment Cargo
+            <Split className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Split Shipment Cargo
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-slate-500 dark:text-slate-400">
             Create a child shipment (Sub-file) for a partial arrival. It will inherit the master file details.
           </DialogDescription>
         </DialogHeader>
@@ -66,9 +69,9 @@ export function SplitCargoDialog({ shipmentId, parentPcs, parentKgs, parentChw }
                   name="pcs" 
                   type="number"
                   step="any"
-                  className="bg-slate-800 border-slate-700 text-white" 
+                  className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" 
                   placeholder="e.g. 10"
-                  defaultValue={parentPcs ? Math.floor(parentPcs / 2) : ""}
+                  defaultValue={suggestedPcs !== undefined ? suggestedPcs : (parentPcs ? Math.floor(parentPcs / 2) : "")}
                 />
               </div>
               <div className="grid gap-2">
@@ -78,9 +81,9 @@ export function SplitCargoDialog({ shipmentId, parentPcs, parentKgs, parentChw }
                   name="kgs" 
                   type="number"
                   step="any"
-                  className="bg-slate-800 border-slate-700 text-white" 
+                  className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" 
                   placeholder="e.g. 250"
-                  defaultValue={parentKgs ? parentKgs / 2 : ""}
+                  defaultValue={suggestedKgs !== undefined ? suggestedKgs : (parentKgs ? parentKgs / 2 : "")}
                 />
               </div>
             </div>
@@ -91,9 +94,9 @@ export function SplitCargoDialog({ shipmentId, parentPcs, parentKgs, parentChw }
                 name="chw" 
                 type="number"
                 step="any"
-                className="bg-slate-800 border-slate-700 text-white" 
+                className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" 
                 placeholder="e.g. 260"
-                defaultValue={parentChw ? parentChw / 2 : ""}
+                defaultValue={suggestedChw !== undefined ? suggestedChw : (parentChw ? parentChw / 2 : "")}
               />
             </div>
           </div>

@@ -256,23 +256,23 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-1.5">
-                  <Label htmlFor="edit_etd" className="text-slate-300 text-xs uppercase font-extrabold tracking-wider">Departure (ETD)</Label>
+                  <Label htmlFor="edit_etd" className="text-slate-600 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Departure (ETD)</Label>
                   <Input 
                     id="edit_etd" 
-                    type="date"
+                    type="datetime-local"
                     value={etd}
                     onChange={(e) => setEtd(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-200 font-mono text-sm" 
+                    className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 font-mono text-sm" 
                   />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label htmlFor="edit_eta" className="text-slate-300 text-xs uppercase font-extrabold tracking-wider">Arrival (ETA)</Label>
+                  <Label htmlFor="edit_eta" className="text-slate-600 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Arrival (ETA)</Label>
                   <Input 
                     id="edit_eta" 
-                    type="date"
+                    type="datetime-local"
                     value={eta}
                     onChange={(e) => setEta(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-200 font-mono text-sm" 
+                    className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 font-mono text-sm" 
                   />
                 </div>
               </div>
@@ -330,13 +330,13 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
                 </div>
 
                 <div className="grid gap-1.5 sm:col-span-1">
-                  <Label htmlFor="edit_expo_hawb" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">HAWB Housebill</Label>
+                  <Label htmlFor="edit_expo_hawb" className="text-slate-250 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">HAWB Housebills (comma-separated)</Label>
                   <Input 
                     id="edit_expo_hawb" 
                     value={expoHawb}
                     onChange={(e) => setExpoHawb(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 font-mono text-sm" 
-                    placeholder="HAWB-1002" 
+                    className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 font-mono text-sm" 
+                    placeholder="HAWB-1002, HAWB-1003" 
                   />
                 </div>
               </div>

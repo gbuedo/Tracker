@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { 
   Search, Edit, Save, Copy, Check, Plus, Layers, 
-  Trash2, Sliders, ChevronDown, BookOpen, Undo, AlertCircle
+  Trash2, Sliders, ChevronDown, BookOpen, Undo, AlertCircle,
+  LayoutGrid, Table
 } from "lucide-react";
 import { 
   updateRatesheetAction, duplicateRatesheetAction, applyMassMarkupAction, deleteRatesheetAction 
@@ -31,6 +32,8 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
 
   // Collapsed categories state
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+
+  const [layoutMode, setLayoutMode] = useState<"table" | "catalog">("catalog");
 
   const toggleCategoryCollapse = (catName: string) => {
     setCollapsedCategories(prev => ({
@@ -403,6 +406,36 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                 </Button>
               )
             )}
+
+            {/* Layout Mode Selector Toggle */}
+            {!isEditing && (
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-850 shrink-0">
+                <button
+                  onClick={() => setLayoutMode("catalog")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    layoutMode === "catalog"
+                      ? "bg-emerald-600/15 text-emerald-500 dark:text-emerald-400"
+                      : "text-slate-500 hover:text-slate-655"
+                  }`}
+                  title="Switch to Catalog Grid View"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  Catalog
+                </button>
+                <button
+                  onClick={() => setLayoutMode("table")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    layoutMode === "table"
+                      ? "bg-emerald-600/15 text-emerald-500 dark:text-emerald-400"
+                      : "text-slate-500 hover:text-slate-655"
+                  }`}
+                  title="Switch to Table Grid View"
+                >
+                  <Table className="w-3.5 h-3.5" />
+                  Table
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -515,11 +548,66 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                   </div>
                 </div>
 
+                {/* Catalog Card Grid view */}
+                {!isCollapsed && layoutMode === "catalog" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {list.map(r => {
+                      const isRowSelected = selectedConceptIds.has(r.id);
+                      return (
+                        <div
+                          key={r.id}
+                          onClick={() => !isEditing && handleToggleSelectRow(r.id)}
+                          className={`group relative bg-white dark:bg-slate-900 border rounded-2xl p-4 flex flex-col justify-between hover:scale-[1.01] hover:border-emerald-500/35 transition-all duration-200 shadow-md ${
+                            isRowSelected 
+                              ? "border-emerald-500 dark:border-emerald-450 bg-emerald-50/10 dark:bg-emerald-950/10" 
+                              : "border-slate-200 dark:border-slate-800"
+                          } ${!isEditing ? "cursor-pointer" : ""}`}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-start gap-1">
+                              <h4 className="font-extrabold text-slate-800 dark:text-slate-200 text-xs uppercase font-mono tracking-wide leading-tight group-hover:text-emerald-500 transition-colors">
+                                {r.name}
+                              </h4>
+                              {!isEditing && (
+                                <input
+                                  type="checkbox"
+                                  checked={isRowSelected}
+                                  onChange={() => handleToggleSelectRow(r.id)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="rounded border-slate-350 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-emerald-650 focus:ring-0 focus:ring-offset-0 cursor-pointer h-3.5 w-3.5 shrink-0"
+                                />
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                              {r.notes || <span className="italic text-slate-655 font-medium">No special remarks.</span>}
+                            </p>
+                          </div>
+                          <div className="pt-4 flex justify-between items-center border-t border-slate-100 dark:border-slate-950 mt-3">
+                            <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Rate Cost</span>
+                            {isEditing ? (
+                              <Input
+                                value={editRates[r.id]?.rate || ""}
+                                onChange={(e) => handleRateInputChange(r.id, 'rate', e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 h-8 font-mono text-xs font-bold max-w-[120px]"
+                              />
+                            ) : (
+                              <span className="font-black font-mono text-emerald-600 dark:text-emerald-400 text-base bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-0.5 rounded-lg border border-emerald-100 dark:border-emerald-900/20">
+                                {r.rate}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {/* Table list */}
-                {!isCollapsed && (
-                  <div className="bg-[#020203] border border-slate-900 rounded-xl overflow-hidden shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
+                {!isCollapsed && layoutMode === "table" && (
+                  <div className="bg-white dark:bg-[#020203] border border-slate-200 dark:border-slate-900 rounded-xl overflow-hidden shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-[#0a0a0c] border-b border-slate-900 text-slate-500 font-mono text-[9px] uppercase tracking-wider">
+                      <thead className="bg-slate-50 dark:bg-[#0a0a0c] border-b border-slate-200 dark:border-slate-900 text-slate-500 font-mono text-[9px] uppercase tracking-wider">
                         <tr>
                           {!isEditing && <th className="p-3 w-10 text-center">Select</th>}
                           <th className="p-3">Service Description</th>

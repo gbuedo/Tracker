@@ -944,7 +944,10 @@ export async function deleteLog(id: string): Promise<void> {
 
 export async function updateShipmentStatus(shipment_id: number, status_id: number): Promise<void> {
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
-  
+  const oldStatusId = shipmentStatuses[shipment_id];
+  if (oldStatusId === status_id) return;
+
+  // Track status in system values
   if (status_id >= 10000) {
     shipmentStatuses[shipment_id] = status_id;
     await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
@@ -952,7 +955,7 @@ export async function updateShipmentStatus(shipment_id: number, status_id: numbe
     const isDefaultUrl = checkIsDefaultUrl();
     if (!isDemo && !isDefaultUrl) {
       try {
-        const { error } = await supabase.from("shipments").update({ status_id: null }).eq("id", shipment_id);
+        const { error } = await supabase.from("shipments").update({ status_id: null, updated_at: new Date().toISOString() }).eq("id", shipment_id);
         if (error) throw error;
       } catch (err) {
         console.error("Error updating status_id to null in Supabase:", err);
@@ -974,27 +977,43 @@ export async function updateShipmentStatus(shipment_id: number, status_id: numbe
         shipment.updated_at = new Date().toISOString();
         writeMockData(data);
       }
-      return;
-    }
-    try {
-      const { error } = await supabase.from("shipments").update({ status_id }).eq("id", shipment_id);
-      if (error) throw error;
-      isDemo = false;
-    } catch (err: any) {
-      const errMsg = err?.message || String(err);
-      if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
-        isDemo = true;
-        const data = readMockData();
-        const shipment = data.shipments.find((s: any) => s.id === shipment_id);
-        if (shipment) {
-          shipment.status_id = status_id;
-          shipment.updated_at = new Date().toISOString();
-          writeMockData(data);
+    } else {
+      try {
+        const { error } = await supabase.from("shipments").update({ status_id, updated_at: new Date().toISOString() }).eq("id", shipment_id);
+        if (error) throw error;
+        isDemo = false;
+      } catch (err: any) {
+        const errMsg = err?.message || String(err);
+        if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+          isDemo = true;
+          const data = readMockData();
+          const shipment = data.shipments.find((s: any) => s.id === shipment_id);
+          if (shipment) {
+            shipment.status_id = status_id;
+            shipment.updated_at = new Date().toISOString();
+            writeMockData(data);
+          }
+        } else {
+          throw err;
         }
-        return;
       }
-      throw err;
     }
+  }
+
+  // Automatically write status change history to shipment timeline logs
+  try {
+    const allStatuses = await getStatuses();
+    const newStatus = allStatuses.find(st => st.id === status_id);
+    if (newStatus) {
+      await addLog({
+        shipment_id,
+        event_text: `Milestone status updated to: ${newStatus.name.toUpperCase()}`,
+        is_external: true,
+        status_id: status_id
+      });
+    }
+  } catch (logErr) {
+    console.error("Failed to insert status change timeline log:", logErr);
   }
 }
 
@@ -1006,15 +1025,19 @@ export async function splitShipment(parent_id: number, splitDetails: any): Promi
     const parent = data.shipments.find((s: any) => s.id === parent_id);
     if (!parent) throw new Error("Parent shipment not found");
 
+    const masterId = parent.parent_shipment_id || parent.id;
+    const master = data.shipments.find((s: any) => s.id === masterId);
+    if (!master) throw new Error("Master shipment not found");
+
     const newId = data.shipments.length > 0 ? Math.max(...data.shipments.map((s: any) => s.id)) + 1 : 1;
     const newChild = {
-      ...parent,
+      ...master,
       id: newId,
-      parent_shipment_id: parent.id,
-      reference: parent.reference + " - SPLIT",
-      pcs: splitDetails.pcs || parent.pcs,
-      kgs: splitDetails.kgs || parent.kgs,
-      chw: splitDetails.chw || parent.chw,
+      parent_shipment_id: master.id,
+      reference: master.reference + " - SPLIT",
+      pcs: splitDetails.pcs !== undefined ? splitDetails.pcs : master.pcs,
+      kgs: splitDetails.kgs !== undefined ? splitDetails.kgs : master.kgs,
+      chw: splitDetails.chw !== undefined ? splitDetails.chw : master.chw,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -1027,11 +1050,15 @@ export async function splitShipment(parent_id: number, splitDetails: any): Promi
     const { data: parent, error: pError } = await supabase.from("shipments").select("*").eq("id", parent_id).single();
     if (pError || !parent) throw new Error("Parent shipment not found");
 
+    const masterId = parent.parent_shipment_id || parent.id;
+    const { data: master, error: mError } = await supabase.from("shipments").select("*").eq("id", masterId).single();
+    if (mError || !master) throw new Error("Master shipment not found");
+
     const childData = {
-      ...parent,
+      ...master,
       id: undefined,
-      parent_shipment_id: parent.id,
-      reference: parent.reference + " - SPLIT",
+      parent_shipment_id: master.id,
+      reference: master.reference + " - SPLIT",
       ...splitDetails
     };
 
@@ -1047,15 +1074,19 @@ export async function splitShipment(parent_id: number, splitDetails: any): Promi
       const parent = data.shipments.find((s: any) => s.id === parent_id);
       if (!parent) throw new Error("Parent shipment not found");
 
+      const masterId = parent.parent_shipment_id || parent.id;
+      const master = data.shipments.find((s: any) => s.id === masterId);
+      if (!master) throw new Error("Master shipment not found");
+
       const newId = data.shipments.length > 0 ? Math.max(...data.shipments.map((s: any) => s.id)) + 1 : 1;
       const newChild = {
-        ...parent,
+        ...master,
         id: newId,
-        parent_shipment_id: parent.id,
-        reference: parent.reference + " - SPLIT",
-        pcs: splitDetails.pcs || parent.pcs,
-        kgs: splitDetails.kgs || parent.kgs,
-        chw: splitDetails.chw || parent.chw,
+        parent_shipment_id: master.id,
+        reference: master.reference + " - SPLIT",
+        pcs: splitDetails.pcs !== undefined ? splitDetails.pcs : master.pcs,
+        kgs: splitDetails.kgs !== undefined ? splitDetails.kgs : master.kgs,
+        chw: splitDetails.chw !== undefined ? splitDetails.chw : master.chw,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -1481,6 +1512,21 @@ export async function updateShipment(
 ): Promise<Shipment> {
   const fieldsCopy = { ...fields };
   
+  let oldStatusId: number | null = null;
+  const isDefaultUrl = checkIsDefaultUrl();
+  if (fieldsCopy.status_id !== undefined) {
+    if (isDemo || isDefaultUrl) {
+      const data = readMockData();
+      const current = data.shipments.find((s: any) => s.id === id);
+      if (current) oldStatusId = current.status_id;
+    } else {
+      try {
+        const { data: current } = await supabase.from("shipments").select("status_id").eq("id", id).maybeSingle();
+        if (current) oldStatusId = current.status_id;
+      } catch (e) {}
+    }
+  }
+
   if (fieldsCopy.status_id !== undefined) {
     const status_id = fieldsCopy.status_id;
     const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
@@ -1497,7 +1543,7 @@ export async function updateShipment(
     }
   }
 
-  const isDefaultUrl = checkIsDefaultUrl();
+  let result: Shipment;
   if (isDemo || isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
@@ -1510,39 +1556,61 @@ export async function updateShipment(
     };
     data.shipments[index] = updated;
     writeMockData(data);
-    return updated as Shipment;
-  }
-  try {
-    const { data, error } = await supabase
-      .from("shipments")
-      .update({
-        ...fieldsCopy,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", id)
-      .select()
-      .single();
-    if (error) throw error;
-    isDemo = false;
-    return data as Shipment;
-  } catch (err: any) {
-    const errMsg = err?.message || String(err);
-    if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
-      isDemo = true;
-      const data = readMockData();
-      const index = data.shipments.findIndex((s: any) => s.id === id);
-      if (index === -1) throw new Error("Shipment not found");
-      const updated = {
-        ...data.shipments[index],
-        ...fieldsCopy,
-        updated_at: new Date().toISOString()
-      };
-      data.shipments[index] = updated;
-      writeMockData(data);
-      return updated as Shipment;
+    result = updated as Shipment;
+  } else {
+    try {
+      const { data: updatedShipment, error } = await supabase
+        .from("shipments")
+        .update({
+          ...fieldsCopy,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      isDemo = false;
+      result = updatedShipment as Shipment;
+    } catch (err: any) {
+      const errMsg = err?.message || String(err);
+      if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
+        isDemo = true;
+        const data = readMockData();
+        const index = data.shipments.findIndex((s: any) => s.id === id);
+        if (index === -1) throw new Error("Shipment not found");
+        const updated = {
+          ...data.shipments[index],
+          ...fieldsCopy,
+          updated_at: new Date().toISOString()
+        };
+        data.shipments[index] = updated;
+        writeMockData(data);
+        result = updated as Shipment;
+      } else {
+        throw err;
+      }
     }
-    throw err;
   }
+
+  // Automatically write status change history to shipment timeline logs if status changed
+  if (fields.status_id !== undefined && fields.status_id !== oldStatusId) {
+    try {
+      const allStatuses = await getStatuses();
+      const newStatus = allStatuses.find(st => st.id === fields.status_id);
+      if (newStatus) {
+        await addLog({
+          shipment_id: id,
+          event_text: `Milestone status updated to: ${newStatus.name.toUpperCase()}`,
+          is_external: true,
+          status_id: fields.status_id
+        });
+      }
+    } catch (logErr) {
+      console.error("Failed to insert status change timeline log:", logErr);
+    }
+  }
+
+  return result;
 }
 
 export async function getCarriers(): Promise<Carrier[]> {
@@ -1670,7 +1738,9 @@ export async function createTask(
   assignee: string | null,
   start_date: string | null,
   deadline: string | null,
-  subtasks: Subtask[] = []
+  subtasks: Subtask[] = [],
+  shipment_id: number | null = null,
+  shipment_reference: string | null = null
 ): Promise<Task> {
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
@@ -1688,6 +1758,8 @@ export async function createTask(
       status: "Pending",
       subtasks,
       logs: [],
+      shipment_id,
+      shipment_reference,
       created_at: new Date().toISOString()
     };
     data.tasks.push(newTask);
@@ -1703,7 +1775,9 @@ export async function createTask(
       deadline,
       status: "Pending",
       subtasks,
-      logs: []
+      logs: [],
+      shipment_id,
+      shipment_reference
     }).select().single();
     if (error) throw error;
     return data as Task;
@@ -1722,6 +1796,8 @@ export async function createTask(
       status: "Pending",
       subtasks,
       logs: [],
+      shipment_id,
+      shipment_reference,
       created_at: new Date().toISOString()
     };
     data.tasks.push(newTask);

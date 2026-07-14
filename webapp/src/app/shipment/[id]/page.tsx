@@ -10,7 +10,7 @@ import { EmailQuoteParser } from "@/components/EmailQuoteParser";
 import { DeleteShipmentButton } from "@/components/DeleteShipmentButton";
 import { EditShipmentDialog } from "@/components/EditShipmentDialog";
 import Link from "next/link";
-import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity, FileText } from "lucide-react";
+import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity, FileText, CheckSquare, Plus } from "lucide-react";
 import { format } from "date-fns";
 
 export const revalidate = 0;
@@ -25,6 +25,10 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const billableConcepts = await db.getBillableConcepts();
   const customers = await db.getCustomers();
   const isDemoMode = db.checkIsDemoMode();
+
+  // Fetch associated tasks
+  const allTasks = await db.getTasks();
+  const relatedTasks = allTasks.filter(t => t.shipment_id === shipmentId);
 
   if (!shipment) {
     return (
@@ -50,8 +54,34 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const costTotal = logs.reduce((sum, log) => sum + (log.amount && log.amount_type !== 'selling' ? Number(log.amount) : 0), 0);
   const totalProfit = sellingTotal - costTotal;
 
+  const formatDateTime = (val: string | null) => {
+    if (!val) return "TBD";
+    const parts = val.split("T");
+    if (parts.length === 2) {
+      return `${parts[0]} ${parts[1]}`;
+    }
+    return val;
+  };
+
+  // Resolve Master shipment and compute remaining cargo split suggestions
+  let masterShipment = shipment;
+  if (shipment.parent_shipment_id) {
+    const parent = await db.getShipmentById(shipment.parent_shipment_id);
+    if (parent) {
+      masterShipment = parent;
+    }
+  }
+  const existingSplits = masterShipment.children || [];
+  const sumPcs = existingSplits.reduce((acc, c) => acc + (c.pcs || 0), 0);
+  const sumKgs = existingSplits.reduce((acc, c) => acc + (c.kgs || 0), 0);
+  const sumChw = existingSplits.reduce((acc, c) => acc + (c.chw || 0), 0);
+
+  const suggestedPcs = Math.max(0, (masterShipment.pcs || 0) - sumPcs);
+  const suggestedKgs = Math.max(0, (masterShipment.kgs || 0) - sumKgs);
+  const suggestedChw = Math.max(0, (masterShipment.chw || 0) - sumChw);
+
   return (
-    <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans selection:bg-yellow-500/30 selection:text-yellow-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-yellow-500/30 selection:text-yellow-300">
       
       {/* ⚠️ DEMO MODE ACTIVE BANNER */}
       {isDemoMode && (
@@ -61,8 +91,8 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500 border border-slate-950"></span>
             </div>
-            <p className="text-xs md:text-sm font-semibold tracking-wide text-amber-300 flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-amber-400" />
+            <p className="text-xs md:text-sm font-semibold tracking-wide text-amber-650 dark:text-amber-300 flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-amber-550 dark:text-amber-400" />
               DEMO MODE ACTIVE: Database operating in local mock storage. All changes are stored locally.
             </p>
           </div>
@@ -74,35 +104,35 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
         
         {/* Navigation Breadcrumb */}
         <div className="flex justify-between items-center">
-          <Link href="/operations" className="inline-flex items-center text-slate-400 hover:text-white transition-colors group text-sm font-semibold">
+          <Link href="/operations" className="inline-flex items-center text-slate-550 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors group text-sm font-semibold">
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Terminal Board
           </Link>
-          <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">
+          <span className="text-xs font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">
             File Details Center
           </span>
         </div>
         
         {/* Shipment Banner Header (Airport Board Style) */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#0a0a0c] border-t-4 border-yellow-500 border-x border-b border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-md">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white dark:bg-[#0a0a0c] border-t-4 border-yellow-500 border-x border-b border-slate-200 dark:border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-md">
           <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-black font-mono tracking-widest text-yellow-500 uppercase">
+              <h1 className="text-2xl md:text-3xl font-black font-mono tracking-widest text-yellow-600 dark:text-yellow-500 uppercase">
                 FILE #{shipment.id}
               </h1>
               
               {shipment.shipment_type && (
                 <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded border uppercase ${
                   shipment.shipment_type === 'Export' 
-                    ? 'bg-sky-950/40 text-sky-400 border-sky-900/50' 
+                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-900/50' 
                     : shipment.shipment_type === 'Import'
-                    ? 'bg-teal-950/40 text-teal-400 border-teal-900/50'
+                    ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-900/50'
                     : shipment.shipment_type === 'Quote'
-                    ? 'bg-yellow-950/40 text-yellow-500 border-yellow-900/50'
+                    ? 'bg-yellow-50 dark:bg-yellow-950/40 text-yellow-605 dark:text-yellow-500 border-yellow-200 dark:border-yellow-900/50'
                     : shipment.shipment_type === 'Transit'
-                    ? 'bg-amber-950/40 text-amber-500 border-amber-900/50'
-                    : 'bg-indigo-950/40 text-indigo-400 border-indigo-900/50'
+                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-500 border-amber-200 dark:border-amber-900/50'
+                    : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50'
                 }`}>
                   {shipment.shipment_type === 'Export' ? (
                     <Plane className="w-3 h-3" />
@@ -120,7 +150,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               {shipment.parent_shipment_id && (
                 <Link 
                   href={`/shipment/${shipment.parent_shipment_id}`}
-                  className="text-xs bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-900/50 px-2 py-0.5 rounded font-semibold transition-colors flex items-center gap-1"
+                  className="text-xs bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/50 px-2 py-0.5 rounded font-semibold transition-colors flex items-center gap-1"
                 >
                   <Split className="w-3 h-3" />
                   Sub-file of #{shipment.parent_shipment_id}
@@ -128,14 +158,14 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               )}
             </div>
 
-            <p className="text-base text-slate-400">
-              Client: <span className="text-white font-bold">{shipment.client_name}</span> 
-              <span className="mx-2 text-slate-700">•</span> 
-              Ref: <span className="text-indigo-400 font-mono font-medium">{shipment.reference || "N/A"}</span>
+            <p className="text-base text-slate-600 dark:text-slate-400">
+              Client: <span className="text-slate-800 dark:text-white font-bold">{shipment.client_name}</span> 
+              <span className="mx-2 text-slate-300 dark:text-slate-700">•</span> 
+              Ref: <span className="text-indigo-600 dark:text-indigo-400 font-mono font-medium">{shipment.reference || "N/A"}</span>
             </p>
           </div>
           
-          <div className="flex flex-wrap gap-3 items-center w-full md:w-auto justify-between border-t border-slate-800 md:border-none pt-4 md:pt-0">
+          <div className="flex flex-wrap gap-3 items-center w-full md:w-auto justify-between border-t border-slate-200 dark:border-slate-800 md:border-none pt-4 md:pt-0">
             {/* Edit Shipment Details */}
             <EditShipmentDialog shipment={shipment} statuses={statuses} customers={customers} />
 
@@ -148,6 +178,9 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               parentPcs={shipment.pcs} 
               parentKgs={shipment.kgs} 
               parentChw={shipment.chw} 
+              suggestedPcs={suggestedPcs}
+              suggestedKgs={suggestedKgs}
+              suggestedChw={suggestedChw}
             />
           </div>
         </div>
@@ -170,11 +203,11 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 <div className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-800/60">
                   <div className="space-y-0.5">
                     <p className="text-slate-500 uppercase tracking-wider text-[10px]">Estimated Departure</p>
-                    <p className="font-semibold text-slate-200 text-sm">{shipment.etd || "TBD"}</p>
+                    <p className="font-semibold text-slate-700 dark:text-slate-200 text-sm">{formatDateTime(shipment.etd)}</p>
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-slate-500 uppercase tracking-wider text-[10px]">Estimated Arrival</p>
-                    <p className="font-semibold text-slate-200 text-sm">{shipment.eta || "TBD"}</p>
+                    <p className="font-semibold text-sky-600 dark:text-sky-400 text-sm">{formatDateTime(shipment.eta)}</p>
                   </div>
                 </div>
 
@@ -200,8 +233,16 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                     <span className="font-mono text-slate-400 text-[11px]">{shipment.expo_mawb || "N/A"}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-slate-500">HAWB Housebill:</span>
-                    <span className="font-mono text-slate-400 text-[11px]">{shipment.expo_hawb || "N/A"}</span>
+                    <span className="text-slate-555 dark:text-slate-500">HAWB Housebills:</span>
+                    <span className="font-mono text-slate-400 text-[11px] flex flex-wrap gap-1">
+                      {shipment.expo_hawb ? (
+                        shipment.expo_hawb.split(/,\s*/).map((hawb, idx) => (
+                          <span key={idx} className="bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300">
+                            {hawb.trim()}
+                          </span>
+                        ))
+                      ) : "N/A"}
+                    </span>
                   </div>
                 </div>
 
@@ -257,6 +298,52 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 </CardContent>
               </Card>
             )}
+            {/* Related Tasks Card */}
+            <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 backdrop-blur-md">
+              <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/60 flex flex-row items-center justify-between">
+                <CardTitle className="text-slate-800 dark:text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                  Related Tasks ({relatedTasks.length})
+                </CardTitle>
+                <Link
+                  href={`/task-tracker?shipment_id=${shipment.id}&reference=${encodeURIComponent(shipment.reference || "")}`}
+                  className="inline-flex items-center gap-1 text-[10px] bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/85 text-indigo-650 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/40 px-2 py-0.5 rounded font-black uppercase transition-all"
+                >
+                  <Plus className="w-3 h-3" /> Add Task
+                </Link>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {relatedTasks.length === 0 ? (
+                  <p className="text-center italic text-slate-500 text-xs py-2">
+                    No related tasks found. Click "Add Task" to coordinate operational activities.
+                  </p>
+                ) : (
+                  <ul className="space-y-2">
+                    {relatedTasks.map(t => (
+                      <li key={t.id}>
+                        <Link 
+                          href={`/task-tracker?shipment_id=${shipment.id}`} 
+                          className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-lg transition-all text-xs group"
+                        >
+                          <span className="font-semibold text-slate-700 dark:text-slate-350 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {t.title}
+                          </span>
+                          <span className={`font-mono text-[9px] font-extrabold px-1.5 py-0.25 rounded border uppercase ${
+                            t.status === 'Completed'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50'
+                              : t.status === 'In Progress'
+                              ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-250 dark:border-indigo-900/50'
+                              : 'bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 border-slate-250 dark:border-slate-800/50'
+                          }`}>
+                            {t.status}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Pre-invoicing summary box */}
             <Card className="bg-slate-900/40 border-slate-800/80 backdrop-blur-md">

@@ -33,17 +33,33 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
   const router = useRouter();
 
   const getHoursSinceLastUpdate = (ship: Shipment) => {
+    const dates = [
+      new Date(ship.created_at).getTime(),
+      ship.updated_at ? new Date(ship.updated_at).getTime() : 0
+    ];
     if (ship.logs && ship.logs.length > 0) {
-      const dates = ship.logs
-        .filter(log => log.created_at)
-        .map(log => new Date(log.created_at).getTime());
-      if (dates.length > 0) {
-        const maxTime = Math.max(...dates);
-        return (Date.now() - maxTime) / (1000 * 60 * 60);
-      }
+      ship.logs.forEach(log => {
+        if (log.created_at) {
+          dates.push(new Date(log.created_at).getTime());
+        }
+      });
     }
-    const createdTime = new Date(ship.created_at).getTime();
-    return (Date.now() - createdTime) / (1000 * 60 * 60);
+    const maxTime = Math.max(...dates);
+    return (Date.now() - maxTime) / (1000 * 60 * 60);
+  };
+
+  const formatDateTimeSmall = (val: string | null) => {
+    if (!val) return "-";
+    const parts = val.split("T");
+    if (parts.length === 2) {
+      return (
+        <span className="flex items-center gap-1">
+          <span>{parts[0]}</span>
+          <span className="text-[10px] text-slate-500 font-normal">{parts[1]}</span>
+        </span>
+      );
+    }
+    return val;
   };
 
   const [backingUp, setBackingUp] = useState(false);
@@ -184,7 +200,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
     if (letterMatch) {
       const scac = letterMatch[0];
       const match = carriersState.find(c => c.code.toUpperCase() === scac);
-      if (match) return match.name;
+      if (match) return match.name.toUpperCase();
     }
     
     // 2. Match 3-digit prefix
@@ -192,13 +208,13 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
     if (digitMatch) {
       const prefix = digitMatch[0];
       const match = carriersState.find(c => c.code === prefix);
-      if (match) return match.name;
+      if (match) return match.name.toUpperCase();
     }
 
     // 3. Match generic prefix match
     for (const carrier of carriersState) {
       if (cleanMawb.startsWith(carrier.code.toUpperCase())) {
-        return carrier.name;
+        return carrier.name.toUpperCase();
       }
     }
     return "-";
@@ -213,7 +229,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
     if (letterMatch) {
       const scac = letterMatch[0];
       const match = carriersState.find(c => c.code.toUpperCase() === scac);
-      if (match) return match;
+      if (match) return { ...match, name: match.name.toUpperCase() };
     }
     
     // 2. Match 3-digit prefix
@@ -221,13 +237,13 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
     if (digitMatch) {
       const prefix = digitMatch[0];
       const match = carriersState.find(c => c.code === prefix);
-      if (match) return match;
+      if (match) return { ...match, name: match.name.toUpperCase() };
     }
 
     // 3. Match generic prefix match
     for (const carrier of carriersState) {
       if (cleanMawb.startsWith(carrier.code.toUpperCase())) {
-        return carrier;
+        return { ...carrier, name: carrier.name.toUpperCase() };
       }
     }
     return null;
@@ -1057,8 +1073,8 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
 
                           <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-slate-200 font-bold">{ship.etd || "-"}</span>
-                              <span className="text-sky-400 font-bold">{ship.eta || "-"}</span>
+                              <span className="text-slate-700 dark:text-slate-200 font-bold">{formatDateTimeSmall(ship.etd)}</span>
+                              <span className="text-sky-600 dark:text-sky-400 font-bold">{formatDateTimeSmall(ship.eta)}</span>
                             </div>
                           </TableCell>
                           
@@ -1114,11 +1130,15 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                       </div>
                                     ) : null}
                                     {ship.expo_hawb ? (
-                                      <div>
-                                        <span className="text-[9px] text-slate-500 uppercase font-black mr-1.5">HAWB Ref:</span>
-                                        <span className="text-slate-200">{ship.expo_hawb}</span>
-                                      </div>
-                                    ) : null}
+                                       <div className="flex flex-wrap items-center gap-1">
+                                         <span className="text-[9px] text-slate-550 dark:text-slate-500 uppercase font-black mr-1">HAWBs:</span>
+                                         {ship.expo_hawb.split(/,\s*/).map((h, idx) => (
+                                           <span key={idx} className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 px-1 py-0.25 rounded text-[10px] uppercase font-bold">
+                                             {h.trim()}
+                                           </span>
+                                         ))}
+                                       </div>
+                                     ) : null}
                                     {ship.aes ? (
                                       <div>
                                         <span className="text-[9px] text-slate-500 uppercase font-black mr-1.5">AES Ref:</span>

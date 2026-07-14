@@ -42,6 +42,8 @@ export type Task = {
   status: 'Pending' | 'In Progress' | 'Completed';
   subtasks: Subtask[];
   logs?: TaskLog[];
+  shipment_id?: number | null;
+  shipment_reference?: string | null;
   created_at: string;
 };
 
@@ -103,6 +105,7 @@ export type Shipment = {
   chw: number | null;
   aes: string | null;
   created_at: string;
+  updated_at?: string | null;
   // Included relations
   status?: Status;
   logs?: Log[];

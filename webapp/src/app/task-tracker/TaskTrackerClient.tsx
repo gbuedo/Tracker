@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import { Task, Subtask } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import {
   createTaskAction, updateTaskAction, deleteTaskAction, toggleSubtaskAction 
 } from "@/actions/tasks";
 import { format } from "date-fns";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface TaskTrackerClientProps {
   initialTasks: Task[];
@@ -29,6 +31,22 @@ export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
   const [sortBy, setSortBy] = useState<"created_at" | "deadline">("deadline");
   const [groupBy, setGroupBy] = useState<"status" | "assignee">("status");
   const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
+
+  // Linkage states
+  const [taskShipmentId, setTaskShipmentId] = useState("");
+  const [taskShipmentRef, setTaskShipmentRef] = useState("");
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const sId = searchParams.get("shipment_id");
+    const sRef = searchParams.get("reference");
+    if (sId) {
+      setTaskShipmentId(sId);
+      if (sRef) setTaskShipmentRef(sRef);
+      setDialogOpen(true);
+    }
+  }, [searchParams]);
 
   // New Task Dialog States
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -93,7 +111,9 @@ export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
         assignee.trim() || null,
         startDate || null,
         deadline || null,
-        subs
+        subs,
+        taskShipmentId ? parseInt(taskShipmentId) : null,
+        taskShipmentRef.trim() || null
       );
 
       // Optimistic update
@@ -111,6 +131,8 @@ export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
     setDeadline("");
     setSubtasksList([]);
     setNewSubtaskTitle("");
+    setTaskShipmentId("");
+    setTaskShipmentRef("");
   };
 
   const handleToggleSubtask = async (taskId: number, subtaskId: string, currentCompleted: boolean) => {
@@ -568,8 +590,33 @@ Please review and update this task as soon as possible!`;
                   )}
                 </div>
 
+                {/* Link Shipment (Optional) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-900 pt-4">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="task_shipment_id" className="text-slate-600 dark:text-slate-250 uppercase text-[10px] tracking-wider">Link Shipment File ID (Optional)</Label>
+                    <Input 
+                      id="task_shipment_id"
+                      type="number"
+                      value={taskShipmentId}
+                      onChange={(e) => setTaskShipmentId(e.target.value)}
+                      placeholder="e.g. 1001"
+                      className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 h-10 font-mono"
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="task_shipment_ref" className="text-slate-600 dark:text-slate-250 uppercase text-[10px] tracking-wider">Link Shipment Reference</Label>
+                    <Input 
+                      id="task_shipment_ref"
+                      value={taskShipmentRef}
+                      onChange={(e) => setTaskShipmentRef(e.target.value)}
+                      placeholder="e.g. REF-2026"
+                      className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 h-10 font-mono"
+                    />
+                  </div>
+                </div>
+
                 {/* Buttons */}
-                <div className="flex justify-end gap-2 border-t border-slate-850 pt-4 mt-6">
+                <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-850 pt-4 mt-6">
                   <Button 
                     type="button" 
                     variant="outline" 
@@ -777,8 +824,19 @@ Please review and update this task as soon as possible!`;
                         >
                           <span className="w-16 text-center font-mono text-[10px] text-slate-600 font-bold shrink-0">#{t.id}</span>
                           
-                          <div className="flex-grow font-bold text-slate-200 pl-2 pr-4 min-w-0 truncate">
-                            {t.title}
+                          <div className="flex-grow font-bold text-slate-200 pl-2 pr-4 min-w-0 flex flex-col justify-center">
+                            <span className="truncate">{t.title}</span>
+                            {t.shipment_id && (
+                              <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
+                                <Link 
+                                  href={`/shipment/${t.shipment_id}`}
+                                  className="inline-flex items-center gap-1 text-[10px] text-indigo-500 dark:text-indigo-450 hover:text-indigo-650 dark:hover:text-indigo-350 font-bold font-mono transition-colors"
+                                >
+                                  <ExternalLink className="w-2.5 h-2.5" />
+                                  File #{t.shipment_id} {t.shipment_reference ? `(${t.shipment_reference})` : ""}
+                                </Link>
+                              </div>
+                            )}
                           </div>
 
                           <div className="w-32 truncate px-3 shrink-0 flex items-center gap-1.5 text-slate-400 font-medium">
@@ -1030,10 +1088,22 @@ Please review and update this task as soon as possible!`;
                             {/* Card title */}
                             <h4 
                               onClick={() => setExpandedTaskId(isExpanded ? null : t.id)}
-                              className="font-bold text-slate-200 text-xs hover:text-indigo-400 cursor-pointer transition-colors leading-tight"
+                              className="font-bold text-slate-200 text-xs hover:text-indigo-400 cursor-pointer transition-colors leading-tight font-sans"
                             >
                               {t.title}
                             </h4>
+
+                            {t.shipment_id && (
+                              <div className="pt-0.5">
+                                <Link 
+                                  href={`/shipment/${t.shipment_id}`}
+                                  className="inline-flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/40 px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-all font-mono"
+                                >
+                                  <ExternalLink className="w-2.5 h-2.5 text-indigo-500" />
+                                  File #{t.shipment_id} {t.shipment_reference ? `(${t.shipment_reference})` : ""}
+                                </Link>
+                              </div>
+                            )}
 
                             {/* Proximity badge & Assignee */}
                             <div className="flex flex-wrap justify-between items-center gap-2 pt-1">

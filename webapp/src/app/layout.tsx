@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const outfit = Outfit({
   variable: "--font-sans",
@@ -27,7 +28,10 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col overflow-x-hidden w-full max-w-full">{children}</body>
+      <body className="min-h-full flex flex-col overflow-x-hidden w-full max-w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-200">
+        {children}
+        <ThemeToggle />
+      </body>
     </html>
   );
 }
