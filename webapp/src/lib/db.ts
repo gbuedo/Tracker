@@ -444,11 +444,46 @@ async function queryWithFallback<T>(supabaseQuery: () => Promise<any>, fallbackF
   }
 }
 
+function processLogStatus(log: any, allStatuses: Status[]) {
+  if (!log || !log.event_text) return log;
+  
+  let status_id = log.status_id || null;
+  let event_text = log.event_text;
+  
+  const statusRegex = /\|\|STATUS_ID:(\d+)\|\|/;
+  const match = event_text.match(statusRegex);
+  if (match) {
+    status_id = parseInt(match[1]);
+    event_text = event_text.replace(statusRegex, "").trim();
+  }
+  
+  if (!status_id) {
+    const milestoneMatch = event_text.match(/Milestone status updated to:\s*(.*)/i);
+    if (milestoneMatch) {
+      const name = milestoneMatch[1].trim();
+      const matchedStatus = allStatuses.find(st => st.name.toLowerCase() === name.toLowerCase());
+      if (matchedStatus) {
+        status_id = matchedStatus.id;
+      }
+    }
+  }
+  
+  const status = status_id ? allStatuses.find(st => st.id === status_id) : null;
+  
+  return {
+    ...log,
+    event_text,
+    status_id,
+    status: status || log.status
+  };
+}
+
 // ----------------------------------------------------
 // PUBLIC INTERFACE METHODS
 // ----------------------------------------------------
 
 export async function getShipments(): Promise<Shipment[]> {
+  const allStatuses = await getStatuses();
   const baseShipments = await queryWithFallback<Shipment[]>(
     async () => {
       return await supabase
@@ -469,21 +504,30 @@ export async function getShipments(): Promise<Shipment[]> {
   const filtered = baseShipments.filter(s => s.client_name !== "SYSTEM_DATA_STORE");
 
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
-  const allStatuses = await getStatuses();
+  const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
 
   return filtered.map(s => {
+    if (s.logs) {
+      s.logs = s.logs.map(l => processLogStatus(l, allStatuses));
+    }
+    let updated = { ...s };
+
     const customStatusId = shipmentStatuses[s.id];
     if (customStatusId !== undefined) {
       const matched = allStatuses.find(st => st.id === customStatusId);
       if (matched) {
-        return {
-          ...s,
-          status_id: customStatusId,
-          status: matched
-        };
+        updated.status_id = customStatusId;
+        updated.status = matched;
       }
     }
-    return s;
+
+    const customDt = shipmentDatetimes[s.id];
+    if (customDt) {
+      if (customDt.eta !== undefined) updated.eta = customDt.eta;
+      if (customDt.etd !== undefined) updated.etd = customDt.etd;
+    }
+
+    return updated;
   });
 }
 
@@ -531,13 +575,12 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
   if (baseShipment.logs) {
     const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
     const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
-    const logStatuses = await getSystemValue<Record<string, number>>("SYSTEM_LOG_STATUSES", {});
     const allStatuses = await getStatuses();
 
     baseShipment.logs = baseShipment.logs.map((log: any) => {
-      let updatedLog = { ...log };
+      let updatedLog = processLogStatus(log, allStatuses);
 
-      const customConceptId = logConcepts[log.id];
+      const customConceptId = logConcepts[updatedLog.id];
       if (customConceptId !== undefined) {
         const concept = customConcepts.find(c => c.id === customConceptId);
         if (concept) {
@@ -546,20 +589,13 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
         }
       }
 
-      const logStatusId = logStatuses[log.id] || log.status_id;
-      if (logStatusId !== undefined && logStatusId !== null) {
-        const status = allStatuses.find(st => st.id === logStatusId);
-        if (status) {
-          updatedLog.status_id = logStatusId;
-          updatedLog.status = status;
-        }
-      }
-
       return updatedLog;
     });
   }
 
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+  const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+
   const customStatusId = shipmentStatuses[id];
   if (customStatusId !== undefined) {
     const allStatuses = await getStatuses();
@@ -570,21 +606,30 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
     }
   }
 
+  const customDt = shipmentDatetimes[id];
+  if (customDt) {
+    if (customDt.eta !== undefined) baseShipment.eta = customDt.eta;
+    if (customDt.etd !== undefined) baseShipment.etd = customDt.etd;
+  }
+
   if (baseShipment.children) {
     const allStatuses = await getStatuses();
     baseShipment.children = baseShipment.children.map(child => {
+      let updatedChild = { ...child };
       const childCustomId = shipmentStatuses[child.id];
       if (childCustomId !== undefined) {
         const matched = allStatuses.find(st => st.id === childCustomId);
         if (matched) {
-          return {
-            ...child,
-            status_id: childCustomId,
-            status: matched
-          };
+          updatedChild.status_id = childCustomId;
+          updatedChild.status = matched;
         }
       }
-      return child;
+      const childDt = shipmentDatetimes[child.id];
+      if (childDt) {
+        if (childDt.eta !== undefined) updatedChild.eta = childDt.eta;
+        if (childDt.etd !== undefined) updatedChild.etd = childDt.etd;
+      }
+      return updatedChild;
     });
   }
 
@@ -649,6 +694,12 @@ export async function createShipment(
     data.shipments.push(newShipment);
     writeMockData(data);
 
+    if (extraCopy.eta || extraCopy.etd) {
+      const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+      shipmentDatetimes[newId] = { eta: extraCopy.eta || null, etd: extraCopy.etd || null };
+      await setSystemValue("SYSTEM_SHIPMENT_DATETIMES", shipmentDatetimes);
+    }
+
     if (initialStatusId && initialStatusId >= 10000) {
       const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
       shipmentStatuses[newId] = initialStatusId;
@@ -694,6 +745,16 @@ export async function createShipment(
       await updateAppConfig({ next_shipment_id: targetId + 1 });
     } catch (e) {
       // Ignore config saving error
+    }
+
+    if (extraCopy.eta || extraCopy.etd) {
+      try {
+        const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+        shipmentDatetimes[targetId] = { eta: extraCopy.eta || null, etd: extraCopy.etd || null };
+        await setSystemValue("SYSTEM_SHIPMENT_DATETIMES", shipmentDatetimes);
+      } catch (dtErr) {
+        console.error("Failed to save full datetimes:", dtErr);
+      }
     }
 
     if (initialStatusId && initialStatusId >= 10000) {
@@ -742,6 +803,12 @@ export async function createShipment(
       data.shipments.push(newShipment);
       writeMockData(data);
 
+      if (extraCopy.eta || extraCopy.etd) {
+        const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+        shipmentDatetimes[newId] = { eta: extraCopy.eta || null, etd: extraCopy.etd || null };
+        await setSystemValue("SYSTEM_SHIPMENT_DATETIMES", shipmentDatetimes);
+      }
+
       if (initialStatusId && initialStatusId >= 10000) {
         const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
         shipmentStatuses[newId] = initialStatusId;
@@ -770,6 +837,11 @@ export async function addLog(req: {
   amount_type?: 'cost' | 'selling' | null,
   status_id?: number | null
 }): Promise<void> {
+  let eventTextWithStatus = req.event_text;
+  if (req.status_id) {
+    eventTextWithStatus += ` ||STATUS_ID:${req.status_id}||`;
+  }
+
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
     isDemo = true;
@@ -778,7 +850,7 @@ export async function addLog(req: {
     const newLog = {
       id: `log-${Date.now()}`,
       shipment_id: req.shipment_id,
-      event_text: req.event_text,
+      event_text: eventTextWithStatus,
       is_external: req.is_external,
       billable_concept_id: req.billable_concept_id || null,
       amount: req.amount || null,
@@ -804,9 +876,12 @@ export async function addLog(req: {
   try {
     const isCustomConcept = req.billable_concept_id && req.billable_concept_id >= 10000;
     const { status_id, ...logPayload } = req;
+    
+    // Override event_text with status metadata payload
+    const updatedPayload = { ...logPayload, event_text: eventTextWithStatus };
     const dbReq = isCustomConcept 
-      ? { ...logPayload, billable_concept_id: null }
-      : logPayload;
+      ? { ...updatedPayload, billable_concept_id: null }
+      : updatedPayload;
 
     const { data: insertedRows, error } = await supabase.from("logs").insert(dbReq).select();
     if (error) throw error;
@@ -837,7 +912,7 @@ export async function addLog(req: {
       const newLog = {
         id: `log-${Date.now()}`,
         shipment_id: req.shipment_id,
-        event_text: req.event_text,
+        event_text: eventTextWithStatus,
         is_external: req.is_external,
         billable_concept_id: req.billable_concept_id || null,
         amount: req.amount || null,
@@ -1298,6 +1373,8 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
 
   // Post-process custom statuses
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+  const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+
   const customStatusId = shipmentStatuses[res.shipment.id];
   if (customStatusId !== undefined) {
     const allStatuses = await getStatuses();
@@ -1308,31 +1385,27 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
     }
   }
 
+  const customDt = shipmentDatetimes[res.shipment.id];
+  if (customDt) {
+    if (customDt.eta !== undefined) res.shipment.eta = customDt.eta;
+    if (customDt.etd !== undefined) res.shipment.etd = customDt.etd;
+  }
+
   // Post-process custom concepts and statuses for logs
   if (res.logs) {
     const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
     const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
-    const logStatuses = await getSystemValue<Record<string, number>>("SYSTEM_LOG_STATUSES", {});
     const allStatuses = await getStatuses();
 
     res.logs = res.logs.map((log: any) => {
-      let updatedLog = { ...log };
+      let updatedLog = processLogStatus(log, allStatuses);
 
-      const customConceptId = logConcepts[log.id];
+      const customConceptId = logConcepts[updatedLog.id];
       if (customConceptId !== undefined) {
         const concept = customConcepts.find(c => c.id === customConceptId);
         if (concept) {
           updatedLog.billable_concept_id = customConceptId;
           updatedLog.billable_concept = concept;
-        }
-      }
-
-      const logStatusId = logStatuses[log.id] || log.status_id;
-      if (logStatusId !== undefined && logStatusId !== null) {
-        const status = allStatuses.find(st => st.id === logStatusId);
-        if (status) {
-          updatedLog.status_id = logStatusId;
-          updatedLog.status = status;
         }
       }
 
@@ -1540,6 +1613,19 @@ export async function updateShipment(
         delete shipmentStatuses[id];
         await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
       }
+    }
+  }
+
+  if (fieldsCopy.eta !== undefined || fieldsCopy.etd !== undefined) {
+    try {
+      const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+      const current = shipmentDatetimes[id] || {};
+      if (fieldsCopy.eta !== undefined) current.eta = fieldsCopy.eta;
+      if (fieldsCopy.etd !== undefined) current.etd = fieldsCopy.etd;
+      shipmentDatetimes[id] = current;
+      await setSystemValue("SYSTEM_SHIPMENT_DATETIMES", shipmentDatetimes);
+    } catch (dtErr) {
+      console.error("Failed to save full datetimes in updateShipment:", dtErr);
     }
   }
 

@@ -11,7 +11,7 @@ export default async function TaskTrackerPage() {
   const isDemoMode = db.checkIsDemoMode();
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-300">
       
       {/* ⚠️ DEMO MODE ACTIVE BANNER */}
       {isDemoMode && (
@@ -33,20 +33,20 @@ export default async function TaskTrackerPage() {
       <div className="max-w-6xl w-full mx-auto p-4 md:p-8 space-y-8 flex-grow">
         
         {/* Terminal Header (Airport Board Style) */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0a0a0c] border-t-4 border-indigo-500 border-x border-b border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-lg">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-[#0a0a0c] border-t-4 border-indigo-500 border-x border-b border-slate-200 dark:border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-lg">
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="space-y-2 flex-grow">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-550 dark:text-indigo-400 shrink-0">
                 <CheckSquare className="w-5 h-5 animate-pulse" />
               </div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-widest text-indigo-400 uppercase font-mono truncate">
+              <h1 className="text-2xl md:text-3xl font-black tracking-widest text-indigo-650 dark:text-indigo-400 uppercase font-mono truncate">
                 WCS TASK TRACKER
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Link href="/" className="inline-flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white px-2.5 py-1 rounded border border-slate-850 hover:border-slate-700 text-[10px] font-extrabold uppercase tracking-wide transition-all shadow-sm">
+              <Link href="/" className="inline-flex items-center gap-1 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2.5 py-1 rounded border border-slate-200 dark:border-slate-850 hover:border-slate-350 dark:hover:border-slate-700 text-[10px] font-extrabold uppercase tracking-wide transition-all shadow-sm">
                 <ArrowLeft className="w-3.5 h-3.5" /> Back to Main Menu
               </Link>
               <p className="text-xs text-slate-500 font-mono tracking-wider uppercase">
@@ -55,10 +55,10 @@ export default async function TaskTrackerPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 self-stretch md:self-auto justify-between border-t border-slate-900 md:border-none pt-4 md:pt-0">
-            <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-black border border-slate-900 font-mono shrink-0">
+          <div className="flex items-center gap-3 self-stretch md:self-auto justify-between border-t border-slate-200 dark:border-slate-900 md:border-none pt-4 md:pt-0">
+            <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 font-mono shrink-0">
               <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping shrink-0" />
-              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest animate-pulse">
+              <span className="text-[10px] font-bold text-indigo-505 dark:text-indigo-400 uppercase tracking-widest animate-pulse">
                 TASKS FLOW FEED ACTIVE
               </span>
             </div>

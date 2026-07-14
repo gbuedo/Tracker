@@ -25,8 +25,12 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
     setIsSaving(true);
     try {
       const parsedAmount = amount.trim() === "" ? null : parseFloat(amount);
+      let textToSend = eventText.trim();
+      if (log.status_id) {
+        textToSend += ` ||STATUS_ID:${log.status_id}||`;
+      }
       await updateLog(log.id, shipmentId, {
-        event_text: eventText.trim(),
+        event_text: textToSend,
         is_external: isExternal,
         amount: parsedAmount,
       });
