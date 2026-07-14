@@ -577,7 +577,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
     const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
     const allStatuses = await getStatuses();
 
-    baseShipment.logs = baseShipment.logs.map((log: any) => {
+    let processed = baseShipment.logs.map((log: any) => {
       let updatedLog = processLogStatus(log, allStatuses);
 
       const customConceptId = logConcepts[updatedLog.id];
@@ -591,6 +591,26 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
 
       return updatedLog;
     });
+
+    // Deduplicate looped/automatic status updates
+    processed = processed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    const deduped: any[] = [];
+    const seenAutoLogs = new Map<string, number>(); // event_text -> timestamp
+    
+    for (const log of processed) {
+      if (log.event_text && log.event_text.toLowerCase().startsWith("milestone status updated to:")) {
+        const time = new Date(log.created_at).getTime();
+        const existingTime = seenAutoLogs.get(log.event_text);
+        if (existingTime !== undefined && Math.abs(existingTime - time) < 60000) {
+          continue;
+        }
+        seenAutoLogs.set(log.event_text, time);
+      }
+      deduped.push(log);
+    }
+    
+    baseShipment.logs = deduped;
   }
 
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
@@ -898,7 +918,7 @@ export async function addLog(req: {
         logStatuses[insertedRow.id] = status_id;
         await setSystemValue("SYSTEM_LOG_STATUSES", logStatuses);
         // Sync main shipment status
-        await updateShipmentStatus(req.shipment_id, status_id);
+        await updateShipmentStatus(req.shipment_id, status_id, true);
       }
     }
     
@@ -1017,7 +1037,7 @@ export async function deleteLog(id: string): Promise<void> {
 }
 
 
-export async function updateShipmentStatus(shipment_id: number, status_id: number): Promise<void> {
+export async function updateShipmentStatus(shipment_id: number, status_id: number, skipLog: boolean = false): Promise<void> {
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const oldStatusId = shipmentStatuses[shipment_id];
   if (oldStatusId === status_id) return;
@@ -1076,19 +1096,21 @@ export async function updateShipmentStatus(shipment_id: number, status_id: numbe
   }
 
   // Automatically write status change history to shipment timeline logs
-  try {
-    const allStatuses = await getStatuses();
-    const newStatus = allStatuses.find(st => st.id === status_id);
-    if (newStatus) {
-      await addLog({
-        shipment_id,
-        event_text: `Milestone status updated to: ${newStatus.name.toUpperCase()}`,
-        is_external: true,
-        status_id: status_id
-      });
+  if (!skipLog) {
+    try {
+      const allStatuses = await getStatuses();
+      const newStatus = allStatuses.find(st => st.id === status_id);
+      if (newStatus) {
+        await addLog({
+          shipment_id,
+          event_text: `Milestone status updated to: ${newStatus.name.toUpperCase()}`,
+          is_external: true,
+          status_id: status_id
+        });
+      }
+    } catch (logErr) {
+      console.error("Failed to insert status change timeline log:", logErr);
     }
-  } catch (logErr) {
-    console.error("Failed to insert status change timeline log:", logErr);
   }
 }
 
