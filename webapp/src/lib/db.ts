@@ -1767,8 +1767,25 @@ export async function updateShipment(
       const normNew = newVal === "" ? null : newVal;
       const normOld = oldVal === "" ? null : oldVal;
 
-      if (normNew !== normOld) {
-        changes.push(`${fieldLabels[key] || key} updated from "${fmtVal(normOld)}" to "${fmtVal(normNew)}"`);
+      let hasChanged = false;
+      if (key === "eta" || key === "etd") {
+        const d1 = normNew ? new Date(normNew).getTime() : null;
+        const d2 = normOld ? new Date(normOld).getTime() : null;
+        if (d1 !== d2) {
+          hasChanged = true;
+        }
+      } else {
+        hasChanged = normNew !== normOld;
+      }
+
+      if (hasChanged) {
+        let displayOld = fmtVal(normOld);
+        let displayNew = fmtVal(normNew);
+        if (key === "eta" || key === "etd") {
+          displayOld = displayOld.replace("T", " ");
+          displayNew = displayNew.replace("T", " ");
+        }
+        changes.push(`${fieldLabels[key] || key} updated from "${displayOld}" to "${displayNew}"`);
       }
     }
 

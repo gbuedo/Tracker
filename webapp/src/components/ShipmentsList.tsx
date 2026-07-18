@@ -868,46 +868,45 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
 
         </div>
       </div>
-
       {/* --- QUICK OPERATION STATS ROW --- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-700/80 transition-all">
+        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Filtered Cargo Files</p>
-            <p className="text-lg font-black text-white tracking-tight leading-none">{stats.total}</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Filtered Cargo Files</p>
+            <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">{stats.total}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center border border-slate-800">
-            <Truck className="w-4 h-4 text-indigo-400" />
+          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
+            <Truck className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-700/80 transition-all">
+        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Export Operations</p>
-            <p className="text-lg font-black text-sky-400 tracking-tight leading-none">{stats.exports}</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Export Operations</p>
+            <p className="text-lg font-black text-sky-600 dark:text-sky-400 tracking-tight leading-none">{stats.exports}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center border border-slate-800">
-            <Plane className="w-4 h-4 text-sky-400 animate-pulse" />
+          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
+            <Plane className="w-4 h-4 text-sky-500 dark:text-sky-400 animate-pulse" />
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-700/80 transition-all">
+        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Import Operations</p>
-            <p className="text-lg font-black text-teal-400 tracking-tight leading-none">{stats.imports}</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Import Operations</p>
+            <p className="text-lg font-black text-teal-650 dark:text-teal-400 tracking-tight leading-none">{stats.imports}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center border border-slate-800">
-            <Ship className="w-4 h-4 text-teal-400" />
+          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
+            <Ship className="w-4 h-4 text-teal-505 dark:text-teal-400" />
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-700/80 transition-all">
+        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Transit Operations</p>
-            <p className="text-lg font-black text-amber-500 tracking-tight leading-none">{stats.transits}</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transit Operations</p>
+            <p className="text-lg font-black text-amber-600 dark:text-amber-500 tracking-tight leading-none">{stats.transits}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center border border-slate-800">
-            <CheckCircle2 className="w-4 h-4 text-amber-500" />
+          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
+            <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-500" />
           </div>
         </div>
       </div>
@@ -916,8 +915,8 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         const renderShipmentTable = (shipmentsList: Shipment[]) => {
           return (
             <Table>
-              <TableHeader className="bg-[#0a0a0c] border-slate-900">
-                <TableRow className="hover:bg-transparent border-slate-900">
+              <TableHeader className="bg-slate-100 dark:bg-[#0a0a0c] border-slate-200 dark:border-slate-900">
+                <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-900">
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[95px] whitespace-normal leading-tight">ID & Relations</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">Reference / PO</TableHead>
@@ -1004,40 +1003,40 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                             )}
                           </TableCell>
                           
-                          <TableCell className="font-bold text-slate-100 group-hover:text-yellow-400 transition-colors truncate max-w-[120px] sm:max-w-[180px]">
+                          <TableCell className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors truncate max-w-[120px] sm:max-w-[180px]">
                             {ship.client_name}
                           </TableCell>
                           
-                          <TableCell className="text-slate-300 font-mono text-xs truncate max-w-[120px] hidden sm:table-cell">
-                            {ship.reference || <span className="text-slate-655">-</span>}
+                          <TableCell className="text-slate-600 dark:text-slate-300 font-mono text-xs truncate max-w-[120px] hidden sm:table-cell">
+                            {ship.reference || <span className="text-slate-400 dark:text-slate-655">-</span>}
                           </TableCell>
                           
                           <TableCell className="hidden md:table-cell">
                             <div className="flex items-center gap-1.5">
                               <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border uppercase ${
                                   ship.shipment_type === 'Export' 
-                                    ? 'bg-sky-950/40 text-sky-400 border-sky-900/30' 
+                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-900/30' 
                                     : ship.shipment_type === 'Import'
-                                    ? 'bg-teal-950/40 text-teal-400 border-teal-900/30'
+                                    ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-650 dark:text-teal-400 border-teal-200 dark:border-teal-900/30'
                                     : ship.shipment_type === 'Quote'
-                                    ? 'bg-yellow-950/40 text-yellow-500 border-yellow-900/30'
+                                    ? 'bg-yellow-50 dark:bg-yellow-950/40 text-yellow-600 dark:text-yellow-500 border-yellow-200 dark:border-yellow-900/30'
                                     : ship.shipment_type === 'Transit'
-                                    ? 'bg-amber-950/40 text-amber-500 border-amber-900/30'
+                                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-500 border-amber-200 dark:border-amber-900/30'
                                     : ship.shipment_type === 'Combine'
-                                    ? 'bg-indigo-950/40 text-indigo-400 border-indigo-900/30'
-                                    : 'bg-slate-900 text-slate-400 border-slate-800'
+                                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/30'
+                                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                               }`}>
                                 {ship.shipment_type}
                               </span>
                               {ship.transport_mode && (
-                                <span className="inline-flex items-center justify-center p-1 rounded-md bg-slate-950 border border-slate-900" title={ship.transport_mode}>
+                                <span className="inline-flex items-center justify-center p-1 rounded-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900" title={ship.transport_mode}>
                                   {getTransportIcon(ship.transport_mode)}
                                 </span>
                               )}
                             </div>
                           </TableCell>
  
-                          <TableCell className="text-slate-350 font-sans text-xs hidden md:table-cell max-w-[100px] truncate">
+                          <TableCell className="text-slate-700 dark:text-slate-350 font-sans text-xs hidden md:table-cell max-w-[100px] truncate">
                             {(() => {
                               const carrier = getCarrierObject(ship.expo_mawb);
                               if (carrier) {
@@ -1045,47 +1044,47 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                   <DropdownMenu>
                                     <DropdownMenuTrigger
                                       onClick={(e) => e.stopPropagation()} 
-                                      className="font-bold text-yellow-500 hover:text-yellow-450 hover:underline cursor-pointer text-left outline-none shrink-0"
+                                      className="font-bold text-yellow-600 dark:text-yellow-500 hover:text-yellow-700 dark:hover:text-yellow-450 hover:underline cursor-pointer text-left outline-none shrink-0"
                                     >
                                       {carrier.name}
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-64 bg-slate-950 border border-slate-900 text-slate-100 p-4 space-y-2.5 rounded-xl shadow-2xl z-50">
-                                      <div className="border-b border-slate-900 pb-2 space-y-1">
+                                    <DropdownMenuContent className="w-64 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 text-slate-900 dark:text-slate-100 p-4 space-y-2.5 rounded-xl shadow-2xl z-50">
+                                      <div className="border-b border-slate-200 dark:border-slate-900 pb-2 space-y-1">
                                         <div className="flex items-center gap-1.5">
-                                          <span className="font-mono bg-slate-900 text-yellow-500 px-1 py-0.25 rounded border border-slate-800 text-[9px] font-black shrink-0">
+                                          <span className="font-mono bg-slate-100 dark:bg-slate-900 text-yellow-600 dark:text-yellow-500 px-1 py-0.25 rounded border border-slate-200 dark:border-slate-800 text-[9px] font-black shrink-0">
                                             {carrier.code}
                                           </span>
-                                          <span className="font-extrabold text-xs text-white truncate">{carrier.name}</span>
+                                          <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">{carrier.name}</span>
                                         </div>
                                         {carrier.handling_agent && (
                                           <p className="text-[10px] text-slate-500">Handling Agent: {carrier.handling_agent}</p>
                                         )}
                                       </div>
                                       
-                                      <div className="space-y-2 text-[11px] font-semibold text-slate-400">
+                                      <div className="space-y-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                                         {carrier.phone && (
                                           <div className="flex items-center gap-1.5">
-                                            <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                                            <a href={`tel:${carrier.phone}`} className="text-slate-200 hover:text-yellow-500 font-mono">
+                                            <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                                            <a href={`tel:${carrier.phone}`} className="text-slate-700 dark:text-slate-200 hover:text-yellow-600 dark:hover:text-yellow-500 font-mono">
                                               {carrier.phone}
                                             </a>
                                           </div>
                                         )}
                                         {carrier.email && (
                                           <div className="flex items-center gap-1.5">
-                                            <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                                            <a href={`mailto:${carrier.email}`} className="text-slate-200 hover:text-yellow-500 font-mono truncate block max-w-[200px]" title={carrier.email}>
+                                            <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                                            <a href={`mailto:${carrier.email}`} className="text-slate-700 dark:text-slate-200 hover:text-yellow-600 dark:hover:text-yellow-500 font-mono truncate block max-w-[200px]" title={carrier.email}>
                                               {carrier.email}
                                             </a>
                                           </div>
                                         )}
                                         {carrier.firms_code && (
-                                          <div className="text-[10px] font-mono text-slate-500">
-                                            FIRMS Code: <span className="text-slate-350 font-bold">{carrier.firms_code}</span>
+                                          <div className="text-[10px] font-mono text-slate-550 dark:text-slate-500">
+                                            FIRMS Code: <span className="text-slate-700 dark:text-slate-350 font-bold">{carrier.firms_code}</span>
                                           </div>
                                         )}
                                         {carrier.address && (
-                                          <p className="text-[10px] text-slate-550 leading-snug pt-1.5 border-t border-slate-900/40">
+                                          <p className="text-[10px] text-slate-600 dark:text-slate-550 leading-snug pt-1.5 border-t border-slate-200 dark:border-slate-900/40">
                                             {carrier.address}
                                           </p>
                                         )}
@@ -1094,7 +1093,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                   </DropdownMenu>
                                 );
                               }
-                              return <span className="font-bold text-slate-400">{getCarrierName(ship.expo_mawb)}</span>;
+                              return <span className="font-bold text-slate-500 dark:text-slate-400">{getCarrierName(ship.expo_mawb)}</span>;
                             })()}
                           </TableCell>
  
@@ -1152,11 +1151,10 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                               {ship.status?.name || 'In Progress'}
                             </span>
                           </TableCell>
-                          
-                          <TableCell className="text-center py-1.5">
+                                              <TableCell className="text-center py-1.5">
                             <button
                               onClick={(e) => toggleRow(ship.id, e)}
-                              className="p-1 rounded bg-slate-950 border border-slate-900 hover:bg-slate-900 text-slate-400 hover:text-white transition-colors"
+                              className="p-1 rounded bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                             >
                               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                             </button>
@@ -1165,25 +1163,25 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         
                         {/* Expanded details container */}
                         {isExpanded && (
-                          <TableRow className="bg-[#0e1017] border-y border-slate-900 hover:bg-transparent">
+                          <TableRow className="bg-slate-50 dark:bg-[#0e1017] border-y border-slate-200 dark:border-slate-900 hover:bg-transparent">
                             <TableCell colSpan={10} className="p-4">
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-400">
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-600 dark:text-slate-400">
                                 
                                 {/* Airbills & Documentation */}
                                 <div className="space-y-1.5">
-                                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Bills & Documentation</h4>
+                                  <h4 className="text-[10px] font-bold text-slate-550 dark:text-slate-500 uppercase tracking-widest">Bills & Documentation</h4>
                                   <div className="space-y-1 font-mono text-[11px]">
                                     {ship.expo_mawb ? (
                                       <div>
                                         <span className="text-[9px] text-slate-500 uppercase font-black mr-1.5">MAWB Ref:</span>
-                                        <span className="text-slate-200">{ship.expo_mawb}</span>
+                                        <span className="text-slate-800 dark:text-slate-200">{ship.expo_mawb}</span>
                                       </div>
                                     ) : null}
                                     {ship.expo_hawb ? (
                                        <div className="flex flex-wrap items-center gap-1">
-                                         <span className="text-[9px] text-slate-550 dark:text-slate-500 uppercase font-black mr-1">HAWBs:</span>
+                                         <span className="text-[9px] text-slate-500 uppercase font-black mr-1">HAWBs:</span>
                                          {ship.expo_hawb.split(/,\s*/).map((h, idx) => (
-                                           <span key={idx} className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 px-1 py-0.25 rounded text-[10px] uppercase font-bold">
+                                           <span key={idx} className="bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 px-1 py-0.25 rounded text-[10px] uppercase font-bold">
                                              {h.trim()}
                                            </span>
                                          ))}
@@ -1192,26 +1190,26 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                     {ship.aes ? (
                                       <div>
                                         <span className="text-[9px] text-slate-500 uppercase font-black mr-1.5">AES Ref:</span>
-                                        <span className="text-sky-400">{ship.aes}</span>
+                                        <span className="text-sky-655 dark:text-sky-400">{ship.aes}</span>
                                       </div>
                                     ) : null}
                                     {!ship.expo_mawb && !ship.expo_hawb && !ship.aes && (
-                                      <span className="italic text-slate-605 text-[11px]">No bills loaded</span>
+                                      <span className="italic text-slate-400 dark:text-slate-600 text-[11px]">No bills loaded</span>
                                     )}
                                   </div>
                                 </div>
 
                                 {/* Tracking Files */}
                                 <div className="space-y-1.5">
-                                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">File References</h4>
-                                  <div className="space-y-1 font-mono">
+                                  <h4 className="text-[10px] font-bold text-slate-550 dark:text-slate-500 uppercase tracking-widest">File References</h4>
+                                  <div className="space-y-1 font-mono text-[11px]">
                                     <div className="flex justify-between max-w-[180px]">
                                       <span className="text-slate-500">CT File:</span>
-                                      <span className="font-mono text-slate-200 font-bold">{ship.ct_file || "N/A"}</span>
+                                      <span className="font-mono text-slate-800 dark:text-slate-200 font-bold">{ship.ct_file || "N/A"}</span>
                                     </div>
                                     <div className="flex justify-between max-w-[180px]">
                                       <span className="text-slate-500">Warehouse Receipt:</span>
-                                      <span className="font-mono text-slate-200 font-bold">{ship.warehouse_receipt || "N/A"}</span>
+                                      <span className="font-mono text-slate-800 dark:text-slate-200 font-bold">{ship.warehouse_receipt || "N/A"}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -1220,17 +1218,17 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                 <div className="space-y-1.5">
                                   <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Weight & Metrics</h4>
                                   <div className="grid grid-cols-3 gap-1.5 font-mono text-center">
-                                    <div className="bg-slate-900 border border-slate-800 p-1.5 rounded">
-                                      <div className="text-[8px] text-slate-550 uppercase">PCS</div>
-                                      <div className="font-bold text-slate-200">{ship.pcs || "-"}</div>
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded">
+                                      <div className="text-[8px] text-slate-500 dark:text-slate-550 uppercase">PCS</div>
+                                      <div className="font-bold text-slate-800 dark:text-slate-200">{ship.pcs || "-"}</div>
                                     </div>
-                                    <div className="bg-slate-900 border border-slate-800 p-1.5 rounded">
-                                      <div className="text-[8px] text-slate-550 uppercase">KGS</div>
-                                      <div className="font-bold text-teal-400">{ship.kgs || "-"}</div>
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded">
+                                      <div className="text-[8px] text-slate-500 dark:text-slate-550 uppercase">KGS</div>
+                                      <div className="font-bold text-teal-600 dark:text-teal-400">{ship.kgs || "-"}</div>
                                     </div>
-                                    <div className="bg-slate-900 border border-slate-800 p-1.5 rounded">
-                                      <div className="text-[8px] text-slate-550 uppercase">CHW</div>
-                                      <div className="font-bold text-amber-500">{ship.chw || "-"}</div>
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded">
+                                      <div className="text-[8px] text-slate-500 dark:text-slate-550 uppercase">CHW</div>
+                                      <div className="font-bold text-amber-600 dark:text-amber-500">{ship.chw || "-"}</div>
                                     </div>
                                   </div>
                                 </div>
