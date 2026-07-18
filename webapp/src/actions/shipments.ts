@@ -80,7 +80,8 @@ export async function addLog(req: {
   billable_concept_id?: number | null, 
   amount?: number | null,
   amount_type?: 'cost' | 'selling' | null,
-  status_id?: number | null
+  status_id?: number | null,
+  skipSyncStatus?: boolean
 }) {
   await db.addLog(req);
   revalidatePath(`/shipment/${req.shipment_id}`);
@@ -91,6 +92,14 @@ export async function updateShipmentStatus(shipment_id: number, status_id: numbe
   await db.updateShipmentStatus(shipment_id, status_id);
   revalidatePath("/");
   revalidatePath(`/shipment/${shipment_id}`);
+}
+
+export async function toggleShipmentFlag(id: number) {
+  const isFlagged = await db.toggleShipmentFlag(id);
+  revalidatePath("/");
+  revalidatePath("/operations");
+  revalidatePath(`/shipment/${id}`);
+  return isFlagged;
 }
 
 export async function splitShipment(parent_id: number, splitDetails: any) {

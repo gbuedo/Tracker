@@ -110,4 +110,5 @@ export type Shipment = {
   status?: Status;
   logs?: Log[];
   children?: Shipment[];
+  is_flagged?: boolean;
 };

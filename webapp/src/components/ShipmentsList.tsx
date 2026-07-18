@@ -8,7 +8,7 @@ import {
   Search, Ship, Plane, Truck, Filter, ArrowUpRight, Calendar, 
   FileText, CheckCircle2, User, Settings, Sparkles, Plus, 
   ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink, Trash2, Download,
-  Mail, Phone
+  Mail, Phone, Flag
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { CarrierDirectoryDialog } from "@/components/CarrierDirectoryDialog";
 import { Label } from "@/components/ui/label";
-import { addCustomer, addStatus, updateAppConfig, deleteShipment, deleteStatus, addCarrier, deleteCarrier, getFullBackupData, importFullBackupAction } from "@/actions/shipments";
+import { addCustomer, addStatus, updateAppConfig, deleteShipment, deleteStatus, addCarrier, deleteCarrier, getFullBackupData, importFullBackupAction, toggleShipmentFlag } from "@/actions/shipments";
 
 interface ShipmentsListProps {
   initialShipments: Shipment[];
@@ -918,12 +918,13 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
             <Table>
               <TableHeader className="bg-[#0a0a0c] border-slate-900">
                 <TableRow className="hover:bg-transparent border-slate-900">
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[80px] whitespace-normal leading-tight">ID & Relations</TableHead>
+                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[95px] whitespace-normal leading-tight">ID & Relations</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">Reference / PO</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[130px] whitespace-normal leading-tight hidden md:table-cell">Type & Mode</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden md:table-cell">Carrier</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">ETD / ETA</TableHead>
+                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Days to ETD/ETA</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Last Update</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
                   <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-center w-[80px]">Expand</TableHead>
@@ -932,7 +933,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <TableBody>
                 {shipmentsList.length === 0 ? (
                   <TableRow className="border-slate-850 hover:bg-transparent">
-                    <TableCell colSpan={9} className="text-center py-8 text-slate-500 font-medium">
+                    <TableCell colSpan={10} className="text-center py-8 text-slate-500 font-medium">
                       No shipments found in this group.
                     </TableCell>
                   </TableRow>
@@ -941,8 +942,23 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                     const isExpanded = !!expandedRows[ship.id];
                     const isToday = (dateStr: string | null) => {
                       if (!dateStr) return false;
+                      const onlyDate = dateStr.split("T")[0].split(" ")[0];
                       const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
-                      return dateStr === todayStr;
+                      return onlyDate === todayStr;
+                    };
+                    const formatDaysDiff = (targetDateStr: string | null) => {
+                      if (!targetDateStr) return "-";
+                      const target = new Date(targetDateStr);
+                      const now = new Date();
+                      
+                      const targetDate = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+                      const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                      
+                      const diffTime = targetDate.getTime() - nowDate.getTime();
+                      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                      
+                      if (diffDays === 0) return "Today";
+                      return diffDays > 0 ? `+${diffDays}d` : `${diffDays}d`;
                     };
                     const hasTodayEtaEtd = isToday(ship.eta) || isToday(ship.etd);
                     return (
@@ -950,25 +966,36 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         <TableRow
                           onClick={(e) => toggleRow(ship.id, e)}
                           className={`border-slate-900 hover:bg-slate-900/50 cursor-pointer transition-all duration-200 group text-slate-350 ${
-                            hasTodayEtaEtd 
-                              ? "bg-rose-950/20 hover:bg-rose-950/30 text-rose-200 border-l-2 border-l-rose-500" 
-                              : ship.parent_shipment_id 
+                            ship.parent_shipment_id 
                               ? "bg-[#0b0c10]" 
                               : ""
                           }`}
                         >
                           <TableCell className="font-bold text-yellow-500 py-1.5 relative">
-                            <div className="flex items-center space-x-1.5 font-mono">
-                              {ship.parent_shipment_id && (
-                                <span className="text-indigo-500 mr-0.5 text-[11px] font-black font-sans">↳</span>
-                              )}
-                              <span>{ship.id}</span>
-                              {hasTodayEtaEtd && (
-                                <span className="relative flex h-2.5 w-2.5 shrink-0 ml-1" title="Priority: ETA/ETD Today">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-                                </span>
-                              )}
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await toggleShipmentFlag(ship.id);
+                                  router.refresh();
+                                }}
+                                className="focus:outline-none shrink-0"
+                                title={ship.is_flagged ? "Unflag Shipment" : "Flag Shipment"}
+                              >
+                                <Flag 
+                                  className={`w-3.5 h-3.5 transition-transform active:scale-75 ${
+                                    ship.is_flagged 
+                                      ? "fill-red-500 text-red-500 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]" 
+                                      : "text-slate-600 hover:text-slate-400 dark:text-slate-700 dark:hover:text-slate-500"
+                                  }`} 
+                                />
+                              </button>
+                              <div className="flex items-center space-x-1 font-mono">
+                                {ship.parent_shipment_id && (
+                                  <span className="text-indigo-500 mr-0.5 text-[11px] font-black font-sans">↳</span>
+                                )}
+                                <span>{ship.id}</span>
+                              </div>
                             </div>
                             {ship.parent_shipment_id && (
                               <span className="text-[8px] bg-indigo-950/70 text-indigo-350 border border-indigo-900/30 px-1 py-0.25 rounded font-mono block mt-0.5 w-max">
@@ -1070,11 +1097,34 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                               return <span className="font-bold text-slate-400">{getCarrierName(ship.expo_mawb)}</span>;
                             })()}
                           </TableCell>
+ 
+                          <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-slate-700 dark:text-slate-200 font-bold">{formatDateTimeSmall(ship.etd)}</span>
+                                {isToday(ship.etd) && (
+                                  <span className="relative flex h-2 w-2 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 dark:bg-slate-200 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-650 dark:bg-slate-200"></span>
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sky-600 dark:text-sky-400 font-bold">{formatDateTimeSmall(ship.eta)}</span>
+                                {isToday(ship.eta) && (
+                                  <span className="relative flex h-2 w-2 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
 
                           <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-slate-700 dark:text-slate-200 font-bold">{formatDateTimeSmall(ship.etd)}</span>
-                              <span className="text-sky-600 dark:text-sky-400 font-bold">{formatDateTimeSmall(ship.eta)}</span>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-slate-550 dark:text-slate-500 text-[11px] font-semibold">{formatDaysDiff(ship.etd)}</span>
+                              <span className="text-sky-500 dark:text-sky-455 text-[11px] font-semibold">{formatDaysDiff(ship.eta)}</span>
                             </div>
                           </TableCell>
                           
@@ -1116,7 +1166,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         {/* Expanded details container */}
                         {isExpanded && (
                           <TableRow className="bg-[#0e1017] border-y border-slate-900 hover:bg-transparent">
-                            <TableCell colSpan={9} className="p-4">
+                            <TableCell colSpan={10} className="p-4">
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-400">
                                 
                                 {/* Airbills & Documentation */}

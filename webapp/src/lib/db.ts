@@ -505,6 +505,7 @@ export async function getShipments(): Promise<Shipment[]> {
 
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+  const flaggedList = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
 
   return filtered.map(s => {
     if (s.logs) {
@@ -526,6 +527,8 @@ export async function getShipments(): Promise<Shipment[]> {
       if (customDt.eta !== undefined) updated.eta = customDt.eta;
       if (customDt.etd !== undefined) updated.etd = customDt.etd;
     }
+
+    updated.is_flagged = flaggedList.includes(s.id);
 
     return updated;
   });
@@ -615,6 +618,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
 
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+  const flaggedList = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
 
   const customStatusId = shipmentStatuses[id];
   if (customStatusId !== undefined) {
@@ -631,6 +635,8 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
     if (customDt.eta !== undefined) baseShipment.eta = customDt.eta;
     if (customDt.etd !== undefined) baseShipment.etd = customDt.etd;
   }
+
+  baseShipment.is_flagged = flaggedList.includes(baseShipment.id);
 
   if (baseShipment.children) {
     const allStatuses = await getStatuses();
@@ -649,6 +655,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
         if (childDt.eta !== undefined) updatedChild.eta = childDt.eta;
         if (childDt.etd !== undefined) updatedChild.etd = childDt.etd;
       }
+      updatedChild.is_flagged = flaggedList.includes(child.id);
       return updatedChild;
     });
   }
@@ -855,7 +862,8 @@ export async function addLog(req: {
   billable_concept_id?: number | null, 
   amount?: number | null,
   amount_type?: 'cost' | 'selling' | null,
-  status_id?: number | null
+  status_id?: number | null,
+  skipSyncStatus?: boolean
 }): Promise<void> {
   let eventTextWithStatus = req.event_text;
   if (req.status_id) {
@@ -1396,6 +1404,7 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
   // Post-process custom statuses
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+  const flaggedList = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
 
   const customStatusId = shipmentStatuses[res.shipment.id];
   if (customStatusId !== undefined) {
@@ -1412,6 +1421,8 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
     if (customDt.eta !== undefined) res.shipment.eta = customDt.eta;
     if (customDt.etd !== undefined) res.shipment.etd = customDt.etd;
   }
+
+  res.shipment.is_flagged = flaggedList.includes(res.shipment.id);
 
   // Post-process custom concepts and statuses for logs
   if (res.logs) {
@@ -1608,18 +1619,39 @@ export async function updateShipment(
   const fieldsCopy = { ...fields };
   
   let oldStatusId: number | null = null;
+  let oldShipment: any = null;
   const isDefaultUrl = checkIsDefaultUrl();
-  if (fieldsCopy.status_id !== undefined) {
-    if (isDemo || isDefaultUrl) {
-      const data = readMockData();
-      const current = data.shipments.find((s: any) => s.id === id);
-      if (current) oldStatusId = current.status_id;
-    } else {
+
+  if (isDemo || isDefaultUrl) {
+    isDemo = true;
+    const data = readMockData();
+    const current = data.shipments.find((s: any) => s.id === id);
+    if (current) {
+      oldStatusId = current.status_id;
+      oldShipment = { ...current };
       try {
-        const { data: current } = await supabase.from("shipments").select("status_id").eq("id", id).maybeSingle();
-        if (current) oldStatusId = current.status_id;
+        const shipmentDatetimes = data.system_store?.SYSTEM_SHIPMENT_DATETIMES || {};
+        const customDt = shipmentDatetimes[id];
+        if (customDt) {
+          if (customDt.eta !== undefined) oldShipment.eta = customDt.eta;
+          if (customDt.etd !== undefined) oldShipment.etd = customDt.etd;
+        }
       } catch (e) {}
     }
+  } else {
+    try {
+      const { data: current } = await supabase.from("shipments").select("*").eq("id", id).maybeSingle();
+      if (current) {
+        oldStatusId = current.status_id;
+        oldShipment = { ...current };
+        const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+        const customDt = shipmentDatetimes[id];
+        if (customDt) {
+          if (customDt.eta !== undefined) oldShipment.eta = customDt.eta;
+          if (customDt.etd !== undefined) oldShipment.etd = customDt.etd;
+        }
+      }
+    } catch (e) {}
   }
 
   if (fieldsCopy.status_id !== undefined) {
@@ -1700,8 +1732,75 @@ export async function updateShipment(
     }
   }
 
-  // Automatically write status change history to shipment timeline logs if status changed
-  if (fields.status_id !== undefined && fields.status_id !== oldStatusId) {
+  // Automatically write change history to shipment timeline logs
+  if (oldShipment) {
+    const changes: string[] = [];
+    let finalStatusIdForLog: number | null = null;
+    const fmtVal = (val: any) => {
+      if (val === null || val === undefined || val === "") return "None";
+      return String(val);
+    };
+
+    const fieldLabels: Record<string, string> = {
+      client_name: "Client Name",
+      reference: "Reference",
+      shipment_type: "Shipment Type",
+      transport_mode: "Transport Mode",
+      eta: "ETA",
+      etd: "ETD",
+      ct_file: "CT File",
+      warehouse_receipt: "Warehouse Receipt",
+      expo_mawb: "MAWB",
+      expo_hawb: "HAWB",
+      pcs: "Pieces",
+      kgs: "Weight (KGs)",
+      chw: "Chargeable Weight (CHW)",
+      aes: "AES Filing"
+    };
+
+    // Compare fields
+    for (const key in fields) {
+      if (key === "status_id") continue;
+      const newVal = (fields as any)[key];
+      const oldVal = oldShipment[key];
+      
+      const normNew = newVal === "" ? null : newVal;
+      const normOld = oldVal === "" ? null : oldVal;
+
+      if (normNew !== normOld) {
+        changes.push(`${fieldLabels[key] || key} updated from "${fmtVal(normOld)}" to "${fmtVal(normNew)}"`);
+      }
+    }
+
+    // Compare status
+    if (fields.status_id !== undefined && fields.status_id !== oldStatusId) {
+      const allStatuses = await getStatuses();
+      const oldStatus = allStatuses.find(st => st.id === oldStatusId);
+      const newStatus = allStatuses.find(st => st.id === fields.status_id);
+      
+      const oldName = oldStatus ? oldStatus.name : "None";
+      const newName = newStatus ? newStatus.name : "None";
+      
+      changes.push(`Status updated from "${oldName}" to "${newName}"`);
+      finalStatusIdForLog = fields.status_id;
+    }
+
+    if (changes.length > 0) {
+      try {
+        const logText = `Shipment data modified: ${changes.join(" • ")}`;
+        await addLog({
+          shipment_id: id,
+          event_text: logText,
+          is_external: true,
+          status_id: finalStatusIdForLog,
+          skipSyncStatus: true
+        });
+      } catch (logErr) {
+        console.error("Failed to log shipment modifications:", logErr);
+      }
+    }
+  } else if (fields.status_id !== undefined && fields.status_id !== oldStatusId) {
+    // Fallback if oldShipment was not loaded for some reason
     try {
       const allStatuses = await getStatuses();
       const newStatus = allStatuses.find(st => st.id === fields.status_id);
@@ -1710,7 +1809,8 @@ export async function updateShipment(
           shipment_id: id,
           event_text: `Milestone status updated to: ${newStatus.name.toUpperCase()}`,
           is_external: true,
-          status_id: fields.status_id
+          status_id: fields.status_id,
+          skipSyncStatus: true
         });
       }
     } catch (logErr) {
@@ -2321,6 +2421,21 @@ export async function importFullBackup(backup: any): Promise<void> {
       throw err;
     }
   }
+}
+
+export async function toggleShipmentFlag(id: number): Promise<boolean> {
+  const flagged = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
+  const index = flagged.indexOf(id);
+  let isFlagged = false;
+  if (index === -1) {
+    flagged.push(id);
+    isFlagged = true;
+  } else {
+    flagged.splice(index, 1);
+    isFlagged = false;
+  }
+  await setSystemValue("SYSTEM_FLAGGED_SHIPMENTS", flagged);
+  return isFlagged;
 }
 
 
