@@ -65,6 +65,54 @@ async function getOrCreateSystemShipmentId(): Promise<number> {
   }
 }
 
+function getByShipmentId<V>(record: Record<string | number, V> | undefined | null, id: number | string): V | undefined {
+  if (!record) return undefined;
+  if (record[id] !== undefined) return record[id];
+  return record[String(id)];
+}
+
+export async function getShipmentNotes(id: number): Promise<string> {
+  const notesRecord = await getSystemValue<Record<string, string>>("SYSTEM_SHIPMENT_NOTES", {});
+  return getByShipmentId(notesRecord, id) || "";
+}
+
+export async function saveShipmentNotes(id: number, notes: string): Promise<void> {
+  const notesRecord = await getSystemValue<Record<string, string>>("SYSTEM_SHIPMENT_NOTES", {});
+  notesRecord[String(id)] = notes;
+  await setSystemValue("SYSTEM_SHIPMENT_NOTES", notesRecord);
+}
+
+async function writeInitialCreationLog(shipmentId: number, clientName: string, reference: string, shipmentType: string, extra: any) {
+  try {
+    const logDetails: string[] = [];
+    if (clientName) logDetails.push(`Client: "${clientName}"`);
+    if (reference) logDetails.push(`Reference: "${reference}"`);
+    if (shipmentType) logDetails.push(`Type: "${shipmentType}"`);
+    if (extra.transport_mode) logDetails.push(`Mode: "${extra.transport_mode}"`);
+    if (extra.etd) logDetails.push(`ETD: "${extra.etd.replace("T", " ")}"`);
+    if (extra.eta) logDetails.push(`ETA: "${extra.eta.replace("T", " ")}"`);
+    if (extra.ct_file) logDetails.push(`CT File: "${extra.ct_file}"`);
+    if (extra.warehouse_receipt) logDetails.push(`Warehouse: "${extra.warehouse_receipt}"`);
+    if (extra.expo_mawb) logDetails.push(`MAWB: "${extra.expo_mawb}"`);
+    if (extra.expo_hawb) logDetails.push(`HAWB: "${extra.expo_hawb}"`);
+    if (extra.pcs) logDetails.push(`Pieces: ${extra.pcs}`);
+    if (extra.kgs) logDetails.push(`KGS: ${extra.kgs}`);
+    if (extra.chw) logDetails.push(`CHW: ${extra.chw}`);
+    if (extra.aes) logDetails.push(`AES: "${extra.aes}"`);
+
+    const logText = `Shipment created with initial parameters: ${logDetails.join(" • ")}`;
+    await addLog({
+      shipment_id: shipmentId,
+      event_text: logText,
+      is_external: true,
+      status_id: extra.status_id || 1,
+      skipSyncStatus: true
+    });
+  } catch (err) {
+    console.error("Failed to write initial creation log:", err);
+  }
+}
+
 async function getSystemValue<T>(key: string, defaultValue: T): Promise<T> {
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
@@ -513,7 +561,7 @@ export async function getShipments(): Promise<Shipment[]> {
     }
     let updated = { ...s };
 
-    const customStatusId = shipmentStatuses[s.id];
+    const customStatusId = getByShipmentId(shipmentStatuses, s.id);
     if (customStatusId !== undefined) {
       const matched = allStatuses.find(st => st.id === customStatusId);
       if (matched) {
@@ -522,7 +570,7 @@ export async function getShipments(): Promise<Shipment[]> {
       }
     }
 
-    const customDt = shipmentDatetimes[s.id];
+    const customDt = getByShipmentId(shipmentDatetimes, s.id);
     if (customDt) {
       if (customDt.eta !== undefined) updated.eta = customDt.eta;
       if (customDt.etd !== undefined) updated.etd = customDt.etd;
@@ -620,7 +668,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
   const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
   const flaggedList = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
 
-  const customStatusId = shipmentStatuses[id];
+  const customStatusId = getByShipmentId(shipmentStatuses, id);
   if (customStatusId !== undefined) {
     const allStatuses = await getStatuses();
     const matched = allStatuses.find(st => st.id === customStatusId);
@@ -630,7 +678,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
     }
   }
 
-  const customDt = shipmentDatetimes[id];
+  const customDt = getByShipmentId(shipmentDatetimes, id);
   if (customDt) {
     if (customDt.eta !== undefined) baseShipment.eta = customDt.eta;
     if (customDt.etd !== undefined) baseShipment.etd = customDt.etd;
@@ -642,7 +690,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
     const allStatuses = await getStatuses();
     baseShipment.children = baseShipment.children.map(child => {
       let updatedChild = { ...child };
-      const childCustomId = shipmentStatuses[child.id];
+      const childCustomId = getByShipmentId(shipmentStatuses, child.id);
       if (childCustomId !== undefined) {
         const matched = allStatuses.find(st => st.id === childCustomId);
         if (matched) {
@@ -650,7 +698,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
           updatedChild.status = matched;
         }
       }
-      const childDt = shipmentDatetimes[child.id];
+      const childDt = getByShipmentId(shipmentDatetimes, child.id);
       if (childDt) {
         if (childDt.eta !== undefined) updatedChild.eta = childDt.eta;
         if (childDt.etd !== undefined) updatedChild.etd = childDt.etd;
@@ -720,6 +768,7 @@ export async function createShipment(
 
     data.shipments.push(newShipment);
     writeMockData(data);
+    await writeInitialCreationLog(newId, client_name, reference, shipment_type, extraCopy);
 
     if (extraCopy.eta || extraCopy.etd) {
       const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
@@ -767,6 +816,7 @@ export async function createShipment(
 
     if (error) throw error;
     isDemo = false;
+    await writeInitialCreationLog(targetId, client_name, reference, shipment_type, extraCopy);
     
     try {
       await updateAppConfig({ next_shipment_id: targetId + 1 });
@@ -829,6 +879,7 @@ export async function createShipment(
 
       data.shipments.push(newShipment);
       writeMockData(data);
+      await writeInitialCreationLog(newId, client_name, reference, shipment_type, extraCopy);
 
       if (extraCopy.eta || extraCopy.etd) {
         const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
@@ -1047,7 +1098,7 @@ export async function deleteLog(id: string): Promise<void> {
 
 export async function updateShipmentStatus(shipment_id: number, status_id: number, skipLog: boolean = false): Promise<void> {
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
-  const oldStatusId = shipmentStatuses[shipment_id];
+  const oldStatusId = getByShipmentId(shipmentStatuses, shipment_id);
   if (oldStatusId === status_id) return;
 
   // Track status in system values
@@ -1627,11 +1678,13 @@ export async function updateShipment(
     const data = readMockData();
     const current = data.shipments.find((s: any) => s.id === id);
     if (current) {
-      oldStatusId = current.status_id;
       oldShipment = { ...current };
+      const shipmentStatuses = data.system_store?.SYSTEM_SHIPMENT_STATUSES || {};
+      const customStatusId = getByShipmentId(shipmentStatuses, id);
+      oldStatusId = customStatusId !== undefined ? customStatusId : current.status_id;
       try {
         const shipmentDatetimes = data.system_store?.SYSTEM_SHIPMENT_DATETIMES || {};
-        const customDt = shipmentDatetimes[id];
+        const customDt = getByShipmentId(shipmentDatetimes, id) as { eta?: string | null; etd?: string | null } | undefined;
         if (customDt) {
           if (customDt.eta !== undefined) oldShipment.eta = customDt.eta;
           if (customDt.etd !== undefined) oldShipment.etd = customDt.etd;
@@ -1642,10 +1695,12 @@ export async function updateShipment(
     try {
       const { data: current } = await supabase.from("shipments").select("*").eq("id", id).maybeSingle();
       if (current) {
-        oldStatusId = current.status_id;
         oldShipment = { ...current };
+        const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
+        const customStatusId = getByShipmentId(shipmentStatuses, id);
+        oldStatusId = customStatusId !== undefined ? customStatusId : current.status_id;
         const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
-        const customDt = shipmentDatetimes[id];
+        const customDt = getByShipmentId(shipmentDatetimes, id);
         if (customDt) {
           if (customDt.eta !== undefined) oldShipment.eta = customDt.eta;
           if (customDt.etd !== undefined) oldShipment.etd = customDt.etd;
@@ -1659,12 +1714,14 @@ export async function updateShipment(
     const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
     
     if (status_id !== null && status_id >= 10000) {
-      shipmentStatuses[id] = status_id;
+      (shipmentStatuses as any)[id] = status_id;
       await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
       (fieldsCopy as any).status_id = null;
     } else {
-      if (shipmentStatuses[id] !== undefined) {
-        delete shipmentStatuses[id];
+      const existingStatusId = getByShipmentId(shipmentStatuses, id);
+      if (existingStatusId !== undefined) {
+        delete (shipmentStatuses as any)[id];
+        delete (shipmentStatuses as any)[String(id)];
         await setSystemValue("SYSTEM_SHIPMENT_STATUSES", shipmentStatuses);
       }
     }
@@ -1672,11 +1729,11 @@ export async function updateShipment(
 
   if (fieldsCopy.eta !== undefined || fieldsCopy.etd !== undefined) {
     try {
-      const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
-      const current = shipmentDatetimes[id] || {};
+      const shipmentDatetimes = await getSystemValue<Record<string | number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+      const current = getByShipmentId(shipmentDatetimes, id) || {};
       if (fieldsCopy.eta !== undefined) current.eta = fieldsCopy.eta;
       if (fieldsCopy.etd !== undefined) current.etd = fieldsCopy.etd;
-      shipmentDatetimes[id] = current;
+      shipmentDatetimes[String(id)] = current;
       await setSystemValue("SYSTEM_SHIPMENT_DATETIMES", shipmentDatetimes);
     } catch (dtErr) {
       console.error("Failed to save full datetimes in updateShipment:", dtErr);

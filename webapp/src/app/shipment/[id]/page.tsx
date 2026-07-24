@@ -9,6 +9,7 @@ import { StatusSelector } from "@/components/StatusSelector";
 import { EmailQuoteParser } from "@/components/EmailQuoteParser";
 import { DeleteShipmentButton } from "@/components/DeleteShipmentButton";
 import { EditShipmentDialog } from "@/components/EditShipmentDialog";
+import { ShipmentNotepad } from "@/components/ShipmentNotepad";
 import Link from "next/link";
 import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity, FileText, CheckSquare, Plus } from "lucide-react";
 import { format } from "date-fns";
@@ -25,6 +26,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const billableConcepts = await db.getBillableConcepts();
   const customers = await db.getCustomers();
   const isDemoMode = db.checkIsDemoMode();
+  const initialNotes = await db.getShipmentNotes(shipmentId);
 
   // Fetch associated tasks
   const allTasks = await db.getTasks();
@@ -192,18 +194,18 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
           <div className="md:col-span-1 space-y-6">
             
             {/* Operational Info Card */}
-            <Card className="bg-slate-900/40 border-slate-800/80 backdrop-blur-md">
-              <CardHeader className="border-b border-slate-800/60 pb-3">
-                <CardTitle className="text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-sky-400" />
+            <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 backdrop-blur-md">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-800/60 pb-3">
+                <CardTitle className="text-slate-700 dark:text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-sky-505 dark:text-sky-400" />
                   Operational File
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-4 text-xs font-semibold">
-                <div className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-800/60">
+                <div className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-200 dark:border-slate-800/60">
                   <div className="space-y-0.5">
                     <p className="text-slate-500 uppercase tracking-wider text-[10px]">Estimated Departure</p>
-                    <p className="font-semibold text-slate-700 dark:text-slate-200 text-sm">{formatDateTime(shipment.etd)}</p>
+                    <p className="font-semibold text-slate-750 dark:text-slate-200 text-sm">{formatDateTime(shipment.etd)}</p>
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-slate-500 uppercase tracking-wider text-[10px]">Estimated Arrival</p>
@@ -214,30 +216,30 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-1">
                     <span className="text-slate-500">CargoTrack File:</span>
-                    <span className="font-mono text-slate-300 bg-slate-950/80 border border-slate-800 px-2 py-0.5 rounded">
+                    <span className="font-mono text-slate-850 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded">
                       {shipment.ct_file || "Not Invoiced"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-slate-500">Warehouse Rec.:</span>
-                    <span className="font-mono text-slate-300 bg-slate-950/80 border border-slate-800 px-2 py-0.5 rounded">
+                    <span className="font-mono text-slate-850 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded">
                       {shipment.warehouse_receipt || "No Cargo Rec."}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-slate-500">AES Filing Ref:</span>
-                    <span className="font-mono text-slate-300">{shipment.aes || "N/A"}</span>
+                    <span className="font-mono text-slate-800 dark:text-slate-300">{shipment.aes || "N/A"}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-slate-500">MAWB Airbill:</span>
-                    <span className="font-mono text-slate-400 text-[11px]">{shipment.expo_mawb || "N/A"}</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-400 text-[11px]">{shipment.expo_mawb || "N/A"}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-slate-555 dark:text-slate-500">HAWB Housebills:</span>
-                    <span className="font-mono text-slate-400 text-[11px] flex flex-wrap gap-1">
+                    <span className="text-slate-500">HAWB Housebills:</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-400 text-[11px] flex flex-wrap gap-1">
                       {shipment.expo_hawb ? (
                         shipment.expo_hawb.split(/,\s*/).map((hawb, idx) => (
-                          <span key={idx} className="bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300">
+                          <span key={idx} className="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300">
                             {hawb.trim()}
                           </span>
                         ))
@@ -247,32 +249,34 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 </div>
 
                 {/* Cargo Dimensions breakdown */}
-                <div className="pt-4 border-t border-slate-800/60">
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60">
                   <p className="text-slate-500 text-[10px] uppercase tracking-wider mb-2">Metrics & Load Weight</p>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 text-center space-y-0.5">
+                    <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800/80 text-center space-y-0.5">
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest">PCS</p>
-                      <p className="font-mono font-bold text-sky-400 text-sm">{shipment.pcs || "-"}</p>
+                      <p className="font-mono font-bold text-sky-600 dark:text-sky-400 text-sm">{shipment.pcs || "-"}</p>
                     </div>
-                    <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 text-center space-y-0.5">
+                    <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800/80 text-center space-y-0.5">
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest">KGS</p>
-                      <p className="font-mono font-bold text-teal-400 text-sm">{shipment.kgs || "-"}</p>
+                      <p className="font-mono font-bold text-teal-650 dark:text-teal-400 text-sm">{shipment.kgs || "-"}</p>
                     </div>
-                    <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 text-center space-y-0.5">
+                    <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800/80 text-center space-y-0.5">
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest">CHW</p>
-                      <p className="font-mono font-bold text-amber-500 text-sm">{shipment.chw || "-"}</p>
+                      <p className="font-mono font-bold text-amber-600 dark:text-amber-500 text-sm">{shipment.chw || "-"}</p>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
+            <ShipmentNotepad shipmentId={shipmentId} initialNotes={initialNotes} />
+
             {/* Split Shipments dropdown list */}
             {shipment.children && shipment.children.length > 0 && (
-              <Card className="bg-slate-900/40 border-slate-800/80 backdrop-blur-md">
-                <CardHeader className="pb-3 border-b border-slate-800/60">
-                  <CardTitle className="text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                    <Split className="w-4 h-4 text-indigo-400" />
+              <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 backdrop-blur-md">
+                <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/60">
+                  <CardTitle className="text-slate-700 dark:text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
+                    <Split className="w-4 h-4 text-indigo-505 dark:text-indigo-400" />
                     Split Sub-parts ({shipment.children.length})
                   </CardTitle>
                 </CardHeader>
@@ -282,12 +286,12 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                       <li key={child.id}>
                         <Link 
                           href={`/shipment/${child.id}`} 
-                          className="flex justify-between items-center p-2.5 bg-slate-950/60 hover:bg-slate-900/80 border border-slate-800 rounded-lg transition-all text-xs group"
+                          className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-lg transition-all text-xs group"
                         >
-                          <span className="font-semibold text-slate-300 group-hover:text-indigo-400 transition-colors">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             Sub-file #{child.id}
                           </span>
-                          <span className="font-mono text-slate-500 text-[10px] flex items-center gap-1 group-hover:text-slate-300">
+                          <span className="font-mono text-slate-500 text-[10px] flex items-center gap-1 group-hover:text-slate-700 dark:group-hover:text-slate-300">
                             {child.reference}
                             <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                           </span>
@@ -298,6 +302,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 </CardContent>
               </Card>
             )}
+            
             {/* Related Tasks Card */}
             <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 backdrop-blur-md">
               <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/60 flex flex-row items-center justify-between">

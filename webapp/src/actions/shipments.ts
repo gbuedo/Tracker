@@ -239,6 +239,16 @@ export async function importFullBackupAction(backup: any) {
   revalidatePath("/ratesheet-tracker");
 }
 
+export async function getShipmentNotes(id: number) {
+  return await db.getShipmentNotes(id);
+}
+
+export async function saveShipmentNotes(id: number, notes: string) {
+  const data = await db.saveShipmentNotes(id, notes);
+  revalidatePath(`/shipment/${id}`);
+  return data;
+}
+
 
 
 

@@ -942,16 +942,18 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                     const isToday = (dateStr: string | null) => {
                       if (!dateStr) return false;
                       const onlyDate = dateStr.split("T")[0].split(" ")[0];
-                      const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
-                      return onlyDate === todayStr;
+                      const miamiTodayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD in Miami
+                      return onlyDate === miamiTodayStr;
                     };
                     const formatDaysDiff = (targetDateStr: string | null) => {
                       if (!targetDateStr) return "-";
-                      const target = new Date(targetDateStr);
-                      const now = new Date();
+                      const datePart = targetDateStr.split("T")[0].split(" ")[0];
+                      const [tY, tM, tD] = datePart.split("-").map(Number);
+                      const targetDate = new Date(tY, tM - 1, tD);
                       
-                      const targetDate = new Date(target.getFullYear(), target.getMonth(), target.getDate());
-                      const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                      const miamiDateStr = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+                      const [mY, mM, mD] = miamiDateStr.split("-").map(Number);
+                      const nowDate = new Date(mY, mM - 1, mD);
                       
                       const diffTime = targetDate.getTime() - nowDate.getTime();
                       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
