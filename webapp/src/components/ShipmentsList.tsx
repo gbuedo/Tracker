@@ -525,26 +525,23 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <button
                 key={status.id}
                 onClick={() => handleToggleStatus(status.name)}
-                className={`py-0.5 px-2 rounded-lg border flex items-center gap-1.5 transition-all duration-200 backdrop-blur-md relative overflow-hidden group shrink-0 h-[28px] ${
+                className={`py-0.5 px-2 rounded-lg border flex items-center gap-1.5 transition-all duration-200 relative overflow-hidden group shrink-0 h-[28px] ${
                   isSelected 
-                    ? "bg-slate-900 border-slate-700 shadow-md ring-1 ring-sky-500/20"
-                    : "bg-slate-900/20 border-slate-900/50 hover:border-slate-800/80 hover:bg-slate-900/40"
+                    ? "bg-[#FDF1EE] border-[#F0C5BC] shadow-sm"
+                    : "bg-card border-border hover:border-[#F0C5BC] hover:bg-[#FDF8F5]"
                 }`}
               >
                 {/* Visual Accent Dot */}
                 <span 
                   className="w-1.5 h-1.5 rounded-full shrink-0" 
-                  style={{ 
-                    backgroundColor: status.color_code,
-                    boxShadow: isSelected ? `0 0 5px ${status.color_code}` : "none"
-                  }}
+                  style={{ backgroundColor: status.color_code }}
                 />
 
-                <span className="text-[9px] font-extrabold uppercase tracking-wide text-slate-350 group-hover:text-white transition-colors truncate max-w-[100px]">
+                <span className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground group-hover:text-foreground transition-colors truncate max-w-[100px]">
                   {status.name}
                 </span>
 
-                <span className="text-[9px] font-black font-mono text-white bg-slate-100 dark:bg-slate-950/80 px-1 py-0.25 rounded border border-slate-200 dark:border-slate-900 text-slate-800 dark:text-slate-100 ml-0.5">
+                <span className="text-[9px] font-bold font-mono text-foreground bg-muted px-1 py-0.25 rounded border border-border ml-0.5">
                   {count}
                 </span>
               </button>
@@ -556,32 +553,32 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
       {/* --- SEARCH BAR & CARRIERS DIRECTORY BUTTON --- */}
       <div className="flex gap-3 items-center">
         <div className="relative flex-grow">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search Client, Reference, CT File, Airway Bill (MAWB/HAWB) or ID..."
-            className="pl-10 h-10 bg-slate-900/60 border-slate-800 text-slate-200 placeholder:text-slate-505 focus-visible:ring-sky-500/50 focus-visible:border-sky-500/80 transition-all rounded-xl w-full text-xs font-semibold"
+            className="pl-10 h-10 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#E8A99A]/60 focus-visible:border-[#E8A99A] transition-all rounded-xl w-full text-xs font-semibold"
           />
         </div>
         <CarrierDirectoryDialog carriers={carriersState} />
       </div>
 
       {/* --- CONTROLS & UTILITIES ROW (LINE 2) --- */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between bg-slate-900/40 border border-slate-850 p-2.5 rounded-xl backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between bg-card border border-border p-2.5 rounded-xl">
         
         {/* Left: filters & selectors */}
         <div className="flex flex-wrap gap-2.5 items-center">
           {/* Shipment Type filter */}
-          <div className="flex bg-white dark:bg-slate-950/60 p-0.5 rounded-lg border border-slate-850 gap-0.5 flex-wrap">
+          <div className="flex bg-muted p-0.5 rounded-lg border border-border gap-0.5 flex-wrap">
             {["All", "Quote", "Import", "Export", "Transit", "Combine"].map((type) => (
               <button
                 key={type}
                 onClick={() => setTypeFilter(type)}
                 className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all ${
                   typeFilter === type
-                    ? "bg-sky-600 text-white shadow shadow-sky-500/10"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-[#E8A99A] text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {type}
@@ -590,35 +587,35 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           </div>
 
           {/* Priority sorting select */}
-          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
-            <ArrowUpDown className="w-3 h-3 text-slate-500" />
+          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8">
+            <ArrowUpDown className="w-3 h-3" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-slate-200"
+              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
             >
-              <option value="created_at" className="bg-white dark:bg-slate-950">Sort: Default (Created)</option>
-              <option value="eta_asc" className="bg-white dark:bg-slate-950">Sort: First ETA (Arrival)</option>
-              <option value="eta_desc" className="bg-white dark:bg-slate-950">Sort: Latest ETA (Arrival)</option>
-              <option value="etd_asc" className="bg-white dark:bg-slate-950">Sort: First ETD (Departure)</option>
-              <option value="etd_desc" className="bg-white dark:bg-slate-950">Sort: Latest ETD (Departure)</option>
-              <option value="update_hours_desc" className="bg-white dark:bg-slate-950">Sort: Longest Since Update</option>
-              <option value="update_hours_asc" className="bg-white dark:bg-slate-950">Sort: Most Recently Updated</option>
+              <option value="created_at">Sort: Default (Created)</option>
+              <option value="eta_asc">Sort: First ETA (Arrival)</option>
+              <option value="eta_desc">Sort: Latest ETA (Arrival)</option>
+              <option value="etd_asc">Sort: First ETD (Departure)</option>
+              <option value="etd_desc">Sort: Latest ETD (Departure)</option>
+              <option value="update_hours_desc">Sort: Longest Since Update</option>
+              <option value="update_hours_asc">Sort: Most Recently Updated</option>
             </select>
           </div>
 
           {/* Grouping select */}
-          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
-            <Layers className="w-3 h-3 text-slate-500" />
+          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8">
+            <Layers className="w-3 h-3" />
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
-              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-slate-200"
+              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
             >
-              <option value="none" className="bg-white dark:bg-slate-950">Group: None (List)</option>
-              <option value="customer" className="bg-white dark:bg-slate-950">Group: Customer</option>
-              <option value="type" className="bg-white dark:bg-slate-950">Group: Type</option>
-              <option value="status" className="bg-white dark:bg-slate-950">Group: Status</option>
+              <option value="none">Group: None (List)</option>
+              <option value="customer">Group: Customer</option>
+              <option value="type">Group: Type</option>
+              <option value="status">Group: Status</option>
             </select>
           </div>
         </div>
@@ -628,15 +625,15 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           <Button 
             onClick={exportFullBackup}
             disabled={backingUp}
-            className="h-8 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30 text-[10px] font-bold gap-1.5 px-3"
+            className="h-8 bg-card border border-border text-muted-foreground hover:text-foreground rounded-lg shadow-sm hover:border-[#B0D4C8] hover:bg-[#EEF6F3] text-[10px] font-bold gap-1.5 px-3"
             title="Download Full Database Backup (JSON)"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-500" />
+            <Download className="w-3.5 h-3.5 text-[#7BB5A0]" />
             {backingUp ? "Backing up..." : "Backup Data"}
           </Button>
 
-          <label className="h-8 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30 text-[10px] font-bold gap-1.5 px-3 flex items-center cursor-pointer justify-center select-none">
-            <RefreshCw className={`w-3.5 h-3.5 text-sky-500 ${importing ? "animate-spin" : ""}`} />
+          <label className="h-8 bg-card border border-border text-muted-foreground hover:text-foreground rounded-lg shadow-sm hover:border-[#B0D0E8] hover:bg-[#EEF5FA] text-[10px] font-bold gap-1.5 px-3 flex items-center cursor-pointer justify-center select-none">
+            <RefreshCw className={`w-3.5 h-3.5 text-[#8BBAD4] ${importing ? "animate-spin" : ""}`} />
             {importing ? "Importing..." : "Import Backup"}
             <input 
               type="file" 
@@ -648,66 +645,66 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           </label>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger render={<Button className="h-8 w-8 p-0 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-lg shadow-sm hover:border-slate-700 hover:bg-slate-800/30" />}>
+            <DialogTrigger render={<Button className="h-8 w-8 p-0 bg-card border border-border text-muted-foreground hover:text-foreground rounded-lg shadow-sm hover:border-[#F0C5BC] hover:bg-[#FDF1EE]" />}>
               <Settings className="w-3.5 h-3.5" />
             </DialogTrigger>
             
-            <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-white dark:bg-slate-950 border-slate-900 text-slate-50 max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
-              <DialogHeader className="border-b border-slate-850 pb-4">
-                <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">
-                  <Settings className="w-5 h-5 text-sky-400 animate-spin" />
+            <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-card border-border text-foreground max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
+              <DialogHeader className="border-b border-border pb-4">
+                <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                  <Settings className="w-5 h-5 text-[#E8A99A]" />
                   WCS Tracker Configurations
                 </DialogTitle>
-                <DialogDescription className="text-slate-400 text-xs font-semibold">
+                <DialogDescription className="text-muted-foreground text-xs">
                   Manage autonumeric index seeds, clients catalogs, carrier databases, and operational milestone status tags.
                 </DialogDescription>
               </DialogHeader>
 
-              <form onSubmit={handleSaveConfig} className="space-y-6 pt-4 text-xs font-bold text-slate-400">
+              <form onSubmit={handleSaveConfig} className="space-y-6 pt-4 text-xs font-semibold text-muted-foreground">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* --- LEFT COLUMN --- */}
                   <div className="space-y-6">
                     {/* Autonumeric seeding */}
                     <div className="space-y-2">
-                      <Label htmlFor="next_id" className="text-slate-350 uppercase tracking-wider text-[10px]">Autonumeric shipment File ID seed</Label>
+                      <Label htmlFor="next_id" className="text-muted-foreground uppercase tracking-wider text-[10px]">Autonumeric shipment File ID seed</Label>
                       <div className="flex gap-2">
                         <Input 
                           id="next_id"
                           type="number"
                           value={nextAutonumeric}
                           onChange={(e) => setNextAutonumeric(e.target.value)}
-                          className="bg-slate-900 border-slate-800 font-mono text-slate-200"
+                          className="bg-background border-border font-mono text-foreground"
                           placeholder="e.g. 1000"
                         />
-                        <span className="text-[10px] text-slate-500 self-center shrink-0">Current: {initialConfig?.next_shipment_id || 1}</span>
+                        <span className="text-[10px] text-muted-foreground self-center shrink-0">Current: {initialConfig?.next_shipment_id || 1}</span>
                       </div>
                     </div>
 
                     {/* Clients Catalogs */}
-                    <div className="space-y-2 border-t border-slate-850 pt-4">
-                      <Label htmlFor="add_cust" className="text-slate-350 uppercase tracking-wider text-[10px]">Add Customer Profile</Label>
+                    <div className="space-y-2 border-t border-border pt-4">
+                      <Label htmlFor="add_cust" className="text-muted-foreground uppercase tracking-wider text-[10px]">Add Customer Profile</Label>
                       <div className="flex gap-2">
                         <Input 
                           id="add_cust"
                           value={newCustomer}
                           onChange={(e) => setNewCustomer(e.target.value)}
-                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200"
+                          className="bg-background border-border text-foreground"
                           placeholder="e.g. Kuehne Nagel Logistics"
                         />
                         <Button 
                           type="button"
                           onClick={handleAddCustomer}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 font-bold h-9"
+                          className="bg-[#A89ACC] hover:bg-[#9080BA] text-white px-3 font-bold h-9"
                         >
                           Add
                         </Button>
                       </div>
                       
-                      <div className="max-h-36 overflow-y-auto bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-[10px] font-mono font-semibold space-y-1 text-slate-550">
-                        <span className="block font-bold uppercase text-[9px] text-slate-600 mb-1">Registered Clients ({customersState.length})</span>
+                      <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1 text-muted-foreground">
+                        <span className="block font-bold uppercase text-[9px] mb-1">Registered Clients ({customersState.length})</span>
                         {customersState.map(c => (
-                          <div key={c} className="py-0.5 border-b border-slate-900/10 last:border-b-0 text-slate-400">
+                          <div key={c} className="py-0.5 border-b border-border/50 last:border-b-0">
                             • {c}
                           </div>
                         ))}
@@ -721,27 +718,27 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                   <div className="space-y-6">
                     {/* Milestone Status tags */}
                     <div className="space-y-3">
-                      <Label className="text-slate-350 uppercase tracking-wider text-[10px]">Create Custom Milestone Status Tag</Label>
+                      <Label className="text-muted-foreground uppercase tracking-wider text-[10px]">Create Custom Milestone Status Tag</Label>
                       
                       <div className="flex gap-2">
                         <Input 
                           id="status_name"
                           value={newStatusName}
                           onChange={(e) => setNewStatusName(e.target.value)}
-                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200"
+                          className="bg-background border-border text-foreground"
                           placeholder="e.g. Cleared Customs"
                         />
                         <Button
                           type="button"
                           onClick={handleAddStatus}
-                          className="bg-sky-600 hover:bg-sky-700 text-white px-3 font-bold h-9 shrink-0"
+                          className="bg-[#8BBAD4] hover:bg-[#6EA0BC] text-white px-3 font-bold h-9 shrink-0"
                         >
                           Add
                         </Button>
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-slate-500">Color Accent Dot</Label>
+                        <Label className="text-[10px] text-muted-foreground">Color Accent Dot</Label>
                         <div className="flex flex-wrap gap-1.5">
                           {statusColors.map((color) => (
                             <button
@@ -749,29 +746,29 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                               type="button"
                               onClick={() => setNewStatusColor(color.hex)}
                               className={`w-5.5 h-5.5 rounded-full border transition-all relative ${
-                                newStatusColor === color.hex ? "border-white ring-1 ring-sky-500" : "border-slate-850"
+                                newStatusColor === color.hex ? "border-foreground ring-1 ring-[#E8A99A]" : "border-border"
                               }`}
                               style={{ backgroundColor: color.hex }}
                               title={color.name}
                             >
-                              {newStatusColor === color.hex && <Check className="w-2.5 h-2.5 text-slate-950 absolute inset-0 m-auto font-black" />}
+                              {newStatusColor === color.hex && <Check className="w-2.5 h-2.5 text-white absolute inset-0 m-auto font-black" />}
                             </button>
                           ))}
                         </div>
                       </div>
 
-                      <div className="max-h-36 overflow-y-auto bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-[10px] font-mono font-semibold space-y-1.5 text-slate-500">
-                        <span className="block font-bold uppercase text-[9px] text-slate-650 mb-1">Registered Milestones ({statusesState.length})</span>
+                      <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1.5 text-muted-foreground">
+                        <span className="block font-bold uppercase text-[9px] mb-1">Registered Milestones ({statusesState.length})</span>
                         {statusesState.map(st => (
-                          <div key={st.id} className="flex justify-between items-center py-0.5 border-b border-slate-900/20 last:border-b-0">
+                          <div key={st.id} className="flex justify-between items-center py-0.5 border-b border-border/50 last:border-b-0">
                             <div className="flex items-center gap-1.5">
                               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: st.color_code }} />
-                              <span className="text-slate-300">{st.name}</span>
+                              <span className="text-foreground">{st.name}</span>
                             </div>
                             <button
                               type="button"
                               onClick={() => handleDeleteStatus(st.id)}
-                              className="text-rose-500 hover:text-rose-455 hover:bg-rose-955/20 p-1 rounded transition-colors"
+                              className="text-rose-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
                               title="Delete milestone"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -782,21 +779,21 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                     </div>
 
                     {/* Carrier Database Settings */}
-                    <div className="space-y-3 border-t border-slate-850 pt-4">
-                      <Label className="text-slate-350 uppercase tracking-wider text-[10px]">Carrier Database Lookup (Air Prefix / Ocean SCAC)</Label>
+                    <div className="space-y-3 border-t border-border pt-4">
+                      <Label className="text-muted-foreground uppercase tracking-wider text-[10px]">Carrier Database Lookup (Air Prefix / Ocean SCAC)</Label>
                       
                       <div className="grid grid-cols-3 gap-2">
                         <Input
                           value={newCarrierCode}
                           onChange={(e) => setNewCarrierCode(e.target.value)}
                           placeholder="Code (E.g. 001, MAEU)"
-                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-xs col-span-1"
+                          className="bg-background border-border text-foreground text-xs col-span-1"
                         />
                         <Input
                           value={newCarrierName}
                           onChange={(e) => setNewCarrierName(e.target.value)}
                           placeholder="Carrier Name (E.g. Maersk)"
-                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-xs col-span-2"
+                          className="bg-background border-border text-foreground text-xs col-span-2"
                         />
                       </div>
                       
@@ -804,27 +801,27 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         <Button
                           type="button"
                           onClick={handleAddCarrier}
-                          className="bg-emerald-650 hover:bg-emerald-700 text-white text-xs font-bold h-8 px-4"
+                          className="bg-[#7BB5A0] hover:bg-[#5E9E89] text-white text-xs font-bold h-8 px-4"
                         >
                           + Add Carrier
                         </Button>
                       </div>
 
-                      <div className="max-h-36 overflow-y-auto bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-[10px] font-mono font-semibold space-y-1.5 text-slate-500">
-                        <span className="block font-bold uppercase text-[9px] text-slate-655 mb-1">Carrier Mapping Index ({carriersState.length})</span>
+                      <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1.5 text-muted-foreground">
+                        <span className="block font-bold uppercase text-[9px] mb-1">Carrier Mapping Index ({carriersState.length})</span>
                         {carriersState.length === 0 ? (
-                          <div className="italic text-center py-2 text-slate-600">No Carrier profiles loaded.</div>
+                          <div className="italic text-center py-2">No Carrier profiles loaded.</div>
                         ) : (
                           carriersState.map(c => (
-                            <div key={c.id} className="flex justify-between items-center py-0.5 border-b border-slate-900/20 last:border-b-0">
+                            <div key={c.id} className="flex justify-between items-center py-0.5 border-b border-border/50 last:border-b-0">
                               <div className="flex items-center gap-2">
-                                <span className="bg-slate-100 dark:bg-slate-950 text-sky-600 dark:text-sky-400 px-1 py-0.25 rounded border border-slate-200 dark:border-slate-900 font-bold shrink-0">{c.code}</span>
-                                <span className="text-slate-300 truncate max-w-[170px]">{c.name}</span>
+                                <span className="bg-[#EEF5FA] text-[#3A6580] px-1 py-0.25 rounded border border-[#B0D0E8] font-bold shrink-0">{c.code}</span>
+                                <span className="text-foreground truncate max-w-[170px]">{c.name}</span>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteCarrier(c.id)}
-                                className="text-rose-500 hover:text-rose-455 hover:bg-rose-955/20 p-1 rounded transition-colors"
+                                className="text-rose-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
                                 title="Delete carrier mapping"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -838,24 +835,24 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                 </div>
 
                 {saveSuccessMsg && (
-                  <div className="p-3 bg-emerald-950/20 border border-emerald-900/30 text-emerald-400 font-bold rounded-lg text-center animate-pulse">
+                  <div className="p-3 bg-[#EEF6F3] border border-[#B0D4C8] text-[#3D6E61] font-bold rounded-lg text-center">
                     {saveSuccessMsg}
                   </div>
                 )}
 
                 {/* Footer Controls */}
-                <div className="flex justify-end gap-2 border-t border-slate-850 pt-4">
+                <div className="flex justify-end gap-2 border-t border-border pt-4">
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => setDialogOpen(false)} 
-                    className="bg-transparent border-slate-800 text-slate-400"
+                    className="bg-transparent border-border text-muted-foreground hover:text-foreground"
                   >
                     Close
                   </Button>
                   <Button 
                     type="submit" 
-                    className="bg-sky-600 hover:bg-sky-700 text-white font-bold"
+                    className="bg-[#E8A99A] hover:bg-[#D4907F] text-white font-bold"
                     disabled={savingSettings}
                   >
                     {savingSettings ? <RefreshCw className="animate-spin w-4 h-4" /> : "Save Index Seed"}
@@ -870,43 +867,43 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
       </div>
       {/* --- QUICK OPERATION STATS ROW --- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
+        <div className="bg-card border border-border rounded-xl p-2.5 flex items-center justify-between hover:border-[#F0C5BC] hover:shadow-sm transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Filtered Cargo Files</p>
-            <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">{stats.total}</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Filtered Cargo Files</p>
+            <p className="text-lg font-bold text-foreground tracking-tight leading-none">{stats.total}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
-            <Truck className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+          <div className="w-8 h-8 rounded-lg bg-[#F2F0F8] flex items-center justify-center border border-[#C8C0E0]">
+            <Truck className="w-4 h-4 text-[#A89ACC]" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
+        <div className="bg-card border border-border rounded-xl p-2.5 flex items-center justify-between hover:border-[#B0D0E8] hover:shadow-sm transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Export Operations</p>
-            <p className="text-lg font-black text-sky-600 dark:text-sky-400 tracking-tight leading-none">{stats.exports}</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Export Operations</p>
+            <p className="text-lg font-bold text-[#3A6580] tracking-tight leading-none">{stats.exports}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
-            <Plane className="w-4 h-4 text-sky-500 dark:text-sky-400 animate-pulse" />
+          <div className="w-8 h-8 rounded-lg bg-[#EEF5FA] flex items-center justify-center border border-[#B0D0E8]">
+            <Plane className="w-4 h-4 text-[#8BBAD4]" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
+        <div className="bg-card border border-border rounded-xl p-2.5 flex items-center justify-between hover:border-[#B0D4C8] hover:shadow-sm transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Import Operations</p>
-            <p className="text-lg font-black text-teal-650 dark:text-teal-400 tracking-tight leading-none">{stats.imports}</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Import Operations</p>
+            <p className="text-lg font-bold text-[#3D6E61] tracking-tight leading-none">{stats.imports}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
-            <Ship className="w-4 h-4 text-teal-505 dark:text-teal-400" />
+          <div className="w-8 h-8 rounded-lg bg-[#EEF6F3] flex items-center justify-center border border-[#B0D4C8]">
+            <Ship className="w-4 h-4 text-[#7BB5A0]" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between group hover:border-slate-350 dark:hover:border-slate-700/80 transition-all">
+        <div className="bg-card border border-border rounded-xl p-2.5 flex items-center justify-between hover:border-[#F0C5BC] hover:shadow-sm transition-all">
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transit Operations</p>
-            <p className="text-lg font-black text-amber-600 dark:text-amber-500 tracking-tight leading-none">{stats.transits}</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Transit Operations</p>
+            <p className="text-lg font-bold text-[#8B4E43] tracking-tight leading-none">{stats.transits}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center border border-slate-200 dark:border-slate-800">
-            <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-500" />
+          <div className="w-8 h-8 rounded-lg bg-[#FDF1EE] flex items-center justify-center border border-[#F0C5BC]">
+            <CheckCircle2 className="w-4 h-4 text-[#E8A99A]" />
           </div>
         </div>
       </div>
@@ -915,18 +912,18 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         const renderShipmentTable = (shipmentsList: Shipment[]) => {
           return (
             <Table>
-              <TableHeader className="bg-slate-100 dark:bg-[#0a0a0c] border-slate-200 dark:border-slate-900">
-                <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-900">
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[95px] whitespace-normal leading-tight">ID & Relations</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">Reference / PO</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[130px] whitespace-normal leading-tight hidden md:table-cell">Type & Mode</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden md:table-cell">Carrier</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">ETD / ETA</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Days to ETD/ETA</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Last Update</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
-                  <TableHead className="text-yellow-500 font-mono font-bold text-[10px] uppercase tracking-wider py-1.5 text-center w-[80px]">Expand</TableHead>
+              <TableHeader className="bg-muted border-border">
+                <TableRow className="hover:bg-transparent border-border">
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[95px] whitespace-normal leading-tight">ID & Relations</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">Reference / PO</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[130px] whitespace-normal leading-tight hidden md:table-cell">Type & Mode</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden md:table-cell">Carrier</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">ETD / ETA</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Days to ETD/ETA</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Last Update</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-center w-[80px]">Expand</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -966,13 +963,13 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                       <div key={ship.id} style={{ display: 'contents' }}>
                         <TableRow
                           onClick={(e) => toggleRow(ship.id, e)}
-                          className={`border-slate-900 hover:bg-slate-900/50 cursor-pointer transition-all duration-200 group text-slate-350 ${
+                          className={`border-border hover:bg-accent cursor-pointer transition-all duration-200 group ${
                             ship.parent_shipment_id 
-                              ? "bg-[#0b0c10]" 
+                              ? "bg-muted/50" 
                               : ""
                           }`}
                         >
-                          <TableCell className="font-bold text-yellow-500 py-1.5 relative">
+                          <TableCell className="font-bold text-[#8B4E43] py-1.5 relative">
                             <div className="flex items-center space-x-2">
                               <button
                                 onClick={async (e) => {
@@ -986,26 +983,26 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                 <Flag 
                                   className={`w-3.5 h-3.5 transition-transform active:scale-75 ${
                                     ship.is_flagged 
-                                      ? "fill-red-500 text-red-500 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]" 
-                                      : "text-slate-600 hover:text-slate-400 dark:text-slate-700 dark:hover:text-slate-500"
+                                      ? "fill-rose-400 text-rose-400" 
+                                      : "text-muted-foreground hover:text-foreground"
                                   }`} 
                                 />
                               </button>
                               <div className="flex items-center space-x-1 font-mono">
                                 {ship.parent_shipment_id && (
-                                  <span className="text-indigo-500 mr-0.5 text-[11px] font-black font-sans">↳</span>
+                                  <span className="text-[#A89ACC] mr-0.5 text-[11px] font-black font-sans">↳</span>
                                 )}
                                 <span>{ship.id}</span>
                               </div>
                             </div>
                             {ship.parent_shipment_id && (
-                              <span className="text-[8px] bg-indigo-950/70 text-indigo-350 border border-indigo-900/30 px-1 py-0.25 rounded font-mono block mt-0.5 w-max">
+                              <span className="text-[8px] bg-[#F2F0F8] text-[#5A4F7A] border border-[#C8C0E0] px-1 py-0.25 rounded font-mono block mt-0.5 w-max">
                                 Sub of {ship.parent_shipment_id}
                               </span>
                             )}
                           </TableCell>
                           
-                          <TableCell className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors truncate max-w-[120px] sm:max-w-[180px]">
+                          <TableCell className="font-bold text-foreground group-hover:text-[#8B4E43] transition-colors truncate max-w-[120px] sm:max-w-[180px]">
                             {ship.client_name}
                           </TableCell>
                           
@@ -1038,7 +1035,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                             </div>
                           </TableCell>
  
-                          <TableCell className="text-slate-700 dark:text-slate-350 font-sans text-xs hidden md:table-cell max-w-[100px] truncate">
+                          <TableCell className="text-muted-foreground font-sans text-xs hidden md:table-cell max-w-[100px] truncate">
                             {(() => {
                               const carrier = getCarrierObject(ship.expo_mawb);
                               if (carrier) {
@@ -1046,14 +1043,14 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                   <DropdownMenu>
                                     <DropdownMenuTrigger
                                       onClick={(e) => e.stopPropagation()} 
-                                      className="font-bold text-yellow-600 dark:text-yellow-500 hover:text-yellow-700 dark:hover:text-yellow-450 hover:underline cursor-pointer text-left outline-none shrink-0"
+                                      className="font-bold text-[#8B4E43] hover:text-[#C97A57] hover:underline cursor-pointer text-left outline-none shrink-0"
                                     >
                                       {carrier.name}
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-64 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 text-slate-900 dark:text-slate-100 p-4 space-y-2.5 rounded-xl shadow-2xl z-50">
-                                      <div className="border-b border-slate-200 dark:border-slate-900 pb-2 space-y-1">
+                                    <DropdownMenuContent className="w-64 bg-card border border-border text-foreground p-4 space-y-2.5 rounded-xl shadow-xl z-50">
+                                      <div className="border-b border-border pb-2 space-y-1">
                                         <div className="flex items-center gap-1.5">
-                                          <span className="font-mono bg-slate-100 dark:bg-slate-900 text-yellow-600 dark:text-yellow-500 px-1 py-0.25 rounded border border-slate-200 dark:border-slate-800 text-[9px] font-black shrink-0">
+                                          <span className="font-mono bg-[#FDF1EE] text-[#8B4E43] px-1 py-0.25 rounded border border-[#F0C5BC] text-[9px] font-bold shrink-0">
                                             {carrier.code}
                                           </span>
                                           <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">{carrier.name}</span>
@@ -1156,7 +1153,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                               <TableCell className="text-center py-1.5">
                             <button
                               onClick={(e) => toggleRow(ship.id, e)}
-                              className="p-1 rounded bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                              className="p-1 rounded bg-muted border border-border hover:bg-accent hover:border-[#F0C5BC] text-muted-foreground hover:text-foreground transition-colors"
                             >
                               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                             </button>
@@ -1165,9 +1162,9 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                         
                         {/* Expanded details container */}
                         {isExpanded && (
-                          <TableRow className="bg-slate-50 dark:bg-[#0e1017] border-y border-slate-200 dark:border-slate-900 hover:bg-transparent">
+                          <TableRow className="bg-[#FDFAF7] border-y border-border hover:bg-transparent">
                             <TableCell colSpan={10} className="p-4">
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-600 dark:text-slate-400">
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-muted-foreground">
                                 
                                 {/* Airbills & Documentation */}
                                 <div className="space-y-1.5">
@@ -1218,19 +1215,19 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
 
                                 {/* Cargo metrics */}
                                 <div className="space-y-1.5">
-                                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Weight & Metrics</h4>
+                                  <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Weight & Metrics</h4>
                                   <div className="grid grid-cols-3 gap-1.5 font-mono text-center">
-                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded">
-                                      <div className="text-[8px] text-slate-500 dark:text-slate-550 uppercase">PCS</div>
-                                      <div className="font-bold text-slate-800 dark:text-slate-200">{ship.pcs || "-"}</div>
+                                    <div className="bg-card border border-border p-1.5 rounded">
+                                      <div className="text-[8px] text-muted-foreground uppercase">PCS</div>
+                                      <div className="font-bold text-foreground">{ship.pcs || "-"}</div>
                                     </div>
-                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded">
-                                      <div className="text-[8px] text-slate-500 dark:text-slate-550 uppercase">KGS</div>
-                                      <div className="font-bold text-teal-600 dark:text-teal-400">{ship.kgs || "-"}</div>
+                                    <div className="bg-card border border-border p-1.5 rounded">
+                                      <div className="text-[8px] text-muted-foreground uppercase">KGS</div>
+                                      <div className="font-bold text-[#3D6E61]">{ship.kgs || "-"}</div>
                                     </div>
-                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded">
-                                      <div className="text-[8px] text-slate-500 dark:text-slate-550 uppercase">CHW</div>
-                                      <div className="font-bold text-amber-600 dark:text-amber-500">{ship.chw || "-"}</div>
+                                    <div className="bg-card border border-border p-1.5 rounded">
+                                      <div className="text-[8px] text-muted-foreground uppercase">CHW</div>
+                                      <div className="font-bold text-[#8B4E43]">{ship.chw || "-"}</div>
                                     </div>
                                   </div>
                                 </div>
@@ -1250,27 +1247,26 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                       </div>
                                     </div>
                                   </div>
-                                  
-                                  <div className="flex gap-2 items-center w-full">
-                                    <Link 
+                                                             <div className="flex gap-2 items-center w-full">
+                                     <Link 
                                       href={`/shipment/${ship.id}`}
-                                      className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg transition-colors flex-grow text-[10px] uppercase tracking-wider shadow-sm truncate"
+                                      className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-[#8BBAD4] hover:bg-[#6EA0BC] text-white font-bold rounded-lg transition-colors flex-grow text-[10px] uppercase tracking-wider shadow-sm truncate"
                                     >
                                       <ExternalLink className="w-3 h-3 shrink-0" />
                                       Manage Details
                                     </Link>
 
                                     {confirmDeleteId === ship.id ? (
-                                      <div className="p-1 border border-rose-900/50 bg-rose-950/30 rounded-lg flex gap-1 items-center animate-in zoom-in-95 duration-155 shrink-0">
+                                      <div className="p-1 border border-rose-200 bg-rose-50 rounded-lg flex gap-1 items-center animate-in zoom-in-95 duration-155 shrink-0">
                                         <button
                                           onClick={(e) => handleDelete(ship.id, e)}
-                                          className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[8px] font-bold"
+                                          className="px-2 py-1 bg-rose-400 hover:bg-rose-500 text-white rounded text-[8px] font-bold"
                                         >
                                           Del
                                         </button>
                                         <button
                                           onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
-                                          className="px-2 py-1 bg-slate-900 text-slate-450 rounded text-[8px] font-bold"
+                                          className="px-2 py-1 bg-muted text-muted-foreground rounded text-[8px] font-bold"
                                         >
                                           Cancel
                                         </button>
@@ -1278,13 +1274,13 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                     ) : (
                                       <button
                                         onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(ship.id); }}
-                                        className="p-1.5 border border-rose-950 bg-rose-950/20 hover:bg-rose-950/40 hover:border-rose-900/40 text-rose-450 hover:text-rose-350 font-bold rounded-lg transition-colors shrink-0"
+                                        className="p-1.5 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-400 hover:text-rose-500 font-bold rounded-lg transition-colors shrink-0"
                                         title="Delete Shipment"
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
                                       </button>
                                     )}
-                                  </div>
+                                  </div>  </div>
                                 </div>
 
                               </div>
@@ -1302,7 +1298,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
 
         if (groupBy === "none") {
           return (
-            <div className="bg-black border border-slate-900 rounded-xl overflow-hidden shadow-2xl">
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               {renderShipmentTable(sortedShipments)}
             </div>
           );
@@ -1312,18 +1308,18 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           <div className="space-y-6">
             {Object.entries(groupedShipmentsMap || {}).map(([groupName, groupShipments]) => (
               <div key={groupName} className="space-y-2.5">
-                <div className="flex items-center justify-between bg-[#0e0f12] border border-slate-900/60 px-4 py-2.5 rounded-xl">
+                <div className="flex items-center justify-between bg-[#FDF1EE] border border-[#F0C5BC] px-4 py-2.5 rounded-xl">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 shadow-[0_0_6px_#eab308]"></span>
-                    <h3 className="text-xs font-mono font-black uppercase tracking-wider text-slate-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#E8A99A]"></span>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8B4E43]">
                       {groupBy === "customer" ? `Client: ${groupName}` : groupBy === "type" ? `Type: ${groupName}` : `Milestone: ${groupName}`}
                     </h3>
                   </div>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-950 text-yellow-600 dark:text-yellow-500 border border-slate-850 rounded">
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-card text-[#8B4E43] border border-[#F0C5BC] rounded">
                     {groupShipments.length} Cargo Files
                   </span>
                 </div>
-                <div className="bg-black border border-slate-900 rounded-xl overflow-hidden shadow-lg">
+                <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
                   {renderShipmentTable(groupShipments)}
                 </div>
               </div>

@@ -28,7 +28,7 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col overflow-x-hidden w-full max-w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      <body className="min-h-full flex flex-col overflow-x-hidden w-full max-w-full bg-background text-foreground transition-colors duration-200 selection:bg-[#E8A99A]/30 selection:text-[#8B4E43]">
         {children}
         <ThemeToggle />
       </body>
