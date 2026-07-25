@@ -163,9 +163,9 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
         Carriers Agenda
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-6xl w-full bg-slate-950 border-slate-900 text-slate-100 rounded-2xl shadow-2xl p-6 max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-6xl w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl p-6 max-h-[90vh] flex flex-col">
         <DialogHeader className="border-b border-slate-850 pb-4">
-          <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-mono">
+          <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 font-mono">
             <BookOpen className="w-5 h-5 text-yellow-500" />
             CARRIER CONTACT DIRECTORY
           </DialogTitle>
@@ -215,12 +215,12 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       className={`w-full text-left p-2.5 rounded-lg border text-xs flex justify-between items-center transition-all ${
                         isSelected
                           ? "bg-slate-900 border-slate-700 text-white shadow-md"
-                          : "bg-slate-950/40 border-transparent hover:bg-slate-900/40 hover:border-slate-850 text-slate-400"
+                          : "bg-white dark:bg-slate-950/40 border-transparent hover:bg-slate-900/40 hover:border-slate-850 text-slate-400"
                       }`}
                     >
                       <div className="space-y-0.5 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono bg-slate-950 text-yellow-500/80 px-1 py-0.25 rounded border border-slate-900 font-bold text-[10px]">
+                          <span className="font-mono bg-slate-100 dark:bg-slate-950 text-yellow-600 dark:text-yellow-500/80 px-1 py-0.25 rounded border border-slate-900 font-bold text-[10px]">
                             {c.code}
                           </span>
                           <span className="font-bold truncate max-w-[150px]">{c.name}</span>
@@ -287,7 +287,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={code} 
                       onChange={(e) => setCode(e.target.value)} 
                       placeholder="e.g. 001, MAEU"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9 font-mono"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9 font-mono"
                       required
                       disabled={isEditing} // Code prefix is immutable on edit
                     />
@@ -298,7 +298,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={name} 
                       onChange={(e) => setName(e.target.value)} 
                       placeholder="e.g. American Airlines"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                       required
                     />
                   </div>
@@ -308,7 +308,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={handlingAgent} 
                       onChange={(e) => setHandlingAgent(e.target.value)} 
                       placeholder="e.g. Alliance Ground"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                     />
                   </div>
                   <div className="grid gap-1.5">
@@ -317,7 +317,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={firmsCode} 
                       onChange={(e) => setFirmsCode(e.target.value)} 
                       placeholder="e.g. M706"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9 font-mono"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9 font-mono"
                     />
                   </div>
                   <div className="grid gap-1.5">
@@ -326,7 +326,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={phone} 
                       onChange={(e) => setPhone(e.target.value)} 
                       placeholder="e.g. 305-397-0170"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                     />
                   </div>
                   <div className="grid gap-1.5">
@@ -335,7 +335,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={email} 
                       onChange={(e) => setEmail(e.target.value)} 
                       placeholder="e.g. miaoffice@allianceground.com"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                     />
                   </div>
                   <div className="grid gap-1.5">
@@ -344,7 +344,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={importFee} 
                       onChange={(e) => setImportFee(e.target.value)} 
                       placeholder="e.g. 175"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                     />
                   </div>
                   <div className="grid gap-1.5">
@@ -353,7 +353,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={paymentMethod} 
                       onChange={(e) => setPaymentMethod(e.target.value)} 
                       placeholder="e.g. www.pay.agi.aero"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                     />
                   </div>
                   <div className="grid gap-1.5 col-span-2">
@@ -362,7 +362,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={storage} 
                       onChange={(e) => setStorage(e.target.value)} 
                       placeholder="e.g. 24 hrs / $0.10 per kilo"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                     />
                   </div>
                   <div className="grid gap-1.5 col-span-2">
@@ -371,7 +371,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={address} 
                       onChange={(e) => setAddress(e.target.value)} 
                       placeholder="e.g. 1651 NW 68TH AVE, MIAMI FL 33122"
-                      className="bg-slate-900 border-slate-800 text-slate-200 h-9"
+                      className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 h-9"
                     />
                   </div>
                   <div className="grid gap-1.5 col-span-2">
@@ -380,7 +380,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                       value={notes} 
                       onChange={(e) => setNotes(e.target.value)} 
                       placeholder="Any specific delivery instructions, airline schedules or rules..."
-                      className="flex min-h-[70px] w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                      className="flex min-h-[70px] w-full rounded-md border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                     />
                   </div>
                 </div>
@@ -491,7 +491,7 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
                   )}
 
                   {selectedCarrier.notes && (
-                    <div className="p-3 bg-slate-950 border border-slate-900 rounded-xl sm:col-span-2">
+                    <div className="p-3 bg-white dark:bg-slate-950 border border-slate-900 rounded-xl sm:col-span-2">
                       <span className="text-[8px] uppercase tracking-wider text-slate-500 block font-bold mb-1">Delivery Notes & Comments</span>
                       <p className="text-slate-400 whitespace-pre-wrap leading-relaxed">{selectedCarrier.notes}</p>
                     </div>

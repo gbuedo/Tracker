@@ -544,7 +544,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                   {status.name}
                 </span>
 
-                <span className="text-[9px] font-black font-mono text-white bg-slate-950/80 px-1 py-0.25 rounded border border-slate-900 ml-0.5">
+                <span className="text-[9px] font-black font-mono text-white bg-slate-100 dark:bg-slate-950/80 px-1 py-0.25 rounded border border-slate-200 dark:border-slate-900 text-slate-800 dark:text-slate-100 ml-0.5">
                   {count}
                 </span>
               </button>
@@ -573,7 +573,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         {/* Left: filters & selectors */}
         <div className="flex flex-wrap gap-2.5 items-center">
           {/* Shipment Type filter */}
-          <div className="flex bg-slate-950/60 p-0.5 rounded-lg border border-slate-850 gap-0.5 flex-wrap">
+          <div className="flex bg-white dark:bg-slate-950/60 p-0.5 rounded-lg border border-slate-850 gap-0.5 flex-wrap">
             {["All", "Quote", "Import", "Export", "Transit", "Combine"].map((type) => (
               <button
                 key={type}
@@ -590,35 +590,35 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           </div>
 
           {/* Priority sorting select */}
-          <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
             <ArrowUpDown className="w-3 h-3 text-slate-500" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-slate-200"
             >
-              <option value="created_at" className="bg-slate-950">Sort: Default (Created)</option>
-              <option value="eta_asc" className="bg-slate-950">Sort: First ETA (Arrival)</option>
-              <option value="eta_desc" className="bg-slate-950">Sort: Latest ETA (Arrival)</option>
-              <option value="etd_asc" className="bg-slate-950">Sort: First ETD (Departure)</option>
-              <option value="etd_desc" className="bg-slate-950">Sort: Latest ETD (Departure)</option>
-              <option value="update_hours_desc" className="bg-slate-950">Sort: Longest Since Update</option>
-              <option value="update_hours_asc" className="bg-slate-950">Sort: Most Recently Updated</option>
+              <option value="created_at" className="bg-white dark:bg-slate-950">Sort: Default (Created)</option>
+              <option value="eta_asc" className="bg-white dark:bg-slate-950">Sort: First ETA (Arrival)</option>
+              <option value="eta_desc" className="bg-white dark:bg-slate-950">Sort: Latest ETA (Arrival)</option>
+              <option value="etd_asc" className="bg-white dark:bg-slate-950">Sort: First ETD (Departure)</option>
+              <option value="etd_desc" className="bg-white dark:bg-slate-950">Sort: Latest ETD (Departure)</option>
+              <option value="update_hours_desc" className="bg-white dark:bg-slate-950">Sort: Longest Since Update</option>
+              <option value="update_hours_asc" className="bg-white dark:bg-slate-950">Sort: Most Recently Updated</option>
             </select>
           </div>
 
           {/* Grouping select */}
-          <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-850 text-[10px] font-bold text-slate-405 h-8">
             <Layers className="w-3 h-3 text-slate-500" />
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-slate-200"
             >
-              <option value="none" className="bg-slate-950">Group: None (List)</option>
-              <option value="customer" className="bg-slate-950">Group: Customer</option>
-              <option value="type" className="bg-slate-950">Group: Type</option>
-              <option value="status" className="bg-slate-950">Group: Status</option>
+              <option value="none" className="bg-white dark:bg-slate-950">Group: None (List)</option>
+              <option value="customer" className="bg-white dark:bg-slate-950">Group: Customer</option>
+              <option value="type" className="bg-white dark:bg-slate-950">Group: Type</option>
+              <option value="status" className="bg-white dark:bg-slate-950">Group: Status</option>
             </select>
           </div>
         </div>
@@ -652,9 +652,9 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
               <Settings className="w-3.5 h-3.5" />
             </DialogTrigger>
             
-            <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-slate-950 border-slate-900 text-slate-50 max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
+            <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-white dark:bg-slate-950 border-slate-900 text-slate-50 max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
               <DialogHeader className="border-b border-slate-850 pb-4">
-                <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+                <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">
                   <Settings className="w-5 h-5 text-sky-400 animate-spin" />
                   WCS Tracker Configurations
                 </DialogTitle>
@@ -692,7 +692,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                           id="add_cust"
                           value={newCustomer}
                           onChange={(e) => setNewCustomer(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-slate-200"
+                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200"
                           placeholder="e.g. Kuehne Nagel Logistics"
                         />
                         <Button 
@@ -728,7 +728,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                           id="status_name"
                           value={newStatusName}
                           onChange={(e) => setNewStatusName(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-slate-200"
+                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200"
                           placeholder="e.g. Cleared Customs"
                         />
                         <Button
@@ -790,13 +790,13 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                           value={newCarrierCode}
                           onChange={(e) => setNewCarrierCode(e.target.value)}
                           placeholder="Code (E.g. 001, MAEU)"
-                          className="bg-slate-900 border-slate-800 text-slate-200 text-xs col-span-1"
+                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-xs col-span-1"
                         />
                         <Input
                           value={newCarrierName}
                           onChange={(e) => setNewCarrierName(e.target.value)}
                           placeholder="Carrier Name (E.g. Maersk)"
-                          className="bg-slate-900 border-slate-800 text-slate-200 text-xs col-span-2"
+                          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-xs col-span-2"
                         />
                       </div>
                       
@@ -818,7 +818,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                           carriersState.map(c => (
                             <div key={c.id} className="flex justify-between items-center py-0.5 border-b border-slate-900/20 last:border-b-0">
                               <div className="flex items-center gap-2">
-                                <span className="bg-slate-950 text-sky-400 px-1 py-0.25 rounded border border-slate-900 font-bold shrink-0">{c.code}</span>
+                                <span className="bg-slate-100 dark:bg-slate-950 text-sky-600 dark:text-sky-400 px-1 py-0.25 rounded border border-slate-200 dark:border-slate-900 font-bold shrink-0">{c.code}</span>
                                 <span className="text-slate-300 truncate max-w-[170px]">{c.name}</span>
                               </div>
                               <button
@@ -1319,7 +1319,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                       {groupBy === "customer" ? `Client: ${groupName}` : groupBy === "type" ? `Type: ${groupName}` : `Milestone: ${groupName}`}
                     </h3>
                   </div>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-slate-950 text-yellow-500 border border-slate-850 rounded">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-950 text-yellow-600 dark:text-yellow-500 border border-slate-850 rounded">
                     {groupShipments.length} Cargo Files
                   </span>
                 </div>

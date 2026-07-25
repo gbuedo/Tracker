@@ -134,7 +134,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
           name="event_text" 
           placeholder="e.g. Flight departed from MIA, custom clearance paperwork prepared..." 
           required 
-          className="bg-slate-950/80 border-slate-800 text-slate-200 placeholder:text-slate-650 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/80 h-10 rounded-lg" 
+          className="bg-white dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-650 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/80 h-10 rounded-lg" 
         />
       </div>
 
@@ -144,7 +144,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
           <Label htmlFor="status_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Milestone (Optional)
           </Label>
-          <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
             <Activity className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <select
               id="status_id"
@@ -152,9 +152,9 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="bg-transparent text-slate-300 border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
             >
-              <option value="" className="bg-slate-950 text-slate-500">None (No change)</option>
+              <option value="" className="bg-white dark:bg-slate-950 text-slate-500">None (No change)</option>
               {statuses.map((st) => (
-                <option key={st.id} value={st.id} className="bg-slate-950 text-slate-300">
+                <option key={st.id} value={st.id} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-300">
                   {st.name}
                 </option>
               ))}
@@ -167,7 +167,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
           <Label htmlFor="billable_concept_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Concept (Optional)
           </Label>
-          <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
             <Tag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <select
               id="billable_concept_id"
@@ -175,13 +175,13 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
               onChange={handleConceptChange}
               className="bg-transparent text-slate-300 border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
             >
-              <option value="" className="bg-slate-950 text-slate-500">None (Log)</option>
+              <option value="" className="bg-white dark:bg-slate-950 text-slate-500">None (Log)</option>
               {billableConcepts.map((concept) => (
-                <option key={concept.id} value={concept.id} className="bg-slate-950 text-slate-300">
+                <option key={concept.id} value={concept.id} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-300">
                   {concept.name}
                 </option>
               ))}
-              <option value="new_concept" className="bg-slate-950 text-sky-400 font-bold">+ Add Custom Concept...</option>
+              <option value="new_concept" className="bg-white dark:bg-slate-950 text-sky-600 dark:text-sky-400 font-bold">+ Add Custom Concept...</option>
             </select>
           </div>
         </div>
@@ -190,7 +190,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
           <Label htmlFor="cost_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Cost Amount ($)
           </Label>
-          <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
             <DollarSign className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <input 
               id="cost_amount"
@@ -198,7 +198,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
               type="number"
               step="any"
               placeholder="0.00" 
-              className="bg-transparent text-slate-300 placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
+              className="bg-transparent text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
             />
           </div>
         </div>
@@ -208,7 +208,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
           <Label htmlFor="selling_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Selling Amount ($)
           </Label>
-          <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 h-10">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
             <DollarSign className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <input 
               id="selling_amount"
@@ -216,7 +216,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
               type="number"
               step="any"
               placeholder="0.00" 
-              className="bg-transparent text-slate-300 placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
+              className="bg-transparent text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
             />
           </div>
         </div>
@@ -230,7 +230,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
             className={`h-10 text-[10px] font-extrabold transition-all border rounded-lg uppercase w-full ${
               isExternal 
                 ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' 
-                : 'border-slate-800 bg-slate-950/80 text-slate-500 hover:text-slate-350'
+                : 'border-slate-800 bg-white dark:bg-slate-950/80 text-slate-500 hover:text-slate-350'
             }`}
             onClick={() => setIsExternal(!isExternal)}
           >
@@ -245,14 +245,14 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
 
       {/* Show custom concept name text field if selected */}
       {showCustomInput && (
-        <div className="space-y-1.5 p-3.5 bg-slate-950/40 border border-slate-850 rounded-lg animate-in fade-in duration-200">
+        <div className="space-y-1.5 p-3.5 bg-white dark:bg-slate-950/40 border border-slate-850 rounded-lg animate-in fade-in duration-200">
           <Label htmlFor="custom_concept_name" className="text-[10px] uppercase font-bold text-slate-400">Custom Concept Name</Label>
           <Input
             id="custom_concept_name"
             value={customConceptName}
             onChange={(e) => setCustomConceptName(e.target.value)}
             placeholder="Enter custom billable concept name..."
-            className="bg-slate-950/80 border-slate-800 text-slate-200 text-xs h-9"
+            className="bg-white dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs h-9"
           />
         </div>
       )}

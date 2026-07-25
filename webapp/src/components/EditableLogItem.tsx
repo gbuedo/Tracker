@@ -57,7 +57,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
   return (
     <div className="relative group">
       {/* Timeline Icon Node indicator */}
-      <div className={`absolute -left-[31px] top-1 w-4 h-4 rounded-full border bg-slate-950 flex items-center justify-center transition-all ${
+      <div className={`absolute -left-[31px] top-1 w-4 h-4 rounded-full border bg-white dark:bg-slate-950 flex items-center justify-center transition-all ${
         isExternal 
           ? 'border-emerald-500 text-emerald-500 shadow-sm shadow-emerald-500/20' 
           : 'border-slate-700 text-slate-500'
@@ -66,7 +66,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
       </div>
 
       {/* Activities feed Card */}
-      <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-850/80 hover:border-slate-800 transition-all shadow-sm">
+      <div className="p-4 rounded-xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-850/80 hover:border-slate-800 transition-all shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <time className="text-xs font-mono font-semibold text-slate-500">
             {new Date(log.created_at).toLocaleString('en-US', {
@@ -159,7 +159,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
             <Input
               value={eventText}
               onChange={(e) => setEventText(e.target.value)}
-              className="bg-slate-900 border-slate-800 text-slate-200 text-sm font-semibold focus-visible:ring-indigo-500/50"
+              className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-sm font-semibold focus-visible:ring-indigo-500/50"
             />
             {log.amount !== null && (
               <div className="flex items-center gap-1.5 max-w-[150px]">
@@ -170,7 +170,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
                     step="any"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="pl-7 pr-1.5 h-8 bg-slate-900 border-slate-800 text-slate-200 text-xs font-mono font-bold"
+                    className="pl-7 pr-1.5 h-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-xs font-mono font-bold"
                     placeholder="0.00"
                   />
                 </div>

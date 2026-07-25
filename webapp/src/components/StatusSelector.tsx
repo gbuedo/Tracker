@@ -48,7 +48,7 @@ export function StatusSelector({ shipmentId, currentStatusId, statuses }: Status
         className="bg-transparent text-slate-200 border-none outline-none font-semibold cursor-pointer pr-8 text-xs focus:ring-0"
       >
         {statuses.map((s) => (
-          <option key={s.id} value={s.id} className="bg-slate-950 text-slate-200 font-semibold">
+          <option key={s.id} value={s.id} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-semibold">
             {s.name}
           </option>
         ))}

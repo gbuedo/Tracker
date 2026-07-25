@@ -296,9 +296,9 @@ export function EmailQuoteParser({ shipment, billableConcepts }: EmailQuoteParse
         <span className="flex items-center"><FileCode2 className="mr-2 h-4 w-4" /> AI Paste Quote Parser</span>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-slate-950 border-slate-900 text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
+      <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 text-slate-900 dark:text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
         <DialogHeader className="border-b border-slate-850 pb-4">
-          <DialogTitle className="text-lg font-black uppercase flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+          <DialogTitle className="text-lg font-black uppercase flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">
             <Sparkles className="w-5 h-5 text-sky-400 animate-pulse" />
             AI Email Pricing Quote Recognizer
           </DialogTitle>
@@ -319,7 +319,7 @@ export function EmailQuoteParser({ shipment, billableConcepts }: EmailQuoteParse
                   value={sellingText}
                   onChange={(e) => setSellingText(e.target.value)}
                   placeholder="Paste selling rates email details. E.g.:&#10;Ocean Freight: USD 1,500&#10;Local Handling: $250&#10;Customs clearance: 150"
-                  className="w-full h-48 bg-slate-900 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-medium focus-visible:ring-sky-500/50 focus-visible:outline-none p-3 rounded-lg"
+                  className="w-full h-48 bg-slate-900 border border-slate-800 text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 text-xs font-medium focus-visible:ring-sky-500/50 focus-visible:outline-none p-3 rounded-lg"
                 />
               </div>
 
@@ -332,7 +332,7 @@ export function EmailQuoteParser({ shipment, billableConcepts }: EmailQuoteParse
                   value={costText}
                   onChange={(e) => setCostText(e.target.value)}
                   placeholder="Paste buying rates email details. E.g.:&#10;Ocean Freight cost: $900&#10;Coordinating & handling: 150"
-                  className="w-full h-48 bg-slate-900 border border-slate-800 text-slate-100 placeholder:text-slate-650 text-xs font-medium focus-visible:ring-amber-500/50 focus-visible:outline-none p-3 rounded-lg"
+                  className="w-full h-48 bg-slate-900 border border-slate-800 text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-650 text-xs font-medium focus-visible:ring-amber-500/50 focus-visible:outline-none p-3 rounded-lg"
                 />
               </div>
             </div>
@@ -373,7 +373,7 @@ export function EmailQuoteParser({ shipment, billableConcepts }: EmailQuoteParse
             </div>
 
             {/* Editable Spreadsheet Table */}
-            <div className="border border-slate-850 rounded-xl overflow-x-auto bg-slate-950/60 text-slate-350">
+            <div className="border border-slate-850 rounded-xl overflow-x-auto bg-slate-50 dark:bg-slate-950/60 text-slate-700 dark:text-slate-350">
               <table className="w-full text-left border-collapse text-[11px] font-semibold min-w-[650px]">
                 <thead>
                   <tr className="bg-slate-900/80 border-b border-slate-850 text-slate-400 font-bold uppercase tracking-wider text-[9px]">

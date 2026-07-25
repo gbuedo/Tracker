@@ -169,9 +169,9 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
         <span className="flex items-center"><Plus className="mr-1.5 h-4 w-4" /> New Shipment</span>
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-slate-950 border-slate-900 text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
-        <DialogHeader className="border-b border-slate-900 pb-6">
-          <DialogTitle className="text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-mono tracking-widest">
+      <DialogContent className="sm:max-w-5xl md:max-w-6xl w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 text-slate-900 dark:text-white max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-8">
+        <DialogHeader className="border-b border-slate-200 dark:border-slate-900 pb-6">
+          <DialogTitle className="text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 font-mono tracking-widest">
             <Sparkles className="w-6 h-6 text-sky-400 animate-pulse" />
             CREATE NEW FREIGHT FILE
           </DialogTitle>
@@ -181,10 +181,10 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
         </DialogHeader>
 
         {/* --- AI Document Parser Dropzone --- */}
-        <div className="bg-slate-900/30 border border-slate-900 rounded-xl p-4 relative overflow-hidden backdrop-blur-sm">
+        <div className="bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-900 rounded-xl p-4 relative overflow-hidden backdrop-blur-sm">
           {isScanning ? (
             <div className="py-4 flex flex-col items-center justify-center space-y-4">
-              <div className="relative w-full max-w-lg h-24 bg-slate-950 border border-slate-900 rounded-lg overflow-hidden flex flex-col items-center justify-center p-4">
+              <div className="relative w-full max-w-lg h-24 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-lg overflow-hidden flex flex-col items-center justify-center p-4">
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent shadow-[0_0_10px_#22d3ee] animate-bounce z-10"></div>
                 <div className="w-8 h-8 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin mb-1"></div>
                 <span className="text-xs font-mono text-cyan-400 animate-pulse font-bold">{scanMessage}</span>
@@ -206,7 +206,7 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
                 type="button" 
                 variant="ghost" 
                 onClick={handleResetForm}
-                className="h-8 text-xs bg-slate-950 text-slate-400 hover:text-white border border-slate-800 rounded px-3"
+                className="h-8 text-xs bg-white dark:bg-slate-950 text-slate-605 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-250 dark:border-slate-800 rounded px-3"
               >
                 Reset Form
               </Button>
@@ -214,7 +214,7 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
           ) : (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="border border-dashed border-slate-850 hover:border-sky-500/50 hover:bg-slate-900/20 cursor-pointer rounded-lg p-5 text-center transition-all group"
+              className="border border-dashed border-slate-300 dark:border-slate-850 hover:border-sky-500/50 hover:bg-slate-100 dark:hover:bg-slate-900/20 cursor-pointer rounded-lg p-5 text-center transition-all group"
             >
               <input 
                 type="file" 
@@ -235,20 +235,20 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
         {/* --- Form Details --- */}
         <form action={actionWithClose} className="space-y-6">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-semibold text-slate-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
             
             {/* Section 1: Core Operations */}
-            <div className="space-y-4 p-5 bg-slate-900/20 border border-slate-900 rounded-xl md:col-span-2">
+            <div className="space-y-4 p-5 bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-900 rounded-xl md:col-span-2">
               <h3 className="text-xs font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2.5 border-b border-slate-900">
                 <Clipboard className="w-4 h-4" /> 1. Core Operations Settings
               </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2 grid gap-1.5">
-                  <Label htmlFor="client_name" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">Client / Customer Profile</Label>
+                  <Label htmlFor="client_name" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">Client / Customer Profile</Label>
                   <div className="flex gap-2">
                     <select 
-                      className="flex h-11 rounded-md border border-slate-800 bg-slate-900 text-slate-200 px-3 py-2 text-sm focus:border-sky-550 focus:outline-none"
+                      className="flex h-11 rounded-md border border-slate-800 bg-white dark:bg-slate-900 text-slate-905 dark:text-slate-200 px-3 py-2 text-sm focus:border-sky-550 focus:outline-none"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
                     >
@@ -264,31 +264,31 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
                       placeholder="Or type custom client profile name..." 
-                      className="flex-grow h-11 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-600 text-sm"
+                      className="flex-grow h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm"
                     />
                   </div>
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="reference" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">Client Reference / PO</Label>
+                  <Label htmlFor="reference" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">Client Reference / PO</Label>
                   <Input 
                     id="reference" 
                     name="reference" 
                     value={reference}
                     onChange={(e) => setReference(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650 text-sm font-mono"
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-650 text-sm font-mono"
                     placeholder="e.g. PO-881293-AMZ" 
                   />
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="shipment_type" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">Operation Type</Label>
+                  <Label htmlFor="shipment_type" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">Operation Type</Label>
                   <select 
                     id="shipment_type" 
                     name="shipment_type" 
                     value={shipmentType}
                     onChange={(e) => setShipmentType(e.target.value)}
-                    className="flex h-11 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-slate-200 text-sm focus:border-sky-550 focus:outline-none"
+                    className="flex h-11 w-full rounded-md border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-200 text-sm focus:border-sky-550 focus:outline-none"
                   >
                     <option value="Quote">Quote</option>
                     <option value="Import">Import</option>
@@ -299,13 +299,13 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="transport_mode" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">Transport Mode</Label>
+                  <Label htmlFor="transport_mode" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">Transport Mode</Label>
                   <select 
                     id="transport_mode" 
                     name="transport_mode" 
                     value={transportMode}
                     onChange={(e) => setTransportMode(e.target.value)}
-                    className="flex h-11 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-slate-200 text-sm focus:border-sky-550 focus:outline-none"
+                    className="flex h-11 w-full rounded-md border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-200 text-sm focus:border-sky-550 focus:outline-none"
                   >
                     <option value="Air">Air</option>
                     <option value="Ocean">Ocean</option>
@@ -316,13 +316,13 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="status_id" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">Initial Milestone</Label>
+                  <Label htmlFor="status_id" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">Initial Milestone</Label>
                   <select 
                     id="status_id" 
                     name="status_id" 
                     value={statusId}
                     onChange={(e) => setStatusId(e.target.value)}
-                    className="flex h-11 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-slate-200 text-sm focus:border-sky-550 focus:outline-none"
+                    className="flex h-11 w-full rounded-md border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-slate-200 text-sm focus:border-sky-550 focus:outline-none"
                   >
                     {statuses.map((st) => (
                       <option key={st.id} value={st.id}>{st.name}</option>
@@ -333,25 +333,25 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
             </div>
 
             {/* Section 2: Load Metrics */}
-            <div className="space-y-4 p-5 bg-slate-900/20 border border-slate-900 rounded-xl col-span-1">
+            <div className="space-y-4 p-5 bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-900 rounded-xl col-span-1">
               <h3 className="text-xs font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2.5 border-b border-slate-900">
                 <Weight className="w-4 h-4" /> 2. Cargo Parameters
               </h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="grid gap-1.5">
-                  <Label htmlFor="pcs" className="text-slate-300 text-xs uppercase font-extrabold tracking-wider">Pieces (PCS)</Label>
+                  <Label htmlFor="pcs" className="text-slate-700 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Pieces (PCS)</Label>
                   <Input 
                     id="pcs" 
                     name="pcs" 
                     type="number"
                     value={pcs}
                     onChange={(e) => setPcs(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 font-mono text-sm" 
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 font-mono text-sm" 
                     placeholder="0" 
                   />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label htmlFor="kgs" className="text-slate-300 text-xs uppercase font-extrabold tracking-wider">Gross KGS</Label>
+                  <Label htmlFor="kgs" className="text-slate-700 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Gross KGS</Label>
                   <Input 
                     id="kgs" 
                     name="kgs" 
@@ -359,12 +359,12 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
                     step="any"
                     value={kgs}
                     onChange={(e) => setKgs(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 font-mono text-sm" 
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 font-mono text-sm" 
                     placeholder="0.0" 
                   />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label htmlFor="chw" className="text-slate-300 text-xs uppercase font-extrabold tracking-wider">Charge CHW</Label>
+                  <Label htmlFor="chw" className="text-slate-700 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Charge CHW</Label>
                   <Input 
                     id="chw" 
                     name="chw" 
@@ -372,7 +372,7 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
                     step="any"
                     value={chw}
                     onChange={(e) => setChw(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 font-mono text-sm" 
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 font-mono text-sm" 
                     placeholder="0.0" 
                   />
                 </div>
@@ -380,13 +380,13 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
             </div>
 
             {/* Section 3: Time Scheduling */}
-            <div className="space-y-4 p-5 bg-slate-900/20 border border-slate-900 rounded-xl col-span-1">
+            <div className="space-y-4 p-5 bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-900 rounded-xl col-span-1">
               <h3 className="text-xs font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2.5 border-b border-slate-900">
                 <Calendar className="w-4 h-4" /> 3. Schedule Timetable
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-1.5">
-                  <Label htmlFor="etd" className="text-slate-600 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Departure (ETD)</Label>
+                  <Label htmlFor="etd" className="text-slate-600 dark:text-slate-700 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Departure (ETD)</Label>
                   <Input 
                     id="etd" 
                     name="etd" 
@@ -397,7 +397,7 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
                   />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label htmlFor="eta" className="text-slate-600 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Arrival (ETA)</Label>
+                  <Label htmlFor="eta" className="text-slate-600 dark:text-slate-700 dark:text-slate-300 text-xs uppercase font-extrabold tracking-wider">Arrival (ETA)</Label>
                   <Input 
                     id="eta" 
                     name="eta" 
@@ -411,62 +411,62 @@ export function NewShipmentDialog({ customers = [], statuses = [] }: NewShipment
             </div>
 
             {/* Section 4: Logistical Bills & References */}
-            <div className="space-y-4 p-5 bg-slate-900/20 border border-slate-900 rounded-xl md:col-span-2">
+            <div className="space-y-4 p-5 bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-900 rounded-xl md:col-span-2">
               <h3 className="text-xs font-mono tracking-widest text-yellow-500 uppercase font-black flex items-center gap-1.5 pb-2.5 border-b border-slate-900">
                 <Plane className="w-4 h-4" /> 4. Logistics References & Airbills
               </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
                 <div className="grid gap-1.5 sm:col-span-1">
-                  <Label htmlFor="ct_file" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">CT File Ref</Label>
+                  <Label htmlFor="ct_file" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">CT File Ref</Label>
                   <Input 
                     id="ct_file" 
                     name="ct_file" 
                     value={ctFile}
                     onChange={(e) => setCtFile(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650 text-sm font-mono" 
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-650 text-sm font-mono" 
                     placeholder="CT-9821" 
                   />
                 </div>
 
                 <div className="grid gap-1.5 sm:col-span-1">
-                  <Label htmlFor="warehouse_receipt" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">Warehouse Rec.</Label>
+                  <Label htmlFor="warehouse_receipt" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">Warehouse Rec.</Label>
                   <Input 
                     id="warehouse_receipt" 
                     name="warehouse_receipt" 
                     value={warehouseReceipt}
                     onChange={(e) => setWarehouseReceipt(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-650 text-sm font-mono" 
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-650 text-sm font-mono" 
                     placeholder="WH-44192" 
                   />
                 </div>
 
                 <div className="grid gap-1.5 sm:col-span-1">
-                  <Label htmlFor="aes" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">AES Filing Ref</Label>
+                  <Label htmlFor="aes" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">AES Filing Ref</Label>
                   <Input 
                     id="aes" 
                     name="aes" 
                     value={aes}
                     onChange={(e) => setAes(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 font-mono text-sm" 
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 font-mono text-sm" 
                     placeholder="AES-X2026..." 
                   />
                 </div>
 
                 <div className="grid gap-1.5 sm:col-span-1">
-                  <Label htmlFor="expo_mawb" className="text-slate-200 text-xs uppercase font-extrabold tracking-wider">MAWB Master bill</Label>
+                  <Label htmlFor="expo_mawb" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">MAWB Master bill</Label>
                   <Input 
                     id="expo_mawb" 
                     name="expo_mawb" 
                     value={expoMawb}
                     onChange={(e) => setExpoMawb(e.target.value)}
-                    className="h-11 bg-slate-900 border-slate-800 text-slate-100 font-mono text-sm" 
+                    className="h-11 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-100 font-mono text-sm" 
                     placeholder="000-00000000" 
                   />
                 </div>
 
                 <div className="grid gap-1.5 sm:col-span-1">
-                  <Label htmlFor="expo_hawb" className="text-slate-250 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">HAWB Housebills (comma-separated)</Label>
+                  <Label htmlFor="expo_hawb" className="text-slate-250 dark:text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">HAWB Housebills (comma-separated)</Label>
                   <Input 
                     id="expo_hawb" 
                     name="expo_hawb" 

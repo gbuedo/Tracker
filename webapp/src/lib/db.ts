@@ -802,8 +802,8 @@ export async function createShipment(
       shipment_type,
       transport_mode: extraCopy.transport_mode || null,
       status_id: extraCopy.status_id || (initialStatusId && initialStatusId >= 10000 ? null : 1),
-      eta: extraCopy.eta || null,
-      etd: extraCopy.etd || null,
+      eta: extraCopy.eta ? extraCopy.eta.split("T")[0].split(" ")[0] : null,
+      etd: extraCopy.etd ? extraCopy.etd.split("T")[0].split(" ")[0] : null,
       ct_file: extraCopy.ct_file || null,
       warehouse_receipt: extraCopy.warehouse_receipt || null,
       expo_mawb: extraCopy.expo_mawb || null,
@@ -863,8 +863,8 @@ export async function createShipment(
         status_id: extraCopy.status_id || (initialStatusId && initialStatusId >= 10000 ? null : 1),
         shipment_type,
         transport_mode: extraCopy.transport_mode || null,
-        eta: extraCopy.eta || null,
-        etd: extraCopy.etd || null,
+        eta: extraCopy.eta ? extraCopy.eta.split("T")[0].split(" ")[0] : null,
+        etd: extraCopy.etd ? extraCopy.etd.split("T")[0].split(" ")[0] : null,
         ct_file: extraCopy.ct_file || null,
         warehouse_receipt: extraCopy.warehouse_receipt || null,
         expo_mawb: extraCopy.expo_mawb || null,
@@ -1756,10 +1756,14 @@ export async function updateShipment(
     result = updated as Shipment;
   } else {
     try {
+      const dbPayload = { ...fieldsCopy };
+      if (dbPayload.eta) dbPayload.eta = dbPayload.eta.split("T")[0].split(" ")[0];
+      if (dbPayload.etd) dbPayload.etd = dbPayload.etd.split("T")[0].split(" ")[0];
+
       const { data: updatedShipment, error } = await supabase
         .from("shipments")
         .update({
-          ...fieldsCopy,
+          ...dbPayload,
           updated_at: new Date().toISOString()
         })
         .eq("id", id)
@@ -1775,9 +1779,14 @@ export async function updateShipment(
         const data = readMockData();
         const index = data.shipments.findIndex((s: any) => s.id === id);
         if (index === -1) throw new Error("Shipment not found");
+        
+        const dbPayload = { ...fieldsCopy };
+        if (dbPayload.eta) dbPayload.eta = dbPayload.eta.split("T")[0].split(" ")[0];
+        if (dbPayload.etd) dbPayload.etd = dbPayload.etd.split("T")[0].split(" ")[0];
+
         const updated = {
           ...data.shipments[index],
-          ...fieldsCopy,
+          ...dbPayload,
           updated_at: new Date().toISOString()
         };
         data.shipments[index] = updated;

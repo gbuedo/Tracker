@@ -43,7 +43,7 @@ export function DeleteShipmentButton({ shipmentId }: DeleteShipmentButtonProps) 
         <span className="flex items-center justify-center"><Trash2 className="w-4 h-4" /></span>
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-[400px] bg-slate-950 border-slate-800 text-white">
+      <DialogContent className="sm:max-w-[400px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-400">
             <AlertTriangle className="w-5 h-5 text-rose-500 animate-pulse" />
