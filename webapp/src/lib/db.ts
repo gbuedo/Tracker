@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept } from "./types";
+import { unstable_noStore as noStore } from "next/cache";
 import carriersSeed from "./carriers_seed.json";
 import ratesSeed from "./rates_seed.json";
 import fs from "fs";
@@ -465,7 +466,7 @@ function writeMockData(data: any) {
  */
 async function queryWithFallback<T>(supabaseQuery: () => Promise<any>, fallbackFn: () => T): Promise<T> {
   const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
+  if (isDefaultUrl) {
     isDemo = true;
     return fallbackFn();
   }
@@ -482,8 +483,7 @@ async function queryWithFallback<T>(supabaseQuery: () => Promise<any>, fallbackF
     if (
       errMsg.includes("fetch") || 
       errMsg.includes("ENOTFOUND") || 
-      errMsg.includes("getaddrinfo") ||
-      isDefaultUrl
+      errMsg.includes("getaddrinfo")
     ) {
       isDemo = true;
       return fallbackFn();
@@ -531,6 +531,7 @@ function processLogStatus(log: any, allStatuses: Status[]) {
 // ----------------------------------------------------
 
 export async function getShipments(): Promise<Shipment[]> {
+  noStore();
   const allStatuses = await getStatuses();
   const baseShipments = await queryWithFallback<Shipment[]>(
     async () => {
@@ -583,6 +584,7 @@ export async function getShipments(): Promise<Shipment[]> {
 }
 
 export async function getShipmentById(id: number): Promise<Shipment | null> {
+  noStore();
   const baseShipment = await queryWithFallback<Shipment | null>(
     async () => {
       return await supabase
@@ -737,7 +739,7 @@ export async function createShipment(
   }
 
   const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
+  if (isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
     if (!data.config) data.config = {};
@@ -922,7 +924,7 @@ export async function addLog(req: {
   }
 
   const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
+  if (isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
     
@@ -1020,7 +1022,7 @@ export async function addLog(req: {
 
 export async function updateLog(id: string, fields: { event_text?: string; is_external?: boolean; amount?: number | null; amount_type?: 'cost' | 'selling' | null }): Promise<void> {
   const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
+  if (isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
     const log = data.logs.find((l: any) => l.id === id);
@@ -1296,6 +1298,7 @@ export async function deleteShipment(id: number): Promise<void> {
 }
 
 export async function getStatuses(): Promise<Status[]> {
+  noStore();
   const baseStatuses = await queryWithFallback<Status[]>(
     async () => {
       return await supabase.from("statuses").select("*").order("sort_order", { ascending: true });
@@ -1321,6 +1324,7 @@ export async function getStatuses(): Promise<Status[]> {
 }
 
 export async function getBillableConcepts(): Promise<BillableConcept[]> {
+  noStore();
   const list = await queryWithFallback<BillableConcept[]>(
     async () => {
       return await supabase.from("billable_concepts").select("*");
@@ -1741,7 +1745,7 @@ export async function updateShipment(
   }
 
   let result: Shipment;
-  if (isDemo || isDefaultUrl) {
+  if (isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
     const index = data.shipments.findIndex((s: any) => s.id === id);
@@ -1905,6 +1909,7 @@ export async function updateShipment(
 }
 
 export async function getCarriers(): Promise<Carrier[]> {
+  noStore();
   const defaults = carriersSeed as Carrier[];
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
@@ -1975,6 +1980,7 @@ export async function deleteCarrier(id: number): Promise<void> {
 // ----------------------------------------------------
 
 export async function getTasks(): Promise<Task[]> {
+  noStore();
   return await queryWithFallback<Task[]>(
     async () => {
       return await supabase
@@ -2155,6 +2161,7 @@ export async function deleteTask(id: number): Promise<void> {
 // ----------------------------------------------------
 
 export async function getRatesheets(): Promise<Ratesheet[]> {
+  noStore();
   return await queryWithFallback<Ratesheet[]>(
     async () => {
       const res = await supabase
