@@ -158,18 +158,18 @@ export function CarrierDirectoryDialog({ carriers }: CarrierDirectoryDialogProps
         selectCarrier(carriers[0]);
       }
     }}>
-      <DialogTrigger render={<Button className="h-10 bg-slate-900 border border-slate-800 text-slate-350 hover:text-white rounded-xl shadow-md hover:border-slate-700 hover:bg-slate-800/30 text-xs font-bold gap-2 px-4 shrink-0" />}>
-        <Notebook className="w-4 h-4 text-yellow-500 animate-pulse" />
+      <DialogTrigger render={<Button className="h-10 bg-card border border-border text-foreground hover:text-[#8B4E43] rounded-xl shadow-sm hover:border-[#F0C5BC] hover:bg-[#FDF1EE] text-xs font-bold gap-2 px-4 shrink-0" />}>
+        <Notebook className="w-4 h-4 text-[#E8A99A]" />
         Carriers Agenda
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-6xl w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl p-6 max-h-[90vh] flex flex-col">
-        <DialogHeader className="border-b border-slate-850 pb-4">
-          <DialogTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 font-mono">
-            <BookOpen className="w-5 h-5 text-yellow-500" />
-            CARRIER CONTACT DIRECTORY
+      <DialogContent className="sm:max-w-6xl w-full bg-card border-border text-foreground rounded-2xl shadow-2xl p-6 max-h-[90vh] flex flex-col">
+        <DialogHeader className="border-b border-border pb-4">
+          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+            <BookOpen className="w-5 h-5 text-[#E8A99A]" />
+            Carrier Contact Directory
           </DialogTitle>
-          <DialogDescription className="text-slate-400 text-xs">
+          <DialogDescription className="text-muted-foreground text-xs">
             Manage contact information, firms codes, storage facilities, and handling agents for air and ocean carriers.
           </DialogDescription>
         </DialogHeader>

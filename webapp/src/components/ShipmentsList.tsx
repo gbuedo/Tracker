@@ -1053,37 +1053,37 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                           <span className="font-mono bg-[#FDF1EE] text-[#8B4E43] px-1 py-0.25 rounded border border-[#F0C5BC] text-[9px] font-bold shrink-0">
                                             {carrier.code}
                                           </span>
-                                          <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">{carrier.name}</span>
+                                          <span className="font-extrabold text-xs text-foreground truncate">{carrier.name}</span>
                                         </div>
                                         {carrier.handling_agent && (
-                                          <p className="text-[10px] text-slate-500">Handling Agent: {carrier.handling_agent}</p>
+                                          <p className="text-[10px] text-muted-foreground">Handling Agent: {carrier.handling_agent}</p>
                                         )}
                                       </div>
                                       
-                                      <div className="space-y-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                                      <div className="space-y-2 text-[11px] font-semibold text-muted-foreground">
                                         {carrier.phone && (
                                           <div className="flex items-center gap-1.5">
-                                            <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                                            <a href={`tel:${carrier.phone}`} className="text-slate-700 dark:text-slate-200 hover:text-yellow-600 dark:hover:text-yellow-500 font-mono">
+                                            <Phone className="w-3.5 h-3.5 text-[#7BB5A0] shrink-0" />
+                                            <a href={`tel:${carrier.phone}`} className="text-foreground hover:text-[#8B4E43] font-mono">
                                               {carrier.phone}
                                             </a>
                                           </div>
                                         )}
                                         {carrier.email && (
                                           <div className="flex items-center gap-1.5">
-                                            <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                                            <a href={`mailto:${carrier.email}`} className="text-slate-700 dark:text-slate-200 hover:text-yellow-600 dark:hover:text-yellow-500 font-mono truncate block max-w-[200px]" title={carrier.email}>
+                                            <Mail className="w-3.5 h-3.5 text-[#8BBAD4] shrink-0" />
+                                            <a href={`mailto:${carrier.email}`} className="text-foreground hover:text-[#8B4E43] font-mono truncate block max-w-[200px]" title={carrier.email}>
                                               {carrier.email}
                                             </a>
                                           </div>
                                         )}
                                         {carrier.firms_code && (
-                                          <div className="text-[10px] font-mono text-slate-550 dark:text-slate-500">
-                                            FIRMS Code: <span className="text-slate-700 dark:text-slate-350 font-bold">{carrier.firms_code}</span>
+                                          <div className="text-[10px] font-mono text-muted-foreground">
+                                            FIRMS Code: <span className="text-foreground font-bold">{carrier.firms_code}</span>
                                           </div>
                                         )}
                                         {carrier.address && (
-                                          <p className="text-[10px] text-slate-600 dark:text-slate-550 leading-snug pt-1.5 border-t border-slate-200 dark:border-slate-900/40">
+                                          <p className="text-[10px] text-muted-foreground leading-snug pt-1.5 border-t border-border">
                                             {carrier.address}
                                           </p>
                                         )}
@@ -1096,10 +1096,10 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                             })()}
                           </TableCell>
  
-                          <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
+                          <TableCell className="text-muted-foreground font-sans text-xs hidden sm:table-cell">
                             <div className="flex flex-col gap-1">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-slate-700 dark:text-slate-200 font-bold">{formatDateTimeSmall(ship.etd)}</span>
+                                <span className="text-foreground font-bold">{formatDateTimeSmall(ship.etd)}</span>
                                 {isToday(ship.etd) && (
                                   <span className="relative flex h-2 w-2 shrink-0">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 dark:bg-slate-200 opacity-75"></span>
@@ -1165,22 +1165,21 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                           <TableRow className="bg-[#FDFAF7] border-y border-border hover:bg-transparent">
                             <TableCell colSpan={10} className="p-4">
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-muted-foreground">
-                                
-                                {/* Airbills & Documentation */}
+                                                          {/* Airbills & Documentation */}
                                 <div className="space-y-1.5">
-                                  <h4 className="text-[10px] font-bold text-slate-550 dark:text-slate-500 uppercase tracking-widest">Bills & Documentation</h4>
+                                  <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Bills & Documentation</h4>
                                   <div className="space-y-1 font-mono text-[11px]">
                                     {ship.expo_mawb ? (
                                       <div>
-                                        <span className="text-[9px] text-slate-500 uppercase font-black mr-1.5">MAWB Ref:</span>
-                                        <span className="text-slate-800 dark:text-slate-200">{ship.expo_mawb}</span>
+                                        <span className="text-[9px] text-muted-foreground uppercase font-black mr-1.5">MAWB Ref:</span>
+                                        <span className="text-foreground font-semibold">{ship.expo_mawb}</span>
                                       </div>
                                     ) : null}
                                     {ship.expo_hawb ? (
                                        <div className="flex flex-wrap items-center gap-1">
-                                         <span className="text-[9px] text-slate-500 uppercase font-black mr-1">HAWBs:</span>
+                                         <span className="text-[9px] text-muted-foreground uppercase font-black mr-1">HAWBs:</span>
                                          {ship.expo_hawb.split(/,\s*/).map((h, idx) => (
-                                           <span key={idx} className="bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 px-1 py-0.25 rounded text-[10px] uppercase font-bold">
+                                           <span key={idx} className="bg-muted border border-border text-foreground px-1 py-0.25 rounded text-[10px] uppercase font-bold">
                                              {h.trim()}
                                            </span>
                                          ))}
@@ -1188,27 +1187,27 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                      ) : null}
                                     {ship.aes ? (
                                       <div>
-                                        <span className="text-[9px] text-slate-500 uppercase font-black mr-1.5">AES Ref:</span>
-                                        <span className="text-sky-655 dark:text-sky-400">{ship.aes}</span>
+                                        <span className="text-[9px] text-muted-foreground uppercase font-black mr-1.5">AES Ref:</span>
+                                        <span className="text-[#3A6580] font-semibold">{ship.aes}</span>
                                       </div>
                                     ) : null}
                                     {!ship.expo_mawb && !ship.expo_hawb && !ship.aes && (
-                                      <span className="italic text-slate-400 dark:text-slate-600 text-[11px]">No bills loaded</span>
+                                      <span className="italic text-muted-foreground text-[11px]">No bills loaded</span>
                                     )}
                                   </div>
                                 </div>
 
                                 {/* Tracking Files */}
                                 <div className="space-y-1.5">
-                                  <h4 className="text-[10px] font-bold text-slate-550 dark:text-slate-500 uppercase tracking-widest">File References</h4>
+                                  <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">File References</h4>
                                   <div className="space-y-1 font-mono text-[11px]">
                                     <div className="flex justify-between max-w-[180px]">
-                                      <span className="text-slate-500">CT File:</span>
-                                      <span className="font-mono text-slate-800 dark:text-slate-200 font-bold">{ship.ct_file || "N/A"}</span>
+                                      <span className="text-muted-foreground">CT File:</span>
+                                      <span className="font-mono text-foreground font-bold">{ship.ct_file || "N/A"}</span>
                                     </div>
                                     <div className="flex justify-between max-w-[180px]">
-                                      <span className="text-slate-500">Warehouse Receipt:</span>
-                                      <span className="font-mono text-slate-800 dark:text-slate-200 font-bold">{ship.warehouse_receipt || "N/A"}</span>
+                                      <span className="text-muted-foreground">Warehouse Receipt:</span>
+                                      <span className="font-mono text-foreground font-bold">{ship.warehouse_receipt || "N/A"}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -1235,15 +1234,15 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                                 {/* Timetable dates & Direct link */}
                                 <div className="space-y-1.5 flex flex-col justify-between">
                                   <div>
-                                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Dates</h4>
+                                    <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Estimated Dates</h4>
                                     <div className="space-y-0.5">
                                       <div className="flex items-center gap-1.5">
-                                        <span className="text-[9px] text-slate-500 uppercase font-black w-7">ETD:</span>
-                                        <span className="font-bold font-mono">{ship.etd || "TBD"}</span>
+                                        <span className="text-[9px] text-muted-foreground uppercase font-black w-7">ETD:</span>
+                                        <span className="font-bold font-mono text-foreground">{ship.etd || "TBD"}</span>
                                       </div>
                                       <div className="flex items-center gap-1.5">
-                                        <span className="text-[9px] text-slate-500 uppercase font-black w-7">ETA:</span>
-                                        <span className="font-bold font-mono text-sky-400">{ship.eta || "TBD"}</span>
+                                        <span className="text-[9px] text-muted-foreground uppercase font-black w-7">ETA:</span>
+                                        <span className="font-bold font-mono text-[#3A6580]">{ship.eta || "TBD"}</span>
                                       </div>
                                     </div>
                                   </div>
