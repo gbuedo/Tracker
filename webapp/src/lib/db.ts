@@ -956,7 +956,7 @@ export async function addLog(req: {
   }
   try {
     const isCustomConcept = req.billable_concept_id && req.billable_concept_id >= 10000;
-    const { status_id, ...logPayload } = req;
+    const { status_id, skipSyncStatus, ...logPayload } = req;
     
     // Override event_text with status metadata payload
     const updatedPayload = { ...logPayload, event_text: eventTextWithStatus };
