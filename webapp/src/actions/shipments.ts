@@ -179,10 +179,13 @@ export async function addCarrier(code: string, name: string, extraFields: any = 
   revalidatePath("/operations");
 }
 
-export async function updateCarrier(id: number, fields: any) {
+export async function updateCarrier(id: number, fields: any, shipmentId?: number) {
   await db.updateCarrier(id, fields);
   revalidatePath("/");
   revalidatePath("/operations");
+  if (shipmentId) {
+    revalidatePath(`/shipment/${shipmentId}`);
+  }
 }
 
 export async function deleteCarrier(id: number) {

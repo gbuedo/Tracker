@@ -10,6 +10,7 @@ import { EmailQuoteParser } from "@/components/EmailQuoteParser";
 import { DeleteShipmentButton } from "@/components/DeleteShipmentButton";
 import { EditShipmentDialog } from "@/components/EditShipmentDialog";
 import { ShipmentNotepad } from "@/components/ShipmentNotepad";
+import { ShipmentCarrierCard } from "@/components/ShipmentCarrierCard";
 import Link from "next/link";
 import { ArrowLeft, Clock, Globe, Lock, Split, ArrowRight, ShieldAlert, Cpu, Circle, DollarSign, Tag, Plane, Ship, Truck, Activity, FileText, CheckSquare, Plus } from "lucide-react";
 import { format } from "date-fns";
@@ -27,6 +28,39 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const customers = await db.getCustomers();
   const isDemoMode = db.checkIsDemoMode();
   const initialNotes = await db.getShipmentNotes(shipmentId);
+  const carriers = await db.getCarriers();
+
+  // Resolve associated carrier using prefix matching
+  const getCarrierForShipment = (mawb: string | null) => {
+    if (!mawb) return null;
+    const cleanMawb = mawb.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    
+    // 1. Match 4-letter SCAC code
+    const letterMatch = cleanMawb.match(/^[A-Z]{4}/);
+    if (letterMatch) {
+      const scac = letterMatch[0];
+      const match = carriers.find(c => c.code.toUpperCase() === scac);
+      if (match) return match;
+    }
+    
+    // 2. Match 3-digit prefix
+    const digitMatch = cleanMawb.match(/^[0-9]{3}/);
+    if (digitMatch) {
+      const prefix = digitMatch[0];
+      const match = carriers.find(c => c.code === prefix);
+      if (match) return match;
+    }
+
+    // 3. Match generic prefix match
+    for (const carrier of carriers) {
+      if (cleanMawb.startsWith(carrier.code.toUpperCase())) {
+        return carrier;
+      }
+    }
+    return null;
+  };
+
+  const associatedCarrier = shipment ? getCarrierForShipment(shipment.expo_mawb) : null;
 
   // Fetch associated tasks
   const allTasks = await db.getTasks();
@@ -268,6 +302,10 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 </div>
               </CardContent>
             </Card>
+
+            {associatedCarrier && (
+              <ShipmentCarrierCard carrier={associatedCarrier} shipmentId={shipmentId} />
+            )}
 
             <ShipmentNotepad shipmentId={shipmentId} initialNotes={initialNotes} />
 
