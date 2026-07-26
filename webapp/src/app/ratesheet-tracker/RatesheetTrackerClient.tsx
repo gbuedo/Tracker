@@ -260,13 +260,13 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
     <div className="space-y-6">
       
       {/* CONTROLS MASTER HUB PANEL */}
-      <div className="bg-[#0a0a0c] border border-slate-900 rounded-2xl p-4 md:p-6 space-y-6 shadow-xl relative">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="bg-card border border-border rounded-2xl p-4 md:p-6 space-y-6 shadow-sm relative">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-[#7BB5A0]/5 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-900 pb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
           {/* Ratesheet dropdown selector */}
           <div className="flex items-center gap-3">
-            <span className="text-xs uppercase font-extrabold tracking-wider text-slate-500 font-mono">Catalog:</span>
+            <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Catalog:</span>
             <select
               value={selectedSheetId}
               onChange={(e) => {
@@ -274,11 +274,11 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                 setIsEditing(false);
                 setSelectedConceptIds(new Set());
               }}
-              className="bg-slate-950 text-emerald-400 border border-slate-850 rounded-xl px-3 py-2 text-xs font-bold cursor-pointer outline-none focus:ring-1 focus:ring-emerald-500/30"
+              className="bg-muted text-[#3D6E61] border border-border rounded-xl px-3 py-2 text-xs font-bold cursor-pointer outline-none focus:ring-1 focus:ring-[#7BB5A0]/30"
               disabled={isEditing}
             >
               {ratesheets.map(s => (
-                <option key={s.id} value={s.id} className="bg-slate-950 text-slate-200">
+                <option key={s.id} value={s.id} className="bg-background text-foreground">
                   {s.name} {s.client_name ? `(${s.client_name})` : " (MASTER BASE)"}
                 </option>
               ))}
@@ -289,7 +289,7 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
               <Button 
                 onClick={handleDeleteRatesheet}
                 disabled={isPending || isEditing}
-                className="h-8 w-8 p-0 bg-rose-950/20 hover:bg-rose-955/35 border border-rose-900/30 text-rose-500 rounded-lg"
+                className="h-8 w-8 p-0 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-500 rounded-lg"
                 title="Delete this client ratesheet"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -301,36 +301,36 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
             {/* Save As... Button */}
             {selectedSheet && (
               <Dialog open={saveAsOpen} onOpenChange={(v) => { setSaveAsOpen(v); if(!v) { setClientName(""); setInitMarkupPercent(""); setInitMarkupFixed(""); } }}>
-                <DialogTrigger render={<Button className="h-9 bg-slate-900 border border-slate-800 text-slate-350 hover:text-white rounded-xl text-xs font-bold gap-1.5 px-3.5 shrink-0" />}>
+                <DialogTrigger render={<Button className="h-9 bg-card border border-border text-foreground hover:text-[#3D6E61] rounded-xl text-xs font-bold gap-1.5 px-3.5 shrink-0" />}>
                   <Plus className="w-3.5 h-3.5" /> Save As... (Client Sheet)
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md w-full bg-slate-950 border-slate-900 text-slate-100 rounded-2xl shadow-2xl p-6">
-                  <DialogHeader className="border-b border-slate-850 pb-4">
-                    <DialogTitle className="text-base font-black uppercase tracking-wider flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-mono">
-                      <BookOpen className="w-4 h-4 text-emerald-400" />
+                <DialogContent className="sm:max-w-md w-full bg-card border-border text-foreground rounded-2xl shadow-2xl p-6">
+                  <DialogHeader className="border-b border-border pb-4">
+                    <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                      <BookOpen className="w-4 h-4 text-[#7BB5A0]" />
                       Save As Client Ratesheet
                     </DialogTitle>
-                    <DialogDescription className="text-slate-450 text-xs">
+                    <DialogDescription className="text-muted-foreground text-xs">
                       Duplicate the base ratesheet for a specific client profile and apply an optional markup adjustment.
                     </DialogDescription>
                   </DialogHeader>
 
-                  <form onSubmit={handleSaveAsClient} className="space-y-4 pt-4 text-xs font-semibold text-slate-300">
+                  <form onSubmit={handleSaveAsClient} className="space-y-4 pt-4 text-xs font-semibold text-foreground">
                     <div className="grid gap-1.5">
-                      <Label htmlFor="client_profile" className="text-slate-200 uppercase text-[10px] tracking-wider">Client Name*</Label>
+                      <Label htmlFor="client_profile" className="text-foreground uppercase text-[10px] tracking-wider">Client Name*</Label>
                       <Input 
                         id="client_profile"
                         value={clientName}
                         onChange={(e) => setClientName(e.target.value)}
                         placeholder="e.g. Kuehne Nagel Logistics"
-                        className="bg-slate-900 border-slate-800 text-slate-100 h-10 text-xs font-bold"
+                        className="bg-muted border-border text-foreground h-10 text-xs font-bold"
                         required
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-1.5">
-                        <Label htmlFor="p_markup" className="text-slate-400 uppercase text-[10px] tracking-wider">Add Percentage Markup (%)</Label>
+                        <Label htmlFor="p_markup" className="text-muted-foreground uppercase text-[10px] tracking-wider">Add Percentage Markup (%)</Label>
                         <Input 
                           id="p_markup"
                           type="number"
@@ -338,11 +338,11 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                           value={initMarkupPercent}
                           onChange={(e) => setInitMarkupPercent(e.target.value)}
                           placeholder="e.g. 10 for +10%"
-                          className="bg-slate-900 border-slate-800 text-slate-200 h-10 font-mono"
+                          className="bg-muted border-border text-foreground h-10 font-mono"
                         />
                       </div>
                       <div className="grid gap-1.5">
-                        <Label htmlFor="f_markup" className="text-slate-400 uppercase text-[10px] tracking-wider">Add Fixed Markup ($)</Label>
+                        <Label htmlFor="f_markup" className="text-muted-foreground uppercase text-[10px] tracking-wider">Add Fixed Markup ($)</Label>
                         <Input 
                           id="f_markup"
                           type="number"
@@ -350,24 +350,24 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                           value={initMarkupFixed}
                           onChange={(e) => setInitMarkupFixed(e.target.value)}
                           placeholder="e.g. 5 for +$5.00"
-                          className="bg-slate-900 border-slate-800 text-slate-200 h-10 font-mono"
+                          className="bg-muted border-border text-foreground h-10 font-mono"
                         />
                       </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 border-t border-slate-850 pt-4 mt-6">
+                    <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6">
                       <Button 
                         type="button" 
                         variant="outline" 
                         onClick={() => setSaveAsOpen(false)}
-                        className="bg-transparent border-slate-800 text-slate-400"
+                        className="bg-transparent border-border text-muted-foreground"
                       >
                         Cancel
                       </Button>
                       <Button 
                         type="submit" 
                         disabled={isPending}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                        className="bg-[#7BB5A0] hover:bg-[#6AA290] text-white font-bold"
                       >
                         Create Parallel Sheet
                       </Button>
@@ -384,14 +384,14 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                   <Button 
                     onClick={() => setIsEditing(false)} 
                     variant="outline" 
-                    className="h-9 border-slate-800 text-slate-400 hover:text-white text-xs px-3"
+                    className="h-9 border-border text-muted-foreground hover:text-[#3D6E61] text-xs px-3"
                     disabled={isPending}
                   >
                     Cancel
                   </Button>
                   <Button 
                     onClick={handleSaveChanges} 
-                    className="h-9 bg-emerald-650 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 px-4"
+                    className="h-9 bg-[#7BB5A0] hover:bg-[#6AA290] text-white font-bold text-xs gap-1.5 px-4"
                     disabled={isPending}
                   >
                     <Save className="w-3.5 h-3.5" /> Save Changes
@@ -400,22 +400,22 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
               ) : (
                 <Button 
                   onClick={handleStartEdit} 
-                  className="h-9 bg-slate-900 border border-slate-800 text-slate-350 hover:text-white rounded-xl text-xs font-bold gap-1.5 px-4"
+                  className="h-9 bg-card border border-border text-foreground hover:text-[#3D6E61] rounded-xl text-xs font-bold gap-1.5 px-4"
                 >
-                  <Edit className="w-3.5 h-3.5 text-yellow-500" /> Edit Rates
+                  <Edit className="w-3.5 h-3.5 text-[#7BB5A0]" /> Edit Rates
                 </Button>
               )
             )}
 
             {/* Layout Mode Selector Toggle */}
             {!isEditing && (
-              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-850 shrink-0">
+              <div className="flex bg-muted p-1 rounded-xl border border-border shrink-0">
                 <button
                   onClick={() => setLayoutMode("catalog")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     layoutMode === "catalog"
-                      ? "bg-emerald-600/15 text-emerald-500 dark:text-emerald-400"
-                      : "text-slate-500 hover:text-slate-655"
+                      ? "bg-[#EEF6F3] text-[#3D6E61] border border-[#B0D4C8]"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                   title="Switch to Catalog Grid View"
                 >
@@ -426,8 +426,8 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                   onClick={() => setLayoutMode("table")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     layoutMode === "table"
-                      ? "bg-emerald-600/15 text-emerald-500 dark:text-emerald-400"
-                      : "text-slate-500 hover:text-slate-655"
+                      ? "bg-[#EEF6F3] text-[#3D6E61] border border-[#B0D4C8]"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                   title="Switch to Table Grid View"
                 >
@@ -443,27 +443,27 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search bar */}
           <div className="relative md:col-span-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search concepts or notes..."
-              className="pl-9 h-10 bg-slate-950/60 border-slate-850 text-slate-200 placeholder:text-slate-600 focus-visible:ring-emerald-500/40 rounded-xl text-xs font-semibold"
+              className="pl-9 h-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#7BB5A0]/40 rounded-xl text-xs font-semibold"
             />
           </div>
 
           {/* Mass Markup Panel (only client specific sheets and not editing) */}
           {selectedSheet && selectedSheet.client_name !== null && !isEditing && (
-            <div className="md:col-span-3 flex flex-wrap items-center gap-2 border border-slate-900 bg-slate-950/45 p-2 rounded-xl text-[10px] font-bold">
-              <span className="text-slate-500 uppercase tracking-wider pl-1.5 flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-emerald-500" /> Mass Markup:
+            <div className="md:col-span-3 flex flex-wrap items-center gap-2 border border-border bg-muted p-2 rounded-xl text-[10px] font-bold">
+              <span className="text-muted-foreground uppercase tracking-wider pl-1.5 flex items-center gap-1.5">
+                <Sliders className="w-3.5 h-3.5 text-[#7BB5A0]" /> Mass Markup:
               </span>
               
               {/* Type Select */}
               <select
                 value={markupType}
                 onChange={(e) => setMarkupType(e.target.value as any)}
-                className="bg-slate-900 text-slate-300 border border-slate-800 rounded px-1.5 py-1 text-[10px] outline-none"
+                className="bg-card text-foreground border border-border rounded px-1.5 py-1 text-[10px] outline-none"
               >
                 <option value="percent">Percent (+/- %)</option>
                 <option value="fixed">Fixed Amt (+/- $)</option>
@@ -476,14 +476,14 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                 value={markupValue}
                 onChange={(e) => setMarkupValue(e.target.value)}
                 placeholder="e.g. 10 or -5"
-                className="bg-slate-900 border-slate-800 text-slate-200 h-7 text-[10px] font-mono w-24 shrink-0 px-2 py-0.5 rounded"
+                className="bg-card border-border text-foreground h-7 text-[10px] font-mono w-24 shrink-0 px-2 py-0.5 rounded"
               />
 
               {/* Target Category select */}
               <select
                 value={markupCategory}
                 onChange={(e) => setMarkupCategory(e.target.value)}
-                className="bg-slate-900 text-slate-350 border border-slate-800 rounded px-1.5 py-1 text-[10px] max-w-[120px] outline-none"
+                className="bg-card text-foreground border border-border rounded px-1.5 py-1 text-[10px] max-w-[120px] outline-none"
               >
                 <option value="all">All Sections</option>
                 {categories.map(c => (
@@ -493,7 +493,7 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
 
               <Button 
                 onClick={handleApplyMassMarkup}
-                className="h-7 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-450 font-bold px-3 text-[10px] rounded shrink-0 ml-auto"
+                className="h-7 bg-[#EEF6F3] hover:bg-[#D8EDE8] border border-[#B0D4C8] text-[#3D6E61] font-bold px-3 text-[10px] rounded shrink-0 ml-auto"
                 disabled={isPending || !markupValue}
               >
                 Apply
@@ -506,8 +506,8 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
       {/* RENDER CATEGORIES TABLES GRID */}
       <div className="space-y-8">
         {Object.entries(filteredRatesGrouped).length === 0 ? (
-          <div className="bg-[#0a0a0c] border border-slate-900 rounded-2xl p-12 text-center text-slate-500 italic text-xs">
-            <AlertCircle className="w-8 h-8 mx-auto text-slate-700 mb-2 animate-bounce" />
+          <div className="bg-card border border-border rounded-2xl p-12 text-center text-muted-foreground italic text-xs">
+            <AlertCircle className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2 animate-bounce" />
             No rate concepts matching search.
           </div>
         ) : (
@@ -520,7 +520,7 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                 {/* Category Header */}
                 <div 
                   onClick={() => toggleCategoryCollapse(catName)}
-                  className="flex justify-between items-center bg-[#07080a] border border-slate-900 px-4 py-2.5 rounded-xl cursor-pointer hover:bg-slate-900/40 select-none transition-colors"
+                  className="flex justify-between items-center bg-[#EEF6F3] border border-[#B0D4C8] px-4 py-2.5 rounded-xl cursor-pointer hover:bg-[#D8EDE8] select-none transition-colors"
                 >
                   <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                     {/* Checkbox select all in category */}
@@ -529,22 +529,22 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                         type="checkbox"
                         checked={allSelectedInCat}
                         onChange={() => handleToggleSelectCategory(catName, list)}
-                        className="rounded border-slate-800 bg-slate-950 text-emerald-650 focus:ring-0 focus:ring-offset-0 cursor-pointer h-4 w-4 shrink-0"
+                        className="rounded border-[#B0D4C8] bg-white text-[#3D6E61] focus:ring-0 focus:ring-offset-0 cursor-pointer h-4 w-4 shrink-0"
                       />
                     )}
                     <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleCategoryCollapse(catName)}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
-                      <h3 className="text-xs font-mono font-black uppercase tracking-wider text-slate-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#7BB5A0]"></span>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#3D6E61]">
                         {catName}
                       </h3>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-slate-950 text-emerald-400 border border-slate-850 rounded">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-white text-[#3D6E61] border border-[#B0D4C8] rounded">
                       {list.length} Concepts
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isCollapsed ? "-rotate-90 text-slate-400" : ""}`} />
+                    <ChevronDown className={`w-4 h-4 text-[#7BB5A0] transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`} />
                   </div>
                 </div>
 
@@ -557,15 +557,15 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                         <div
                           key={r.id}
                           onClick={() => !isEditing && handleToggleSelectRow(r.id)}
-                          className={`group relative bg-white dark:bg-slate-900 border rounded-2xl p-4 flex flex-col justify-between hover:scale-[1.01] hover:border-emerald-500/35 transition-all duration-200 shadow-md ${
+                          className={`group relative bg-card border rounded-2xl p-4 flex flex-col justify-between hover:scale-[1.01] hover:border-[#7BB5A0]/50 transition-all duration-200 shadow-sm ${
                             isRowSelected 
-                              ? "border-emerald-500 dark:border-emerald-450 bg-emerald-50/10 dark:bg-emerald-950/10" 
-                              : "border-slate-200 dark:border-slate-800"
+                              ? "border-[#7BB5A0] bg-[#EEF6F3]" 
+                              : "border-border"
                           } ${!isEditing ? "cursor-pointer" : ""}`}
                         >
                           <div className="space-y-2">
                             <div className="flex justify-between items-start gap-1">
-                              <h4 className="font-extrabold text-slate-800 dark:text-slate-200 text-xs uppercase font-mono tracking-wide leading-tight group-hover:text-emerald-500 transition-colors">
+                              <h4 className="font-bold text-foreground text-xs uppercase tracking-wide leading-tight group-hover:text-[#3D6E61] transition-colors">
                                 {r.name}
                               </h4>
                               {!isEditing && (
@@ -574,25 +574,25 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                                   checked={isRowSelected}
                                   onChange={() => handleToggleSelectRow(r.id)}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="rounded border-slate-350 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-emerald-650 focus:ring-0 focus:ring-offset-0 cursor-pointer h-3.5 w-3.5 shrink-0"
+                                  className="rounded border-border bg-muted text-[#3D6E61] focus:ring-0 focus:ring-offset-0 cursor-pointer h-3.5 w-3.5 shrink-0"
                                 />
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-                              {r.notes || <span className="italic text-slate-655 font-medium">No special remarks.</span>}
+                            <p className="text-[11px] text-muted-foreground font-semibold leading-relaxed">
+                              {r.notes || <span className="italic text-muted-foreground/60 font-medium">No special remarks.</span>}
                             </p>
                           </div>
-                          <div className="pt-4 flex justify-between items-center border-t border-slate-100 dark:border-slate-950 mt-3">
-                            <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">Rate Cost</span>
+                          <div className="pt-4 flex justify-between items-center border-t border-border mt-3">
+                            <span className="text-[8px] font-mono text-muted-foreground uppercase tracking-widest">Rate Cost</span>
                             {isEditing ? (
                               <Input
                                 value={editRates[r.id]?.rate || ""}
                                 onChange={(e) => handleRateInputChange(r.id, 'rate', e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
-                                className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 h-8 font-mono text-xs font-bold max-w-[120px]"
+                                className="bg-muted border-border text-foreground h-8 font-mono text-xs font-bold max-w-[120px]"
                               />
                             ) : (
-                              <span className="font-black font-mono text-emerald-600 dark:text-emerald-400 text-base bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-0.5 rounded-lg border border-emerald-100 dark:border-emerald-900/20">
+                              <span className="font-black font-mono text-[#3D6E61] text-base bg-[#EEF6F3] px-2.5 py-0.5 rounded-lg border border-[#B0D4C8]">
                                 {r.rate}
                               </span>
                             )}
@@ -605,9 +605,9 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
 
                 {/* Table list */}
                 {!isCollapsed && layoutMode === "table" && (
-                  <div className="bg-white dark:bg-[#020203] border border-slate-200 dark:border-slate-900 rounded-xl overflow-hidden shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-1 duration-150">
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-slate-50 dark:bg-[#0a0a0c] border-b border-slate-200 dark:border-slate-900 text-slate-500 font-mono text-[9px] uppercase tracking-wider">
+                      <thead className="bg-[#EEF6F3] border-b border-[#B0D4C8] text-[#3D6E61] text-[9px] uppercase tracking-wider">
                         <tr>
                           {!isEditing && <th className="p-3 w-10 text-center">Select</th>}
                           <th className="p-3">Service Description</th>
@@ -615,7 +615,7 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                           <th className="p-3">Notes & Remarks</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-950 text-slate-350">
+                      <tbody className="divide-y divide-border text-foreground">
                         {list.map(r => {
                           const isRowSelected = selectedConceptIds.has(r.id);
                           
@@ -623,8 +623,8 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                             <tr 
                               key={r.id} 
                               onClick={() => !isEditing && handleToggleSelectRow(r.id)}
-                              className={`hover:bg-slate-900/10 transition-all ${
-                                isRowSelected ? "bg-emerald-950/5 text-emerald-100/90" : ""
+                              className={`hover:bg-[#EEF6F3]/40 transition-all ${
+                                isRowSelected ? "bg-[#EEF6F3] text-[#3D6E61]" : ""
                               }`}
                             >
                               {!isEditing && (
@@ -633,13 +633,13 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                                     type="checkbox"
                                     checked={isRowSelected}
                                     onChange={() => handleToggleSelectRow(r.id)}
-                                    className="rounded border-slate-800 bg-slate-950 text-emerald-650 focus:ring-0 focus:ring-offset-0 cursor-pointer h-4 w-4 shrink-0"
+                                    className="rounded border-border bg-muted text-[#3D6E61] focus:ring-0 focus:ring-offset-0 cursor-pointer h-4 w-4 shrink-0"
                                   />
                                 </td>
                               )}
 
                               {/* Concept Name */}
-                              <td className="p-3 font-extrabold max-w-sm leading-relaxed">{r.name}</td>
+                              <td className="p-3 font-bold max-w-sm leading-relaxed">{r.name}</td>
                               
                               {/* Rate Cost cell */}
                               <td className="p-3" onClick={(e) => isEditing && e.stopPropagation()}>
@@ -647,23 +647,23 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
                                   <Input
                                     value={editRates[r.id]?.rate || ""}
                                     onChange={(e) => handleRateInputChange(r.id, 'rate', e.target.value)}
-                                    className="bg-slate-950 border-slate-800 text-slate-200 h-8 font-mono text-xs font-bold"
+                                    className="bg-muted border-border text-foreground h-8 font-mono text-xs font-bold"
                                   />
                                 ) : (
-                                  <span className="font-bold font-mono text-emerald-450 text-sm">{r.rate}</span>
+                                  <span className="font-bold font-mono text-[#3D6E61] text-sm">{r.rate}</span>
                                 )}
                               </td>
 
                               {/* Concept Notes cell */}
-                              <td className="p-3 text-slate-450 leading-relaxed font-semibold" onClick={(e) => isEditing && e.stopPropagation()}>
+                              <td className="p-3 text-muted-foreground leading-relaxed font-semibold" onClick={(e) => isEditing && e.stopPropagation()}>
                                 {isEditing ? (
                                   <Input
                                     value={editRates[r.id]?.notes || ""}
                                     onChange={(e) => handleRateInputChange(r.id, 'notes', e.target.value)}
-                                    className="bg-slate-950 border-slate-800 text-slate-300 h-8 text-xs font-medium"
+                                    className="bg-muted border-border text-foreground h-8 text-xs font-medium"
                                   />
                                 ) : (
-                                  r.notes || <span className="text-slate-655 italic font-medium">-</span>
+                                  r.notes || <span className="text-muted-foreground/50 italic font-medium">-</span>
                                 )}
                               </td>
                             </tr>
@@ -682,13 +682,13 @@ export function RatesheetTrackerClient({ initialRatesheets }: RatesheetTrackerCl
 
       {/* FLOAT ACTION BAR FOR EDIT SAVE OR CLIPBOARD COPY */}
       {!isEditing && selectedConceptIds.size > 0 && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 duration-200">
-          <div className="text-xs font-bold text-slate-450 pl-1">
-            <span className="text-emerald-400 font-black">{selectedConceptIds.size}</span> rate concepts selected
+        <div className="fixed bottom-6 right-6 z-50 bg-card border border-border rounded-2xl shadow-2xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 duration-200">
+          <div className="text-xs font-bold text-muted-foreground pl-1">
+            <span className="text-[#3D6E61] font-black">{selectedConceptIds.size}</span> rate concepts selected
           </div>
           <Button 
             onClick={handleCopySelected}
-            className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 px-4 shadow-lg shadow-emerald-500/20"
+            className="h-10 bg-[#7BB5A0] hover:bg-[#6AA290] text-white font-bold text-xs gap-1.5 px-4 shadow-lg shadow-[#7BB5A0]/20"
           >
             {copySuccess ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
             {copySuccess ? "Copied!" : "Copy Selected Rates"}

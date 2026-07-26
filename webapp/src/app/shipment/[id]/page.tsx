@@ -83,7 +83,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const suggestedChw = Math.max(0, (masterShipment.chw || 0) - sumChw);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-yellow-500/30 selection:text-yellow-300">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-[#E8A99A]/30 selection:text-[#8B4E43]">
       
       {/* ⚠️ DEMO MODE ACTIVE BANNER */}
       {isDemoMode && (
@@ -106,35 +106,35 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
         
         {/* Navigation Breadcrumb */}
         <div className="flex justify-between items-center">
-          <Link href="/operations" className="inline-flex items-center text-slate-550 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors group text-sm font-semibold">
-            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Terminal Board
+          <Link href="/operations" className="inline-flex items-center text-muted-foreground hover:text-[#8B4E43] transition-colors group text-sm font-semibold">
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Operations
           </Link>
-          <span className="text-xs font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
             File Details Center
           </span>
         </div>
         
-        {/* Shipment Banner Header (Airport Board Style) */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white dark:bg-[#0a0a0c] border-t-4 border-yellow-500 border-x border-b border-slate-200 dark:border-slate-900 p-6 rounded-xl relative overflow-hidden shadow-md">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Shipment Banner Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-card border-l-4 border-[#E8A99A] border-r border-t border-b border-border p-6 rounded-xl relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[#E8A99A]/5 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-black font-mono tracking-widest text-yellow-600 dark:text-yellow-500 uppercase">
+              <h1 className="text-2xl md:text-3xl font-black tracking-widest text-[#8B4E43] uppercase">
                 FILE #{shipment.id}
               </h1>
               
               {shipment.shipment_type && (
                 <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded border uppercase ${
                   shipment.shipment_type === 'Export' 
-                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-900/50' 
+                    ? 'bg-[#EEF5FA] text-[#3A6580] border-[#B0D0E8]' 
                     : shipment.shipment_type === 'Import'
-                    ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-900/50'
+                    ? 'bg-[#EEF6F3] text-[#3D6E61] border-[#B0D4C8]'
                     : shipment.shipment_type === 'Quote'
-                    ? 'bg-yellow-50 dark:bg-yellow-950/40 text-yellow-605 dark:text-yellow-500 border-yellow-200 dark:border-yellow-900/50'
+                    ? 'bg-[#FDF8F0] text-[#7A5A20] border-[#E8D0A0]'
                     : shipment.shipment_type === 'Transit'
-                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-500 border-amber-200 dark:border-amber-900/50'
-                    : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50'
+                    ? 'bg-[#FDF1EE] text-[#8B4E43] border-[#F0C5BC]'
+                    : 'bg-[#F2F0F8] text-[#5A4F7A] border-[#C8C0E0]'
                 }`}>
                   {shipment.shipment_type === 'Export' ? (
                     <Plane className="w-3 h-3" />
@@ -152,7 +152,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               {shipment.parent_shipment_id && (
                 <Link 
                   href={`/shipment/${shipment.parent_shipment_id}`}
-                  className="text-xs bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/50 px-2 py-0.5 rounded font-semibold transition-colors flex items-center gap-1"
+                  className="text-xs bg-[#F2F0F8] hover:bg-[#E5E1F3] text-[#5A4F7A] border border-[#C8C0E0] px-2 py-0.5 rounded font-semibold transition-colors flex items-center gap-1"
                 >
                   <Split className="w-3 h-3" />
                   Sub-file of #{shipment.parent_shipment_id}
@@ -160,14 +160,14 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               )}
             </div>
 
-            <p className="text-base text-slate-600 dark:text-slate-400">
-              Client: <span className="text-slate-800 dark:text-white font-bold">{shipment.client_name}</span> 
-              <span className="mx-2 text-slate-300 dark:text-slate-700">•</span> 
-              Ref: <span className="text-indigo-600 dark:text-indigo-400 font-mono font-medium">{shipment.reference || "N/A"}</span>
+            <p className="text-base text-muted-foreground">
+              Client: <span className="text-foreground font-bold">{shipment.client_name}</span> 
+              <span className="mx-2 text-border">•</span> 
+              Ref: <span className="text-[#3A6580] font-mono font-medium">{shipment.reference || "N/A"}</span>
             </p>
           </div>
           
-          <div className="flex flex-wrap gap-3 items-center w-full md:w-auto justify-between border-t border-slate-200 dark:border-slate-800 md:border-none pt-4 md:pt-0">
+          <div className="flex flex-wrap gap-3 items-center w-full md:w-auto justify-between border-t border-border md:border-none pt-4 md:pt-0">
             {/* Edit Shipment Details */}
             <EditShipmentDialog shipment={shipment} statuses={statuses} customers={customers} />
 
@@ -194,52 +194,52 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
           <div className="md:col-span-1 space-y-6">
             
             {/* Operational Info Card */}
-            <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 backdrop-blur-md">
-              <CardHeader className="border-b border-slate-200 dark:border-slate-800/60 pb-3">
-                <CardTitle className="text-slate-700 dark:text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-sky-505 dark:text-sky-400" />
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="border-b border-border pb-3">
+                <CardTitle className="text-foreground text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-[#8BBAD4]" />
                   Operational File
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-4 text-xs font-semibold">
-                <div className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-200 dark:border-slate-800/60">
+                <div className="grid grid-cols-2 gap-4 pb-4 border-b border-border">
                   <div className="space-y-0.5">
-                    <p className="text-slate-500 uppercase tracking-wider text-[10px]">Estimated Departure</p>
-                    <p className="font-semibold text-slate-750 dark:text-slate-200 text-sm">{formatDateTime(shipment.etd)}</p>
+                    <p className="text-muted-foreground uppercase tracking-wider text-[10px]">Estimated Departure</p>
+                    <p className="font-semibold text-foreground text-sm">{formatDateTime(shipment.etd)}</p>
                   </div>
                   <div className="space-y-0.5">
-                    <p className="text-slate-500 uppercase tracking-wider text-[10px]">Estimated Arrival</p>
-                    <p className="font-semibold text-sky-600 dark:text-sky-400 text-sm">{formatDateTime(shipment.eta)}</p>
+                    <p className="text-muted-foreground uppercase tracking-wider text-[10px]">Estimated Arrival</p>
+                    <p className="font-semibold text-[#3A6580] text-sm">{formatDateTime(shipment.eta)}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-slate-500">CargoTrack File:</span>
-                    <span className="font-mono text-slate-850 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded">
+                    <span className="text-muted-foreground">CargoTrack File:</span>
+                    <span className="font-mono text-foreground bg-muted border border-border px-2 py-0.5 rounded">
                       {shipment.ct_file || "Not Invoiced"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-slate-500">Warehouse Rec.:</span>
-                    <span className="font-mono text-slate-850 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded">
+                    <span className="text-muted-foreground">Warehouse Rec.:</span>
+                    <span className="font-mono text-foreground bg-muted border border-border px-2 py-0.5 rounded">
                       {shipment.warehouse_receipt || "No Cargo Rec."}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-slate-500">AES Filing Ref:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-300">{shipment.aes || "N/A"}</span>
+                    <span className="text-muted-foreground">AES Filing Ref:</span>
+                    <span className="font-mono text-foreground">{shipment.aes || "N/A"}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-slate-500">MAWB Airbill:</span>
-                    <span className="font-mono text-slate-700 dark:text-slate-400 text-[11px]">{shipment.expo_mawb || "N/A"}</span>
+                    <span className="text-muted-foreground">MAWB Airbill:</span>
+                    <span className="font-mono text-muted-foreground text-[11px]">{shipment.expo_mawb || "N/A"}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-slate-500">HAWB Housebills:</span>
-                    <span className="font-mono text-slate-700 dark:text-slate-400 text-[11px] flex flex-wrap gap-1">
+                    <span className="text-muted-foreground">HAWB Housebills:</span>
+                    <span className="font-mono text-muted-foreground text-[11px] flex flex-wrap gap-1">
                       {shipment.expo_hawb ? (
                         shipment.expo_hawb.split(/,\s*/).map((hawb, idx) => (
-                          <span key={idx} className="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300">
+                          <span key={idx} className="bg-muted border border-border px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-foreground">
                             {hawb.trim()}
                           </span>
                         ))
@@ -249,20 +249,20 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 </div>
 
                 {/* Cargo Dimensions breakdown */}
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60">
-                  <p className="text-slate-500 text-[10px] uppercase tracking-wider mb-2">Metrics & Load Weight</p>
+                <div className="pt-4 border-t border-border">
+                  <p className="text-muted-foreground text-[10px] uppercase tracking-wider mb-2">Metrics & Load Weight</p>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800/80 text-center space-y-0.5">
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest">PCS</p>
-                      <p className="font-mono font-bold text-sky-600 dark:text-sky-400 text-sm">{shipment.pcs || "-"}</p>
+                    <div className="bg-[#EEF5FA] p-2.5 rounded-lg border border-[#B0D0E8] text-center space-y-0.5">
+                      <p className="text-[9px] text-[#3A6580] uppercase tracking-widest">PCS</p>
+                      <p className="font-mono font-bold text-[#3A6580] text-sm">{shipment.pcs || "-"}</p>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800/80 text-center space-y-0.5">
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest">KGS</p>
-                      <p className="font-mono font-bold text-teal-650 dark:text-teal-400 text-sm">{shipment.kgs || "-"}</p>
+                    <div className="bg-[#EEF6F3] p-2.5 rounded-lg border border-[#B0D4C8] text-center space-y-0.5">
+                      <p className="text-[9px] text-[#3D6E61] uppercase tracking-widest">KGS</p>
+                      <p className="font-mono font-bold text-[#3D6E61] text-sm">{shipment.kgs || "-"}</p>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800/80 text-center space-y-0.5">
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest">CHW</p>
-                      <p className="font-mono font-bold text-amber-600 dark:text-amber-500 text-sm">{shipment.chw || "-"}</p>
+                    <div className="bg-[#FDF1EE] p-2.5 rounded-lg border border-[#F0C5BC] text-center space-y-0.5">
+                      <p className="text-[9px] text-[#8B4E43] uppercase tracking-widest">CHW</p>
+                      <p className="font-mono font-bold text-[#8B4E43] text-sm">{shipment.chw || "-"}</p>
                     </div>
                   </div>
                 </div>
@@ -271,12 +271,12 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
 
             <ShipmentNotepad shipmentId={shipmentId} initialNotes={initialNotes} />
 
-            {/* Split Shipments dropdown list */}
+            {/* Split Shipments list */}
             {shipment.children && shipment.children.length > 0 && (
-              <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 backdrop-blur-md">
-                <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/60">
-                  <CardTitle className="text-slate-700 dark:text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                    <Split className="w-4 h-4 text-indigo-505 dark:text-indigo-400" />
+              <Card className="bg-card border-border shadow-sm">
+                <CardHeader className="pb-3 border-b border-border">
+                  <CardTitle className="text-foreground text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                    <Split className="w-4 h-4 text-[#A89ACC]" />
                     Split Sub-parts ({shipment.children.length})
                   </CardTitle>
                 </CardHeader>
@@ -286,12 +286,12 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                       <li key={child.id}>
                         <Link 
                           href={`/shipment/${child.id}`} 
-                          className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-lg transition-all text-xs group"
+                          className="flex justify-between items-center p-2.5 bg-muted hover:bg-[#F2F0F8] border border-border hover:border-[#C8C0E0] rounded-lg transition-all text-xs group"
                         >
-                          <span className="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          <span className="font-semibold text-foreground group-hover:text-[#5A4F7A] transition-colors">
                             Sub-file #{child.id}
                           </span>
-                          <span className="font-mono text-slate-500 text-[10px] flex items-center gap-1 group-hover:text-slate-700 dark:group-hover:text-slate-300">
+                          <span className="font-mono text-muted-foreground text-[10px] flex items-center gap-1 group-hover:text-[#5A4F7A]">
                             {child.reference}
                             <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                           </span>
@@ -304,22 +304,22 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
             )}
             
             {/* Related Tasks Card */}
-            <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 backdrop-blur-md">
-              <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/60 flex flex-row items-center justify-between">
-                <CardTitle className="text-slate-800 dark:text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                  <CheckSquare className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
+                <CardTitle className="text-foreground text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4 text-[#A89ACC]" />
                   Related Tasks ({relatedTasks.length})
                 </CardTitle>
                 <Link
                   href={`/task-tracker?shipment_id=${shipment.id}&reference=${encodeURIComponent(shipment.reference || "")}`}
-                  className="inline-flex items-center gap-1 text-[10px] bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/85 text-indigo-650 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/40 px-2 py-0.5 rounded font-black uppercase transition-all"
+                  className="inline-flex items-center gap-1 text-[10px] bg-[#F2F0F8] hover:bg-[#E5E1F3] text-[#5A4F7A] border border-[#C8C0E0] px-2 py-0.5 rounded font-bold uppercase transition-all"
                 >
                   <Plus className="w-3 h-3" /> Add Task
                 </Link>
               </CardHeader>
               <CardContent className="pt-4">
                 {relatedTasks.length === 0 ? (
-                  <p className="text-center italic text-slate-500 text-xs py-2">
+                  <p className="text-center italic text-muted-foreground text-xs py-2">
                     No related tasks found. Click "Add Task" to coordinate operational activities.
                   </p>
                 ) : (
@@ -328,17 +328,17 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                       <li key={t.id}>
                         <Link 
                           href={`/task-tracker?shipment_id=${shipment.id}`} 
-                          className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-lg transition-all text-xs group"
+                          className="flex justify-between items-center p-2.5 bg-muted hover:bg-[#F2F0F8] border border-border hover:border-[#C8C0E0] rounded-lg transition-all text-xs group"
                         >
-                          <span className="font-semibold text-slate-700 dark:text-slate-350 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          <span className="font-semibold text-foreground group-hover:text-[#5A4F7A] transition-colors">
                             {t.title}
                           </span>
                           <span className={`font-mono text-[9px] font-extrabold px-1.5 py-0.25 rounded border uppercase ${
                             t.status === 'Completed'
-                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50'
+                              ? 'bg-[#EEF6F3] text-[#3D6E61] border-[#B0D4C8]'
                               : t.status === 'In Progress'
-                              ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-250 dark:border-indigo-900/50'
-                              : 'bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 border-slate-250 dark:border-slate-800/50'
+                              ? 'bg-[#F2F0F8] text-[#5A4F7A] border-[#C8C0E0]'
+                              : 'bg-muted text-muted-foreground border-border'
                           }`}>
                             {t.status}
                           </span>
@@ -351,23 +351,23 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
             </Card>
 
             {/* Pre-invoicing summary box */}
-            <Card className="bg-slate-900/40 border-slate-800/80 backdrop-blur-md">
-              <CardHeader className="pb-3 border-b border-slate-800/60 flex flex-row items-center justify-between">
-                <CardTitle className="text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-sky-400" />
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
+                <CardTitle className="text-foreground text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-[#7BB5A0]" />
                   Pre-Invoicing Board
                 </CardTitle>
                 <div className="flex flex-col items-end text-xs">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold">Net Profit</span>
-                  <span className={`font-extrabold font-mono text-sm ${totalProfit >= 0 ? 'text-emerald-400' : 'text-rose-450'}`}>
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold">Net Profit</span>
+                  <span className={`font-extrabold font-mono text-sm ${totalProfit >= 0 ? 'text-[#3D6E61]' : 'text-rose-500'}`}>
                     ${totalProfit.toFixed(2)}
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 text-xs font-semibold text-slate-450 space-y-3">
+              <CardContent className="pt-4 text-xs font-semibold text-muted-foreground space-y-3">
                 {logs.filter(l => l.amount).length === 0 ? (
                   <div className="space-y-4">
-                    <p className="text-center italic py-2 text-slate-500">
+                    <p className="text-center italic py-2 text-muted-foreground">
                       No billing items logged on this shipment yet. Add billing details manually or parse an email quote.
                     </p>
                     <div className="flex justify-center pt-2">
@@ -378,20 +378,20 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                   <div className="space-y-3">
                     <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
                       {logs.filter(l => l.amount).map(log => (
-                        <div key={log.id} className="flex justify-between items-start py-1.5 border-b border-slate-800/40">
+                        <div key={log.id} className="flex justify-between items-start py-1.5 border-b border-border">
                           <div className="space-y-0.5">
-                            <p className="text-slate-200 text-[11px] font-bold">
+                            <p className="text-foreground text-[11px] font-bold">
                               {log.billable_concept?.name || "Pre-Billing item"}
                             </p>
-                            <p className="text-[10px] text-slate-500 truncate max-w-[140px]">
+                            <p className="text-[10px] text-muted-foreground truncate max-w-[140px]">
                               {log.event_text}
                             </p>
                           </div>
                           <div className="text-right">
-                            <span className={`font-mono text-xs font-bold ${log.amount_type === 'selling' ? 'text-sky-400' : 'text-amber-500'}`}>
+                            <span className={`font-mono text-xs font-bold ${log.amount_type === 'selling' ? 'text-[#3A6580]' : 'text-[#8B4E43]'}`}>
                               ${Number(log.amount).toFixed(2)}
                             </span>
-                            <p className="text-[8px] text-slate-500 uppercase font-bold tracking-wider">
+                            <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-wider">
                               {log.amount_type === 'selling' ? 'Selling' : 'Cost'}
                             </p>
                           </div>
@@ -399,24 +399,24 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                       ))}
                     </div>
 
-                    <div className="pt-2 border-t border-slate-800 space-y-1 text-[11px] text-slate-450">
+                    <div className="pt-2 border-t border-border space-y-1 text-[11px] text-muted-foreground">
                       <div className="flex justify-between items-center">
                         <span>Total Selling Owed:</span>
-                        <span className="text-sky-400 font-mono font-bold">${sellingTotal.toFixed(2)}</span>
+                        <span className="text-[#3A6580] font-mono font-bold">${sellingTotal.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Total Cost Incurred:</span>
-                        <span className="text-amber-500 font-mono font-bold">${costTotal.toFixed(2)}</span>
+                        <span className="text-[#8B4E43] font-mono font-bold">${costTotal.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between items-center pt-2 font-extrabold text-xs text-white border-t border-slate-800">
+                      <div className="flex justify-between items-center pt-2 font-extrabold text-xs text-foreground border-t border-border">
                         <span>Net Profitability:</span>
-                        <span className={totalProfit >= 0 ? 'text-emerald-450 font-mono' : 'text-rose-450 font-mono'}>
+                        <span className={totalProfit >= 0 ? 'text-[#3D6E61] font-mono' : 'text-rose-500 font-mono'}>
                           ${totalProfit.toFixed(2)}
                         </span>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-850 flex justify-center">
+                    <div className="pt-3 border-t border-border flex justify-center">
                       <EmailQuoteParser shipment={shipment} billableConcepts={billableConcepts} />
                     </div>
                   </div>
@@ -424,11 +424,11 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               </CardContent>
             </Card>
             {/* Danger Zone Card */}
-            <Card className="bg-rose-950/5 border-rose-950/30 backdrop-blur-md">
+            <Card className="bg-rose-50 border-rose-200">
               <CardContent className="pt-4 flex items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Danger Zone</p>
-                  <p className="text-[9px] text-slate-500 font-semibold leading-tight">
+                  <p className="text-[9px] text-muted-foreground font-semibold leading-tight">
                     Permanently delete this shipment and all linked logs.
                   </p>
                 </div>
@@ -441,10 +441,10 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
           <div className="md:col-span-2 space-y-6">
             
             {/* Timeline Activities Feed */}
-            <Card className="bg-slate-900/40 border-slate-800/80 backdrop-blur-md">
-              <CardHeader className="border-b border-slate-800/60 pb-3">
-                <CardTitle className="text-slate-200 text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-indigo-400" />
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="border-b border-border pb-3">
+                <CardTitle className="text-foreground text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[#A89ACC]" />
                   Live Operational Activity & Tracking Feed
                 </CardTitle>
               </CardHeader>
@@ -454,10 +454,10 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                 <AddLogForm shipmentId={shipment.id} billableConcepts={billableConcepts} statuses={statuses} />
 
                 {/* Timeline graph */}
-                <div className="space-y-6 relative border-l border-slate-800/80 ml-4 pl-6 pt-2">
+                <div className="space-y-6 relative border-l border-border ml-4 pl-6 pt-2">
                   {logs.length === 0 ? (
-                    <div className="text-center text-slate-500 py-10">
-                      <Clock className="w-8 h-8 mx-auto text-slate-700 animate-spin mb-2" />
+                    <div className="text-center text-muted-foreground py-10">
+                      <Clock className="w-8 h-8 mx-auto text-muted-foreground/50 animate-spin mb-2" />
                       <p className="italic">No operational activities or client alerts registered.</p>
                     </div>
                   ) : (
@@ -476,7 +476,7 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
       </div>
       
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-600">
+      <footer className="border-t border-border bg-muted py-6 text-center text-xs text-muted-foreground">
         <p>© 2026 WCS Tracker. All systems operational.</p>
       </footer>
     </div>
