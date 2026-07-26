@@ -57,16 +57,16 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
   return (
     <div className="relative group">
       {/* Timeline Icon Node indicator */}
-      <div className={`absolute -left-[31px] top-1 w-4 h-4 rounded-full border bg-white dark:bg-slate-950 flex items-center justify-center transition-all ${
+      <div className={`absolute -left-[31px] top-1 w-4 h-4 rounded-full border bg-card flex items-center justify-center transition-all ${
         isExternal 
-          ? 'border-emerald-500 text-emerald-500 shadow-sm shadow-emerald-500/20' 
-          : 'border-slate-700 text-slate-500'
+          ? 'border-[#7BB5A0] text-[#7BB5A0] shadow-sm' 
+          : 'border-border text-muted-foreground'
       }`}>
         <Circle className="w-1.5 h-1.5 fill-current" />
       </div>
 
       {/* Activities feed Card */}
-      <div className="p-4 rounded-xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-850/80 hover:border-slate-800 transition-all shadow-sm">
+      <div className="p-4 rounded-xl bg-card border border-border hover:shadow-md transition-all shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <time className="text-xs font-mono font-semibold text-slate-500">
             {new Date(log.created_at).toLocaleString('en-US', {
@@ -96,7 +96,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
             )}
 
             {log.billable_concept && (
-              <span className="inline-flex items-center gap-1 bg-amber-950/40 text-amber-500 border border-amber-900/40 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+              <span className="inline-flex items-center gap-1 bg-[#FDF8F0] text-[#7A5A20] border border-[#E8D0A0] px-2 py-0.5 rounded text-[10px] font-bold uppercase">
                 <Tag className="w-2.5 h-2.5" />
                 {log.billable_concept.name}
               </span>
@@ -108,8 +108,8 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
                 onClick={() => setIsExternal(!isExternal)}
                 className={`inline-flex items-center gap-1 text-[10px] border px-2 py-0.5 rounded font-bold uppercase transition-all ${
                   isExternal 
-                    ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40 hover:bg-emerald-900/20' 
-                    : 'bg-slate-905 text-slate-500 border-slate-800 hover:text-slate-350'
+                    ? 'bg-[#EEF6F3] text-[#3D6E61] border-[#B0D4C8] hover:bg-[#D8EDE8]' 
+                    : 'bg-muted text-muted-foreground border-border hover:text-foreground'
                 }`}
               >
                 {isExternal ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
@@ -117,12 +117,12 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
               </button>
             ) : (
               log.is_external ? (
-                <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 px-2 py-0.5 rounded font-bold uppercase">
+                <span className="inline-flex items-center gap-1 text-[10px] bg-[#EEF6F3] text-[#3D6E61] border border-[#B0D4C8] px-2 py-0.5 rounded font-bold uppercase">
                   <Globe className="w-2.5 h-2.5" />
                   Visible to Client
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] bg-slate-900/60 text-slate-500 border border-slate-800 px-2 py-0.5 rounded font-bold uppercase">
+                <span className="inline-flex items-center gap-1 text-[10px] bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded font-bold uppercase">
                   <Lock className="w-2.5 h-2.5" />
                   Internal Only
                 </span>
@@ -135,7 +135,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="p-1 rounded text-slate-500 hover:text-sky-400 hover:bg-slate-900 transition-colors"
+                  className="p-1 rounded text-muted-foreground hover:text-[#3A6580] hover:bg-muted transition-colors"
                   title="Edit message"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
@@ -144,7 +144,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
                   type="button"
                   disabled={isDeleting}
                   onClick={handleDelete}
-                  className="p-1 rounded text-slate-500 hover:text-rose-450 hover:bg-slate-900 transition-colors"
+                  className="p-1 rounded text-muted-foreground hover:text-rose-500 hover:bg-rose-50 transition-colors"
                   title="Delete event"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -159,18 +159,18 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
             <Input
               value={eventText}
               onChange={(e) => setEventText(e.target.value)}
-              className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-sm font-semibold focus-visible:ring-indigo-500/50"
+              className="bg-card border-border text-foreground text-sm font-semibold focus-visible:ring-[#A89ACC]/50"
             />
             {log.amount !== null && (
               <div className="flex items-center gap-1.5 max-w-[150px]">
                 <div className="relative flex-grow">
-                  <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <Input
                     type="number"
                     step="any"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="pl-7 pr-1.5 h-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-805 text-slate-900 dark:text-slate-200 text-xs font-mono font-bold"
+                    className="pl-7 pr-1.5 h-8 bg-card border-border text-foreground text-xs font-mono font-bold"
                     placeholder="0.00"
                   />
                 </div>
@@ -187,7 +187,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
                   setIsExternal(log.is_external);
                   setAmount(log.amount !== null ? String(log.amount) : "");
                 }}
-                className="bg-transparent border-slate-800 text-slate-400 hover:text-white h-7 text-[10px]"
+                className="bg-transparent border-border text-muted-foreground hover:text-foreground h-7 text-[10px]"
               >
                 <X className="w-3 h-3 mr-1" /> Cancel
               </Button>
@@ -195,7 +195,7 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
                 size="sm"
                 disabled={isSaving || !eventText.trim()}
                 onClick={handleSave}
-                className="bg-indigo-650 hover:bg-indigo-700 text-white h-7 text-[10px] font-bold"
+                className="bg-[#A89ACC] hover:bg-[#8E7AB5] text-white h-7 text-[10px] font-bold"
               >
                 {isSaving ? "Saving..." : <span className="flex items-center"><Check className="w-3 h-3 mr-1" /> Save</span>}
               </Button>
@@ -203,15 +203,15 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
           </div>
         ) : (
           <>
-            <p className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors leading-relaxed">
+            <p className="text-sm font-semibold text-foreground leading-relaxed">
               {log.event_text}
             </p>
 
             {log.amount && (
               <div className={`mt-2.5 flex items-center gap-1 text-xs font-mono font-bold px-2.5 py-1 rounded-md w-max border ${
                 log.amount_type === 'selling' 
-                  ? 'text-sky-400 bg-sky-950/20 border-sky-950/40' 
-                  : 'text-amber-500 bg-amber-950/20 border-amber-950/40'
+                  ? 'text-[#3A6580] bg-[#EEF5FA] border-[#B0D0E8]' 
+                  : 'text-[#8B4E43] bg-[#FDF1EE] border-[#F0C5BC]'
               }`}>
                 <DollarSign className="w-3.5 h-3.5" />
                 {log.amount_type === 'selling' ? 'Selling' : 'Cost'}: +${Number(log.amount).toFixed(2)}

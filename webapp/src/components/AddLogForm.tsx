@@ -123,10 +123,10 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
   }
 
   return (
-    <form action={handleSubmit} className="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4 backdrop-blur-md">
+    <form action={handleSubmit} className="p-5 bg-muted border border-border rounded-xl space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="event_text" className="text-slate-300 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-          <FileText className="w-3.5 h-3.5 text-indigo-400" />
+        <Label htmlFor="event_text" className="text-foreground font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-[#A89ACC]" />
           Add an update to the shipment timeline
         </Label>
         <Input 
@@ -134,27 +134,27 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
           name="event_text" 
           placeholder="e.g. Flight departed from MIA, custom clearance paperwork prepared..." 
           required 
-          className="bg-white dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-650 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/80 h-10 rounded-lg" 
+          className="bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#A89ACC]/50 focus-visible:border-[#A89ACC]/80 h-10 rounded-lg" 
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
         {/* Milestone Status dropdown */}
         <div className="space-y-1 col-span-1">
-          <Label htmlFor="status_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
+          <Label htmlFor="status_id" className="text-muted-foreground text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Milestone (Optional)
           </Label>
-          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
-            <Activity className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+          <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 h-10">
+            <Activity className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <select
               id="status_id"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-transparent text-slate-300 border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
+              className="bg-transparent text-foreground border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
             >
-              <option value="" className="bg-white dark:bg-slate-950 text-slate-500">None (No change)</option>
+              <option value="" className="bg-background text-muted-foreground">None (No change)</option>
               {statuses.map((st) => (
-                <option key={st.id} value={st.id} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-300">
+                <option key={st.id} value={st.id} className="bg-background text-foreground">
                   {st.name}
                 </option>
               ))}
@@ -164,59 +164,59 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
 
         {/* Billable Concept dropdown */}
         <div className="space-y-1 col-span-1">
-          <Label htmlFor="billable_concept_id" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
+          <Label htmlFor="billable_concept_id" className="text-muted-foreground text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Concept (Optional)
           </Label>
-          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
-            <Tag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+          <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 h-10">
+            <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <select
               id="billable_concept_id"
               value={selectedConcept}
               onChange={handleConceptChange}
-              className="bg-transparent text-slate-300 border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
+              className="bg-transparent text-foreground border-none outline-none font-semibold text-xs cursor-pointer w-full focus:ring-0"
             >
-              <option value="" className="bg-white dark:bg-slate-950 text-slate-500">None (Log)</option>
+              <option value="" className="bg-background text-muted-foreground">None (Log)</option>
               {billableConcepts.map((concept) => (
-                <option key={concept.id} value={concept.id} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-300">
+                <option key={concept.id} value={concept.id} className="bg-background text-foreground">
                   {concept.name}
                 </option>
               ))}
-              <option value="new_concept" className="bg-white dark:bg-slate-950 text-sky-600 dark:text-sky-400 font-bold">+ Add Custom Concept...</option>
+              <option value="new_concept" className="bg-background text-[#3A6580] font-bold">+ Add Custom Concept...</option>
             </select>
           </div>
         </div>
         {/* Cost Amount input */}
         <div className="space-y-1">
-          <Label htmlFor="cost_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
+          <Label htmlFor="cost_amount" className="text-muted-foreground text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Cost Amount ($)
           </Label>
-          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
-            <DollarSign className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+          <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 h-10">
+            <DollarSign className="w-3.5 h-3.5 text-[#8B4E43] shrink-0" />
             <input 
               id="cost_amount"
               name="cost_amount" 
               type="number"
               step="any"
               placeholder="0.00" 
-              className="bg-transparent text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
+              className="bg-transparent text-foreground placeholder:text-muted-foreground border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
             />
           </div>
         </div>
 
         {/* Selling Amount input */}
         <div className="space-y-1">
-          <Label htmlFor="selling_amount" className="text-slate-500 text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
+          <Label htmlFor="selling_amount" className="text-muted-foreground text-[10px] uppercase tracking-wider font-bold min-h-[32px] flex items-end pb-1">
             Selling Amount ($)
           </Label>
-          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 h-10">
-            <DollarSign className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+          <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 h-10">
+            <DollarSign className="w-3.5 h-3.5 text-[#3A6580] shrink-0" />
             <input 
               id="selling_amount"
               name="selling_amount" 
               type="number"
               step="any"
               placeholder="0.00" 
-              className="bg-transparent text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-650 border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
+              className="bg-transparent text-foreground placeholder:text-muted-foreground border-none outline-none font-mono text-xs font-semibold w-full focus:ring-0" 
             />
           </div>
         </div>
@@ -229,15 +229,15 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
             variant="outline"
             className={`h-10 text-[10px] font-extrabold transition-all border rounded-lg uppercase w-full ${
               isExternal 
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' 
-                : 'border-slate-800 bg-white dark:bg-slate-950/80 text-slate-500 hover:text-slate-350'
+                ? 'border-[#7BB5A0] bg-[#EEF6F3] text-[#3D6E61] hover:bg-[#D8EDE8]' 
+                : 'border-border bg-card text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => setIsExternal(!isExternal)}
           >
             {isExternal ? (
-              <span className="flex items-center justify-center gap-1.5"><Eye className="w-3.5 h-3.5 text-emerald-400" /> Client Visible</span>
+              <span className="flex items-center justify-center gap-1.5"><Eye className="w-3.5 h-3.5 text-[#3D6E61]" /> Client Visible</span>
             ) : (
-              <span className="flex items-center justify-center gap-1.5"><EyeOff className="w-3.5 h-3.5 text-slate-500" /> Staff Only</span>
+              <span className="flex items-center justify-center gap-1.5"><EyeOff className="w-3.5 h-3.5 text-muted-foreground" /> Staff Only</span>
             )}
           </Button>
         </div>
@@ -245,14 +245,14 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
 
       {/* Show custom concept name text field if selected */}
       {showCustomInput && (
-        <div className="space-y-1.5 p-3.5 bg-white dark:bg-slate-950/40 border border-slate-850 rounded-lg animate-in fade-in duration-200">
-          <Label htmlFor="custom_concept_name" className="text-[10px] uppercase font-bold text-slate-400">Custom Concept Name</Label>
+        <div className="space-y-1.5 p-3.5 bg-card border border-border rounded-lg animate-in fade-in duration-200">
+          <Label htmlFor="custom_concept_name" className="text-[10px] uppercase font-bold text-muted-foreground">Custom Concept Name</Label>
           <Input
             id="custom_concept_name"
             value={customConceptName}
             onChange={(e) => setCustomConceptName(e.target.value)}
             placeholder="Enter custom billable concept name..."
-            className="bg-white dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs h-9"
+            className="bg-muted border-border text-foreground text-xs h-9"
           />
         </div>
       )}
@@ -262,7 +262,7 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
         <Button 
           type="submit" 
           disabled={isPending} 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-10 px-5 shadow-lg shadow-indigo-500/20 text-xs rounded-lg transition-all"
+          className="bg-[#A89ACC] hover:bg-[#8E7AB5] text-white font-bold h-10 px-5 shadow-sm text-xs rounded-lg transition-all"
         >
           <Send className="w-3.5 h-3.5 mr-2" /> Post Operational Update
         </Button>
