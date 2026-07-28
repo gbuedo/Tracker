@@ -579,31 +579,32 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
         <CarrierDirectoryDialog carriers={carriersState} />
       </div>
 
-      {/* --- CONTROLS & UTILITIES ROW (LINE 2) --- */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between bg-card border border-border p-2.5 rounded-xl">
+      {/* --- CONTROLS & UTILITIES TOOLBAR (SINGLE LINE) --- */}
+      <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center justify-between bg-card border border-border p-2.5 rounded-xl">
         
-        {/* Left: filters & selectors */}
-        <div className="flex flex-wrap gap-2.5 items-center">
-          {/* Shipment Type filter */}
-          <div className="flex bg-muted p-0.5 rounded-lg border border-border gap-0.5 flex-wrap">
-            {["All", "Quote", "Import", "Export", "Transit", "Combine"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setTypeFilter(type)}
-                className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all ${
-                  typeFilter === type
-                    ? "bg-[#E8A99A] text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
+        {/* Left: Type Filter, Sort, Primary Group, and Secondary Group in 1 row */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap overflow-x-auto py-0.5">
+          
+          {/* Shipment Type filter dropdown */}
+          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8 shrink-0">
+            <Filter className="w-3 h-3 text-[#7BB5A0]" />
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
+            >
+              <option value="All">Type: All</option>
+              <option value="Quote">Type: Quote</option>
+              <option value="Import">Type: Import</option>
+              <option value="Export">Type: Export</option>
+              <option value="Transit">Type: Transit</option>
+              <option value="Combine">Type: Combine</option>
+            </select>
           </div>
 
           {/* Priority sorting select */}
-          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8">
-            <ArrowUpDown className="w-3 h-3" />
+          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8 shrink-0">
+            <ArrowUpDown className="w-3 h-3 text-[#8BBAD4]" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -620,14 +621,14 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
           </div>
 
           {/* Primary Grouping select */}
-          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8">
+          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8 shrink-0">
             <Layers className="w-3 h-3 text-[#E8A99A]" />
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
             >
-              <option value="none">Group 1: None (List)</option>
+              <option value="none">Group 1: None</option>
               <option value="customer">Group 1: Customer</option>
               <option value="consolidation">Group 1: Consolidation AWB</option>
               <option value="type">Group 1: Shipment Type</option>
@@ -636,7 +637,7 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
           </div>
 
           {/* Secondary Grouping select */}
-          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8">
+          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8 shrink-0">
             <Boxes className="w-3 h-3 text-amber-500" />
             <select
               value={secondaryGroupBy}
@@ -654,7 +655,7 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
         </div>
 
         {/* Right: Backup JSON & Import Backup & Configuration gear */}
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center gap-2 justify-end shrink-0">
           <Button 
             onClick={exportFullBackup}
             disabled={backingUp}
@@ -947,16 +948,16 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
             <Table>
               <TableHeader className="bg-muted border-border">
                 <TableRow className="hover:bg-transparent border-border">
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[95px] whitespace-normal leading-tight">ID & Relations</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[150px] whitespace-normal leading-tight">Client Name</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">Reference / PO</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[130px] whitespace-normal leading-tight hidden md:table-cell">Type & Mode</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden md:table-cell">Carrier</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[120px] whitespace-normal leading-tight hidden sm:table-cell">ETD / ETA</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Days to ETD/ETA</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 max-w-[100px] whitespace-normal leading-tight hidden sm:table-cell">Last Update</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-right max-w-[100px] whitespace-normal leading-tight">Status</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-center w-[80px]">Expand</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[100px] whitespace-nowrap">ID & Relations</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[140px] max-w-[180px] whitespace-nowrap">Client Name</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[160px] whitespace-nowrap hidden sm:table-cell">Reference / PO</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[130px] whitespace-nowrap hidden md:table-cell">Type & Mode</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[110px] whitespace-nowrap hidden md:table-cell">Carrier</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[130px] whitespace-nowrap hidden sm:table-cell">ETD / ETA</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[100px] whitespace-nowrap hidden sm:table-cell">Days to ETD/ETA</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[100px] whitespace-nowrap hidden sm:table-cell">Last Update</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-right min-w-[130px] whitespace-nowrap">Status</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-center w-[60px]">Expand</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1035,16 +1036,18 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                             )}
                           </TableCell>
                           
-                          <TableCell className="font-bold text-foreground group-hover:text-[#8B4E43] transition-colors truncate max-w-[120px] sm:max-w-[180px]" title={ship.client_name}>
+                          <TableCell className="font-bold text-foreground group-hover:text-[#8B4E43] transition-colors truncate max-w-[150px]" title={ship.client_name}>
                             {ship.client_name}
                           </TableCell>
                           
-                          <TableCell className="text-slate-600 dark:text-slate-300 font-mono text-xs truncate max-w-[140px] hidden sm:table-cell" title={ship.reference || undefined}>
-                            <div>
-                              <span>{ship.reference || <span className="text-slate-400 dark:text-slate-600">-</span>}</span>
+                          <TableCell className="text-slate-600 dark:text-slate-300 font-mono text-xs hidden sm:table-cell py-2 align-middle min-w-[160px]">
+                            <div className="flex flex-col gap-1 items-start">
+                              <span className="font-bold text-foreground truncate max-w-[170px]" title={ship.reference || undefined}>
+                                {ship.reference || <span className="text-slate-400 dark:text-slate-600 font-normal">-</span>}
+                              </span>
                               {ship.consolidation_awb && (
                                 <span 
-                                  className="inline-flex items-center gap-1 text-[9px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40 px-1.5 py-0.5 rounded font-mono font-bold mt-0.5 block w-max max-w-[130px] truncate"
+                                  className="inline-flex items-center gap-1 text-[9px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40 px-1.5 py-0.5 rounded font-mono font-bold w-max max-w-[160px]"
                                   title={`Consolidation Master AWB/BL: ${ship.consolidation_awb}`}
                                 >
                                   <Boxes className="w-2.5 h-2.5 shrink-0 text-amber-500" />
