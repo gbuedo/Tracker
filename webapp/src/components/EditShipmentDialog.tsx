@@ -42,6 +42,7 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
   const [ctFile, setCtFile] = useState(shipment.ct_file || "");
   const [warehouseReceipt, setWarehouseReceipt] = useState(shipment.warehouse_receipt || "");
   const [aes, setAes] = useState(shipment.aes || "");
+  const [consolidationAwb, setConsolidationAwb] = useState(shipment.consolidation_awb || "");
   const [etd, setEtd] = useState(shipment.etd || "");
   const [eta, setEta] = useState(shipment.eta || "");
 
@@ -60,6 +61,7 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
     setCtFile(shipment.ct_file || "");
     setWarehouseReceipt(shipment.warehouse_receipt || "");
     setAes(shipment.aes || "");
+    setConsolidationAwb(shipment.consolidation_awb || "");
     setEtd(shipment.etd || "");
     setEta(shipment.eta || "");
   }, [shipment]);
@@ -83,6 +85,7 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
         ct_file: ctFile || null,
         warehouse_receipt: warehouseReceipt || null,
         aes: aes || null,
+        consolidation_awb: consolidationAwb || null,
         etd: etd || null,
         eta: eta || null,
       });
@@ -284,7 +287,7 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
                 <Plane className="w-4 h-4" /> 4. Logistics References & Airbills
               </h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 gap-4">
                 <div className="grid gap-1.5 sm:col-span-1">
                   <Label htmlFor="edit_ct_file" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">CT File Ref</Label>
                   <Input 
@@ -319,6 +322,17 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
                 </div>
 
                 <div className="grid gap-1.5 sm:col-span-1">
+                  <Label htmlFor="edit_consolidation_awb" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider text-amber-600 dark:text-amber-400">Consolidation AWB</Label>
+                  <Input 
+                    id="edit_consolidation_awb" 
+                    value={consolidationAwb}
+                    onChange={(e) => setConsolidationAwb(e.target.value)}
+                    className="h-11 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-800 text-slate-900 dark:text-slate-100 font-mono text-sm" 
+                    placeholder="CONSOL-MAWB-001" 
+                  />
+                </div>
+
+                <div className="grid gap-1.5 sm:col-span-1">
                   <Label htmlFor="edit_expo_mawb" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">MAWB Master bill</Label>
                   <Input 
                     id="edit_expo_mawb" 
@@ -330,7 +344,7 @@ export function EditShipmentDialog({ shipment, statuses, customers }: EditShipme
                 </div>
 
                 <div className="grid gap-1.5 sm:col-span-1">
-                  <Label htmlFor="edit_expo_hawb" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">HAWB Housebills (comma-separated)</Label>
+                  <Label htmlFor="edit_expo_hawb" className="text-slate-700 dark:text-slate-200 text-xs uppercase font-extrabold tracking-wider">HAWB Housebills</Label>
                   <Input 
                     id="edit_expo_hawb" 
                     value={expoHawb}

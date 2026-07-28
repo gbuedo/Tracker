@@ -8,7 +8,7 @@ import {
   Search, Ship, Plane, Truck, Filter, ArrowUpRight, Calendar, 
   FileText, CheckCircle2, User, Settings, Sparkles, Plus, 
   ArrowUpDown, Check, RefreshCw, Layers, Warehouse, ChevronDown, ChevronUp, ExternalLink, Trash2, Download,
-  Mail, Phone, Flag
+  Mail, Phone, Flag, Boxes
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -23,14 +23,23 @@ import { addCustomer, addStatus, updateAppConfig, deleteShipment, deleteStatus, 
 
 interface ShipmentsListProps {
   initialShipments: Shipment[];
-  statuses: Status[];
+  initialStatuses: Status[];
   initialCustomers: string[];
-  initialCarriers?: Carrier[];
-  initialConfig: any;
+  initialCarriers: Carrier[];
+  initialConfig: { next_shipment_id: number };
 }
 
-export function ShipmentsList({ initialShipments, statuses, initialCustomers, initialCarriers = [], initialConfig }: ShipmentsListProps) {
+export function ShipmentsList({ initialShipments, initialStatuses, initialCustomers, initialCarriers, initialConfig }: ShipmentsListProps) {
   const router = useRouter();
+  
+  // Local state for instant feedback on status and carrier modifications
+  const [statusesState, setStatusesState] = useState<Status[]>(initialStatuses);
+  const [customersState, setCustomersState] = useState<string[]>(initialCustomers);
+  const [carriersState, setCarriersState] = useState<Carrier[]>(initialCarriers);
+  
+  // Backup / Import loading states
+  const [backingUp, setBackingUp] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const getHoursSinceLastUpdate = (ship: Shipment) => {
     const dates = [
@@ -61,9 +70,6 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
     }
     return val;
   };
-
-  const [backingUp, setBackingUp] = useState(false);
-  const [importing, setImporting] = useState(false);
 
   const exportFullBackup = async () => {
     setBackingUp(true);
@@ -127,9 +133,10 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
   // Multi-select Status Filter
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   
-  // Sorting Priorities
+  // Sorting & Grouping Priorities
   const [sortBy, setSortBy] = useState<string>("created_at"); // created_at | eta_asc | eta_desc | etd_asc | etd_desc
-  const [groupBy, setGroupBy] = useState<string>("none"); // none | customer | type | status
+  const [groupBy, setGroupBy] = useState<string>("none"); // none | customer | consolidation | type | status
+  const [secondaryGroupBy, setSecondaryGroupBy] = useState<string>("none"); // none | customer | consolidation | type | status
 
   // Expandable rows state
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
@@ -173,15 +180,12 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
   const [seedingDb, setSeedingDb] = useState(false);
 
   // Local configuration states for instant responsive updates
-  const [statusesState, setStatusesState] = useState<Status[]>(statuses);
-  const [carriersState, setCarriersState] = useState<Carrier[]>(initialCarriers);
-  const [customersState, setCustomersState] = useState<string[]>(initialCustomers);
   const [newCarrierCode, setNewCarrierCode] = useState("");
   const [newCarrierName, setNewCarrierName] = useState("");
 
   useEffect(() => {
-    setStatusesState(statuses);
-  }, [statuses]);
+    setStatusesState(initialStatuses);
+  }, [initialStatuses]);
 
   useEffect(() => {
     setCarriersState(initialCarriers);
@@ -330,6 +334,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         (ship.expo_mawb && ship.expo_mawb.toLowerCase().includes(search.toLowerCase())) ||
         (ship.expo_hawb && ship.expo_hawb.toLowerCase().includes(search.toLowerCase())) ||
         (ship.aes && ship.aes.toLowerCase().includes(search.toLowerCase())) ||
+        (ship.consolidation_awb && ship.consolidation_awb.toLowerCase().includes(search.toLowerCase())) ||
         ship.id.toString().includes(search);
 
       const matchesType = typeFilter === "All" || ship.shipment_type === typeFilter;
@@ -406,30 +411,40 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
     return resultList;
   }, [filteredShipments, sortBy]);
 
-  // Group shipments if grouping is enabled
-  const groupedShipmentsMap = useMemo(() => {
+  const getGroupValue = (ship: Shipment, mode: string): string => {
+    if (mode === "customer") return ship.client_name || "Unknown Customer";
+    if (mode === "consolidation") return ship.consolidation_awb ? ship.consolidation_awb : "Unconsolidated";
+    if (mode === "type") return ship.shipment_type || "No Type";
+    if (mode === "status") return ship.status?.name || "No Milestone";
+    return "Other";
+  };
+
+  // Group shipments if grouping is enabled (supports primary & secondary double grouping)
+  const groupedShipmentsData = useMemo(() => {
     if (groupBy === "none") return null;
 
-    const groups: Record<string, Shipment[]> = {};
-
-    sortedShipments.forEach((ship) => {
-      let key = "Other";
-      if (groupBy === "customer") {
-        key = ship.client_name || "Unknown Customer";
-      } else if (groupBy === "type") {
-        key = ship.shipment_type || "No Type";
-      } else if (groupBy === "status") {
-        key = ship.status?.name || "No Milestone";
-      }
-
-      if (!groups[key]) {
-        groups[key] = [];
-      }
-      groups[key].push(ship);
-    });
-
-    return groups;
-  }, [sortedShipments, groupBy]);
+    if (secondaryGroupBy === "none" || secondaryGroupBy === groupBy) {
+      // Single-level grouping
+      const groups: Record<string, Shipment[]> = {};
+      sortedShipments.forEach((ship) => {
+        const key = getGroupValue(ship, groupBy);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(ship);
+      });
+      return { type: "single" as const, data: groups };
+    } else {
+      // Double-level nested grouping
+      const nested: Record<string, Record<string, Shipment[]>> = {};
+      sortedShipments.forEach((ship) => {
+        const pKey = getGroupValue(ship, groupBy);
+        const sKey = getGroupValue(ship, secondaryGroupBy);
+        if (!nested[pKey]) nested[pKey] = {};
+        if (!nested[pKey][sKey]) nested[pKey][sKey] = [];
+        nested[pKey][sKey].push(ship);
+      });
+      return { type: "double" as const, data: nested };
+    }
+  }, [sortedShipments, groupBy, secondaryGroupBy]);
 
   // Global Volume counts per status category
   const globalStatusCounts = useMemo(() => {
@@ -476,7 +491,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
         await addStatus(
           newStatusName.trim(),
           newStatusColor,
-          statuses.length + 1
+          statusesState.length + 1
         );
         setNewStatusName("");
       }
@@ -604,18 +619,36 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
             </select>
           </div>
 
-          {/* Grouping select */}
+          {/* Primary Grouping select */}
           <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8">
-            <Layers className="w-3 h-3" />
+            <Layers className="w-3 h-3 text-[#E8A99A]" />
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
             >
-              <option value="none">Group: None (List)</option>
-              <option value="customer">Group: Customer</option>
-              <option value="type">Group: Type</option>
-              <option value="status">Group: Status</option>
+              <option value="none">Group 1: None (List)</option>
+              <option value="customer">Group 1: Customer</option>
+              <option value="consolidation">Group 1: Consolidation AWB</option>
+              <option value="type">Group 1: Shipment Type</option>
+              <option value="status">Group 1: Status Milestone</option>
+            </select>
+          </div>
+
+          {/* Secondary Grouping select */}
+          <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8">
+            <Boxes className="w-3 h-3 text-amber-500" />
+            <select
+              value={secondaryGroupBy}
+              onChange={(e) => setSecondaryGroupBy(e.target.value)}
+              className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
+              disabled={groupBy === "none"}
+            >
+              <option value="none">Group 2: None</option>
+              <option value="customer">Group 2: Customer</option>
+              <option value="consolidation">Group 2: Consolidation AWB</option>
+              <option value="type">Group 2: Shipment Type</option>
+              <option value="status">Group 2: Status Milestone</option>
             </select>
           </div>
         </div>
@@ -1002,12 +1035,23 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
                             )}
                           </TableCell>
                           
-                          <TableCell className="font-bold text-foreground group-hover:text-[#8B4E43] transition-colors truncate max-w-[120px] sm:max-w-[180px]">
+                          <TableCell className="font-bold text-foreground group-hover:text-[#8B4E43] transition-colors truncate max-w-[120px] sm:max-w-[180px]" title={ship.client_name}>
                             {ship.client_name}
                           </TableCell>
                           
-                          <TableCell className="text-slate-600 dark:text-slate-300 font-mono text-xs truncate max-w-[120px] hidden sm:table-cell">
-                            {ship.reference || <span className="text-slate-400 dark:text-slate-655">-</span>}
+                          <TableCell className="text-slate-600 dark:text-slate-300 font-mono text-xs truncate max-w-[140px] hidden sm:table-cell" title={ship.reference || undefined}>
+                            <div>
+                              <span>{ship.reference || <span className="text-slate-400 dark:text-slate-600">-</span>}</span>
+                              {ship.consolidation_awb && (
+                                <span 
+                                  className="inline-flex items-center gap-1 text-[9px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40 px-1.5 py-0.5 rounded font-mono font-bold mt-0.5 block w-max max-w-[130px] truncate"
+                                  title={`Consolidation Master AWB/BL: ${ship.consolidation_awb}`}
+                                >
+                                  <Boxes className="w-2.5 h-2.5 shrink-0 text-amber-500" />
+                                  <span className="truncate">{ship.consolidation_awb}</span>
+                                </span>
+                              )}
+                            </div>
                           </TableCell>
                           
                           <TableCell className="hidden md:table-cell">
@@ -1295,7 +1339,7 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           );
         };
 
-        if (groupBy === "none") {
+        if (!groupedShipmentsData) {
           return (
             <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               {renderShipmentTable(sortedShipments)}
@@ -1303,26 +1347,83 @@ export function ShipmentsList({ initialShipments, statuses, initialCustomers, in
           );
         }
 
-        return (
-          <div className="space-y-6">
-            {Object.entries(groupedShipmentsMap || {}).map(([groupName, groupShipments]) => (
-              <div key={groupName} className="space-y-2.5">
-                <div className="flex items-center justify-between bg-[#FDF1EE] border border-[#F0C5BC] px-4 py-2.5 rounded-xl">
-                  <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#E8A99A]"></span>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8B4E43]">
-                      {groupBy === "customer" ? `Client: ${groupName}` : groupBy === "type" ? `Type: ${groupName}` : `Milestone: ${groupName}`}
-                    </h3>
+        const formatGroupTitle = (mode: string, name: string) => {
+          if (mode === "customer") return `Client: ${name}`;
+          if (mode === "consolidation") return `Consolidation AWB: ${name}`;
+          if (mode === "type") return `Shipment Type: ${name}`;
+          if (mode === "status") return `Status Milestone: ${name}`;
+          return name;
+        };
+
+        if (groupedShipmentsData.type === "single") {
+          return (
+            <div className="space-y-6">
+              {Object.entries(groupedShipmentsData.data).map(([groupName, groupShipments]) => (
+                <div key={groupName} className="space-y-2.5">
+                  <div className="flex items-center justify-between bg-[#FDF1EE] dark:bg-[#2A1F1D] border border-[#F0C5BC] dark:border-[#5A3F39] px-4 py-2.5 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#E8A99A]"></span>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#8B4E43] dark:text-[#E8A99A]">
+                        {formatGroupTitle(groupBy, groupName)}
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 bg-card text-[#8B4E43] dark:text-[#E8A99A] border border-[#F0C5BC] dark:border-[#5A3F39] rounded-lg">
+                      {groupShipments.length} Cargo Files
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-card text-[#8B4E43] border border-[#F0C5BC] rounded">
-                    {groupShipments.length} Cargo Files
-                  </span>
+                  <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+                    {renderShipmentTable(groupShipments)}
+                  </div>
                 </div>
-                <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-                  {renderShipmentTable(groupShipments)}
+              ))}
+            </div>
+          );
+        }
+
+        // Double-level nested grouping
+        return (
+          <div className="space-y-8">
+            {Object.entries(groupedShipmentsData.data).map(([primaryName, subMap]) => {
+              const primaryTotal = Object.values(subMap).reduce((sum, list) => sum + list.length, 0);
+              return (
+                <div key={primaryName} className="space-y-4 p-4 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                  {/* Primary Group Header (Level 1) */}
+                  <div className="flex items-center justify-between bg-[#FDF1EE] dark:bg-[#2A1F1D] border border-[#F0C5BC] dark:border-[#5A3F39] px-4 py-3 rounded-xl shadow-xs">
+                    <div className="flex items-center gap-2.5">
+                      <Layers className="w-4 h-4 text-[#8B4E43] dark:text-[#E8A99A]" />
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-[#8B4E43] dark:text-[#E8A99A]">
+                        {formatGroupTitle(groupBy, primaryName)}
+                      </h2>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-1 bg-card text-[#8B4E43] dark:text-[#E8A99A] border border-[#F0C5BC] dark:border-[#5A3F39] rounded-lg shadow-2xs">
+                      {primaryTotal} Files Total
+                    </span>
+                  </div>
+
+                  {/* Secondary Groups List (Level 2) */}
+                  <div className="space-y-4 pl-2 md:pl-4">
+                    {Object.entries(subMap).map(([secondaryName, subShipments]) => (
+                      <div key={secondaryName} className="space-y-2">
+                        <div className="flex items-center justify-between bg-[#EEF5FA] dark:bg-[#1E2832] border border-[#B0D0E8] dark:border-[#385068] px-3.5 py-2 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Boxes className="w-3.5 h-3.5 text-[#3A6580] dark:text-[#8BBAD4]" />
+                            <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#3A6580] dark:text-[#8BBAD4]">
+                              {formatGroupTitle(secondaryGroupBy, secondaryName)}
+                            </h4>
+                          </div>
+                          <span className="text-[9px] font-bold px-2 py-0.5 bg-card text-[#3A6580] dark:text-[#8BBAD4] border border-[#B0D0E8] dark:border-[#385068] rounded">
+                            {subShipments.length} Files
+                          </span>
+                        </div>
+                        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+                          {renderShipmentTable(subShipments)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         );
       })()}

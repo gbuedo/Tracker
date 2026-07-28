@@ -104,6 +104,7 @@ export type Shipment = {
   kgs: number | null;
   chw: number | null;
   aes: string | null;
+  consolidation_awb?: string | null;
   created_at: string;
   updated_at?: string | null;
   // Included relations

@@ -265,6 +265,12 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
                     <span className="font-mono text-foreground">{shipment.aes || "N/A"}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">Consolidation AWB:</span>
+                    <span className="font-mono text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 px-2 py-0.5 rounded">
+                      {shipment.consolidation_awb || "None (Direct)"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1">
                     <span className="text-muted-foreground">MAWB Airbill:</span>
                     <span className="font-mono text-muted-foreground text-[11px]">{shipment.expo_mawb || "N/A"}</span>
                   </div>

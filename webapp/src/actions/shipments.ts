@@ -19,6 +19,7 @@ export async function createShipment(formData: FormData) {
   const warehouse_receipt = formData.get("warehouse_receipt") as string || null;
   const ct_file = formData.get("ct_file") as string || null;
   const aes = formData.get("aes") as string || null;
+  const consolidation_awb = formData.get("consolidation_awb") as string || null;
   const etd = formData.get("etd") as string || null;
   const eta = formData.get("eta") as string || null;
 
@@ -33,6 +34,7 @@ export async function createShipment(formData: FormData) {
     warehouse_receipt,
     ct_file,
     aes,
+    consolidation_awb,
     etd,
     eta
   });
@@ -59,6 +61,7 @@ export async function updateShipment(
     kgs?: number | null;
     chw?: number | null;
     aes?: string | null;
+    consolidation_awb?: string | null;
   }
 ) {
   const data = await db.updateShipment(id, fields);

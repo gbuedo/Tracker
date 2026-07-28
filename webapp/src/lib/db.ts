@@ -554,6 +554,7 @@ export async function getShipments(): Promise<Shipment[]> {
 
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+  const shipmentConsolidations = await getSystemValue<Record<number, string | null>>("SYSTEM_SHIPMENT_CONSOLIDATIONS", {});
   const flaggedList = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
 
   return filtered.map(s => {
@@ -575,6 +576,11 @@ export async function getShipments(): Promise<Shipment[]> {
     if (customDt) {
       if (customDt.eta !== undefined) updated.eta = customDt.eta;
       if (customDt.etd !== undefined) updated.etd = customDt.etd;
+    }
+
+    const customConsol = getByShipmentId(shipmentConsolidations, s.id);
+    if (customConsol !== undefined) {
+      updated.consolidation_awb = customConsol;
     }
 
     updated.is_flagged = flaggedList.includes(s.id);
@@ -668,6 +674,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
 
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+  const shipmentConsolidations = await getSystemValue<Record<number, string | null>>("SYSTEM_SHIPMENT_CONSOLIDATIONS", {});
   const flaggedList = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
 
   const customStatusId = getByShipmentId(shipmentStatuses, id);
@@ -684,6 +691,11 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
   if (customDt) {
     if (customDt.eta !== undefined) baseShipment.eta = customDt.eta;
     if (customDt.etd !== undefined) baseShipment.etd = customDt.etd;
+  }
+
+  const customConsol = getByShipmentId(shipmentConsolidations, id);
+  if (customConsol !== undefined) {
+    baseShipment.consolidation_awb = customConsol;
   }
 
   baseShipment.is_flagged = flaggedList.includes(baseShipment.id);
@@ -704,6 +716,10 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
       if (childDt) {
         if (childDt.eta !== undefined) updatedChild.eta = childDt.eta;
         if (childDt.etd !== undefined) updatedChild.etd = childDt.etd;
+      }
+      const childConsol = getByShipmentId(shipmentConsolidations, child.id);
+      if (childConsol !== undefined) {
+        updatedChild.consolidation_awb = childConsol;
       }
       updatedChild.is_flagged = flaggedList.includes(child.id);
       return updatedChild;
@@ -728,6 +744,7 @@ export async function createShipment(
     warehouse_receipt?: string | null;
     ct_file?: string | null;
     aes?: string | null;
+    consolidation_awb?: string | null;
     etd?: string | null;
     eta?: string | null;
   } = {}
@@ -1459,6 +1476,7 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
   // Post-process custom statuses
   const shipmentStatuses = await getSystemValue<Record<number, number>>("SYSTEM_SHIPMENT_STATUSES", {});
   const shipmentDatetimes = await getSystemValue<Record<number, { eta?: string | null; etd?: string | null }>>("SYSTEM_SHIPMENT_DATETIMES", {});
+  const shipmentConsolidations = await getSystemValue<Record<number, string | null>>("SYSTEM_SHIPMENT_CONSOLIDATIONS", {});
   const flaggedList = await getSystemValue<number[]>("SYSTEM_FLAGGED_SHIPMENTS", []);
 
   const customStatusId = shipmentStatuses[res.shipment.id];
@@ -1475,6 +1493,11 @@ export async function searchPortalShipment(search: string): Promise<{ shipment: 
   if (customDt) {
     if (customDt.eta !== undefined) res.shipment.eta = customDt.eta;
     if (customDt.etd !== undefined) res.shipment.etd = customDt.etd;
+  }
+
+  const customConsol = shipmentConsolidations[res.shipment.id];
+  if (customConsol !== undefined) {
+    res.shipment.consolidation_awb = customConsol;
   }
 
   res.shipment.is_flagged = flaggedList.includes(res.shipment.id);
@@ -1669,6 +1692,7 @@ export async function updateShipment(
     kgs?: number | null;
     chw?: number | null;
     aes?: string | null;
+    consolidation_awb?: string | null;
   }
 ): Promise<Shipment> {
   const fieldsCopy = { ...fields };
@@ -1693,6 +1717,9 @@ export async function updateShipment(
           if (customDt.eta !== undefined) oldShipment.eta = customDt.eta;
           if (customDt.etd !== undefined) oldShipment.etd = customDt.etd;
         }
+        const shipmentConsolidations = data.system_store?.SYSTEM_SHIPMENT_CONSOLIDATIONS || {};
+        const customConsol = getByShipmentId(shipmentConsolidations, id);
+        if (customConsol !== undefined) oldShipment.consolidation_awb = customConsol;
       } catch (e) {}
     }
   } else {
@@ -1709,6 +1736,9 @@ export async function updateShipment(
           if (customDt.eta !== undefined) oldShipment.eta = customDt.eta;
           if (customDt.etd !== undefined) oldShipment.etd = customDt.etd;
         }
+        const shipmentConsolidations = await getSystemValue<Record<number, string | null>>("SYSTEM_SHIPMENT_CONSOLIDATIONS", {});
+        const customConsol = getByShipmentId(shipmentConsolidations, id);
+        if (customConsol !== undefined) oldShipment.consolidation_awb = customConsol;
       }
     } catch (e) {}
   }
@@ -1744,6 +1774,16 @@ export async function updateShipment(
     }
   }
 
+  if (fieldsCopy.consolidation_awb !== undefined) {
+    try {
+      const shipmentConsolidations = await getSystemValue<Record<string | number, string | null>>("SYSTEM_SHIPMENT_CONSOLIDATIONS", {});
+      shipmentConsolidations[String(id)] = fieldsCopy.consolidation_awb || null;
+      await setSystemValue("SYSTEM_SHIPMENT_CONSOLIDATIONS", shipmentConsolidations);
+    } catch (cErr) {
+      console.error("Failed to save consolidation_awb in updateShipment:", cErr);
+    }
+  }
+
   let result: Shipment;
   if (isDefaultUrl) {
     isDemo = true;
@@ -1763,6 +1803,7 @@ export async function updateShipment(
       const dbPayload = { ...fieldsCopy };
       if (dbPayload.eta) dbPayload.eta = dbPayload.eta.split("T")[0].split(" ")[0];
       if (dbPayload.etd) dbPayload.etd = dbPayload.etd.split("T")[0].split(" ")[0];
+      delete (dbPayload as any).consolidation_awb;
 
       const { data: updatedShipment, error } = await supabase
         .from("shipments")
@@ -1787,6 +1828,7 @@ export async function updateShipment(
         const dbPayload = { ...fieldsCopy };
         if (dbPayload.eta) dbPayload.eta = dbPayload.eta.split("T")[0].split(" ")[0];
         if (dbPayload.etd) dbPayload.etd = dbPayload.etd.split("T")[0].split(" ")[0];
+        delete (dbPayload as any).consolidation_awb;
 
         const updated = {
           ...data.shipments[index],
@@ -1825,7 +1867,8 @@ export async function updateShipment(
       pcs: "Pieces",
       kgs: "Weight (KGs)",
       chw: "Chargeable Weight (CHW)",
-      aes: "AES Filing"
+      aes: "AES Filing",
+      consolidation_awb: "Consolidation AWB"
     };
 
     // Compare fields

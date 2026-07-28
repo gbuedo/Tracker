@@ -76,7 +76,7 @@ export default async function OperationsDashboard() {
         {/* shipments interactive list */}
         <ShipmentsList 
           initialShipments={shipments} 
-          statuses={statuses} 
+          initialStatuses={statuses} 
           initialCustomers={customers}
           initialCarriers={carriers}
           initialConfig={appConfig}
