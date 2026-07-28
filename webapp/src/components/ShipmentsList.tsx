@@ -948,22 +948,22 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
             <Table>
               <TableHeader className="bg-muted border-border">
                 <TableRow className="hover:bg-transparent border-border">
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[100px] whitespace-nowrap">ID & Relations</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[140px] max-w-[180px] whitespace-nowrap">Client Name</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[160px] whitespace-nowrap hidden sm:table-cell">Reference / PO</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[130px] whitespace-nowrap hidden md:table-cell">Type & Mode</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[110px] whitespace-nowrap hidden md:table-cell">Carrier</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[130px] whitespace-nowrap hidden sm:table-cell">ETD / ETA</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[100px] whitespace-nowrap hidden sm:table-cell">Days to ETD/ETA</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 min-w-[100px] whitespace-nowrap hidden sm:table-cell">Last Update</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-right min-w-[130px] whitespace-nowrap">Status</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider py-1.5 text-center w-[60px]">Expand</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap">ID & Relations</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap">Client Name</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap hidden sm:table-cell">Reference / PO</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap hidden md:table-cell">Type & Mode</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap hidden md:table-cell">Carrier</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap hidden sm:table-cell">ETD / ETA</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap hidden lg:table-cell">Days</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 whitespace-nowrap hidden lg:table-cell">Last Update</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-2 text-right whitespace-nowrap">Status</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold text-[9px] uppercase tracking-wider py-1 px-1 text-center w-[40px]">Expand</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {shipmentsList.length === 0 ? (
-                  <TableRow className="border-slate-850 hover:bg-transparent">
-                    <TableCell colSpan={10} className="text-center py-8 text-slate-500 font-medium">
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableCell colSpan={10} className="text-center py-6 text-muted-foreground text-xs font-medium">
                       No shipments found in this group.
                     </TableCell>
                   </TableRow>
@@ -973,7 +973,7 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                     const isToday = (dateStr: string | null) => {
                       if (!dateStr) return false;
                       const onlyDate = dateStr.split("T")[0].split(" ")[0];
-                      const miamiTodayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD in Miami
+                      const miamiTodayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
                       return onlyDate === miamiTodayStr;
                     };
                     const formatDaysDiff = (targetDateStr: string | null) => {
@@ -992,19 +992,18 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                       if (diffDays === 0) return "Today";
                       return diffDays > 0 ? `+${diffDays}d` : `${diffDays}d`;
                     };
-                    const hasTodayEtaEtd = isToday(ship.eta) || isToday(ship.etd);
                     return (
                       <div key={ship.id} style={{ display: 'contents' }}>
                         <TableRow
                           onClick={(e) => toggleRow(ship.id, e)}
-                          className={`border-border hover:bg-accent cursor-pointer transition-all duration-200 group ${
+                          className={`border-border hover:bg-accent cursor-pointer transition-all duration-150 group ${
                             ship.parent_shipment_id 
                               ? "bg-muted/50" 
                               : ""
                           }`}
                         >
-                          <TableCell className="font-bold text-[#8B4E43] py-1.5 relative">
-                            <div className="flex items-center space-x-2">
+                          <TableCell className="font-bold text-[#8B4E43] py-1 px-2 relative text-xs">
+                            <div className="flex items-center space-x-1.5">
                               <button
                                 onClick={async (e) => {
                                   e.stopPropagation();
@@ -1015,51 +1014,51 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                                 title={ship.is_flagged ? "Unflag Shipment" : "Flag Shipment"}
                               >
                                 <Flag 
-                                  className={`w-3.5 h-3.5 transition-transform active:scale-75 ${
+                                  className={`w-3 h-3 transition-transform active:scale-75 ${
                                     ship.is_flagged 
                                       ? "fill-rose-400 text-rose-400" 
                                       : "text-muted-foreground hover:text-foreground"
                                   }`} 
                                 />
                               </button>
-                              <div className="flex items-center space-x-1 font-mono">
+                              <div className="flex items-center space-x-0.5 font-mono text-[11px]">
                                 {ship.parent_shipment_id && (
-                                  <span className="text-[#A89ACC] mr-0.5 text-[11px] font-black font-sans">↳</span>
+                                  <span className="text-[#A89ACC] mr-0.5 text-[10px] font-black font-sans">↳</span>
                                 )}
                                 <span>{ship.id}</span>
                               </div>
                             </div>
                             {ship.parent_shipment_id && (
-                              <span className="text-[8px] bg-[#F2F0F8] text-[#5A4F7A] border border-[#C8C0E0] px-1 py-0.25 rounded font-mono block mt-0.5 w-max">
+                              <span className="text-[7px] bg-[#F2F0F8] text-[#5A4F7A] border border-[#C8C0E0] px-1 py-0 rounded font-mono block mt-0.5 w-max">
                                 Sub of {ship.parent_shipment_id}
                               </span>
                             )}
                           </TableCell>
                           
-                          <TableCell className="font-bold text-foreground group-hover:text-[#8B4E43] transition-colors truncate max-w-[150px]" title={ship.client_name}>
+                          <TableCell className="font-bold text-foreground text-xs group-hover:text-[#8B4E43] transition-colors truncate py-1 px-2 max-w-[110px]" title={ship.client_name}>
                             {ship.client_name}
                           </TableCell>
                           
-                          <TableCell className="text-slate-600 dark:text-slate-300 font-mono text-xs hidden sm:table-cell py-2 align-middle min-w-[160px]">
-                            <div className="flex flex-col gap-1 items-start">
-                              <span className="font-bold text-foreground truncate max-w-[170px]" title={ship.reference || undefined}>
+                          <TableCell className="text-slate-600 dark:text-slate-300 font-mono text-[11px] hidden sm:table-cell py-1 px-2 align-middle">
+                            <div className="flex flex-col gap-0.5 items-start">
+                              <span className="font-bold text-foreground truncate max-w-[130px]" title={ship.reference || undefined}>
                                 {ship.reference || <span className="text-slate-400 dark:text-slate-600 font-normal">-</span>}
                               </span>
                               {ship.consolidation_awb && (
                                 <span 
-                                  className="inline-flex items-center gap-1 text-[9px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40 px-1.5 py-0.5 rounded font-mono font-bold w-max max-w-[160px]"
+                                  className="inline-flex items-center gap-0.5 text-[8px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40 px-1 py-0 rounded font-mono font-bold w-max max-w-[120px]"
                                   title={`Consolidation Master AWB/BL: ${ship.consolidation_awb}`}
                                 >
-                                  <Boxes className="w-2.5 h-2.5 shrink-0 text-amber-500" />
+                                  <Boxes className="w-2 h-2 shrink-0 text-amber-500" />
                                   <span className="truncate">{ship.consolidation_awb}</span>
                                 </span>
                               )}
                             </div>
                           </TableCell>
                           
-                          <TableCell className="hidden md:table-cell">
-                            <div className="flex items-center gap-1.5">
-                              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border uppercase ${
+                          <TableCell className="hidden md:table-cell py-1 px-2">
+                            <div className="flex items-center gap-1">
+                              <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.25 rounded border uppercase ${
                                   ship.shipment_type === 'Export' 
                                     ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-900/30' 
                                     : ship.shipment_type === 'Import'
@@ -1075,14 +1074,14 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                                 {ship.shipment_type}
                               </span>
                               {ship.transport_mode && (
-                                <span className="inline-flex items-center justify-center p-1 rounded-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900" title={ship.transport_mode}>
+                                <span className="inline-flex items-center justify-center p-0.5 rounded bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900" title={ship.transport_mode}>
                                   {getTransportIcon(ship.transport_mode)}
                                 </span>
                               )}
                             </div>
                           </TableCell>
  
-                          <TableCell className="text-muted-foreground font-sans text-xs hidden md:table-cell max-w-[100px] truncate">
+                          <TableCell className="text-muted-foreground font-sans text-xs hidden md:table-cell py-1 px-2 max-w-[90px] truncate">
                             {(() => {
                               const carrier = getCarrierObject(ship.expo_mawb);
                               if (carrier) {
@@ -1090,7 +1089,7 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                                   <DropdownMenu>
                                     <DropdownMenuTrigger
                                       onClick={(e) => e.stopPropagation()} 
-                                      className="font-bold text-[#8B4E43] hover:text-[#C97A57] hover:underline cursor-pointer text-left outline-none shrink-0"
+                                      className="font-bold text-[#8B4E43] hover:text-[#C97A57] hover:underline cursor-pointer text-left outline-none shrink-0 text-xs"
                                     >
                                       {carrier.name}
                                     </DropdownMenuTrigger>
@@ -1139,41 +1138,41 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                                   </DropdownMenu>
                                 );
                               }
-                              return <span className="font-bold text-slate-500 dark:text-slate-400">{getCarrierName(ship.expo_mawb)}</span>;
+                              return <span className="font-bold text-slate-500 dark:text-slate-400 text-xs">{getCarrierName(ship.expo_mawb)}</span>;
                             })()}
                           </TableCell>
  
-                          <TableCell className="text-muted-foreground font-sans text-xs hidden sm:table-cell">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-1.5">
+                          <TableCell className="text-muted-foreground font-sans text-[10px] hidden sm:table-cell py-1 px-2">
+                            <div className="flex flex-col gap-0.5">
+                              <div className="flex items-center gap-1">
                                 <span className="text-foreground font-bold">{formatDateTimeSmall(ship.etd)}</span>
                                 {isToday(ship.etd) && (
-                                  <span className="relative flex h-2 w-2 shrink-0">
+                                  <span className="relative flex h-1.5 w-1.5 shrink-0">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 dark:bg-slate-200 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-650 dark:bg-slate-200"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-slate-650 dark:bg-slate-200"></span>
                                   </span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1">
                                 <span className="text-sky-600 dark:text-sky-400 font-bold">{formatDateTimeSmall(ship.eta)}</span>
                                 {isToday(ship.eta) && (
-                                  <span className="relative flex h-2 w-2 shrink-0">
+                                  <span className="relative flex h-1.5 w-1.5 shrink-0">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-sky-500"></span>
                                   </span>
                                 )}
                               </div>
                             </div>
                           </TableCell>
 
-                          <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
-                            <div className="flex flex-col gap-1">
-                              <span className="text-slate-550 dark:text-slate-500 text-[11px] font-semibold">{formatDaysDiff(ship.etd)}</span>
-                              <span className="text-sky-500 dark:text-sky-455 text-[11px] font-semibold">{formatDaysDiff(ship.eta)}</span>
+                          <TableCell className="text-slate-350 font-mono text-[10px] hidden lg:table-cell py-1 px-2">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-slate-550 dark:text-slate-400 font-semibold">{formatDaysDiff(ship.etd)}</span>
+                              <span className="text-sky-500 dark:text-sky-400 font-semibold">{formatDaysDiff(ship.eta)}</span>
                             </div>
                           </TableCell>
                           
-                          <TableCell className="text-slate-350 font-mono text-xs hidden sm:table-cell">
+                          <TableCell className="text-slate-350 font-mono text-[10px] hidden lg:table-cell py-1 px-2">
                             {(() => {
                               const hours = getHoursSinceLastUpdate(ship);
                               if (hours < 1) return <span className="text-emerald-400 font-extrabold animate-pulse">Just now</span>;
@@ -1184,25 +1183,25 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                             })()}
                           </TableCell>
                           
-                          <TableCell className="text-right">
+                          <TableCell className="text-right py-1 px-2">
                             <span 
-                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-extrabold uppercase font-sans"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[8px] font-extrabold uppercase font-sans whitespace-nowrap"
                               style={{ 
                                 backgroundColor: `${ship.status?.color_code}08` || '#47556908',
                                 borderColor: `${ship.status?.color_code}25` || '#47556925',
                                 color: ship.status?.color_code || '#cbd5e1'
                               }}
                             >
-                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: ship.status?.color_code || '#cbd5e1' }} />
+                              <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: ship.status?.color_code || '#cbd5e1' }} />
                               {ship.status?.name || 'In Progress'}
                             </span>
                           </TableCell>
-                                              <TableCell className="text-center py-1.5">
+                          <TableCell className="text-center py-1 px-1">
                             <button
                               onClick={(e) => toggleRow(ship.id, e)}
                               className="p-1 rounded bg-muted border border-border hover:bg-accent hover:border-[#F0C5BC] text-muted-foreground hover:text-foreground transition-colors"
                             >
-                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                             </button>
                           </TableCell>
                         </TableRow>
