@@ -255,6 +255,23 @@ export async function saveShipmentNotes(id: number, notes: string) {
   return data;
 }
 
+// ----------------------------------------------------
+// OVERSEAS AGENTS ACTIONS
+// ----------------------------------------------------
+
+export async function saveOverseasAgentAction(agent: any) {
+  const data = await db.saveOverseasAgent(agent);
+  revalidatePath("/shipping-instructions");
+  return data;
+}
+
+export async function deleteOverseasAgentAction(id: string) {
+  const data = await db.deleteOverseasAgent(id);
+  revalidatePath("/shipping-instructions");
+  return data;
+}
+
+
 
 
 

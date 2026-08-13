@@ -71,8 +71,8 @@ export default async function LandingHub() {
           </p>
         </div>
 
-        {/* 3 APP NAVIGATION CARDS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+        {/* 4 APP NAVIGATION CARDS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 pt-2">
           
           {/* CARD 1: OPERATIONS TERMINAL */}
           <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#F0C5BC] transition-all duration-300 flex flex-col relative h-[370px]">
@@ -203,7 +203,47 @@ export default async function LandingHub() {
             </div>
           </div>
 
+          {/* CARD 4: SHIPPING INSTRUCTIONS */}
+          <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#B8D5E5] transition-all duration-300 flex flex-col relative h-[370px]">
+            <div className="h-1.5 bg-[#2B5B84]" />
+            <div className="p-6 flex flex-col flex-grow">
+              <div className="space-y-1 mb-4">
+                <span className="text-[10px] font-semibold text-[#2B5B84] uppercase tracking-widest">Overseas Instructions</span>
+                <h2 className="text-lg font-bold text-foreground">Shipping Instructions</h2>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-6">
+                Overseas agent directory, MAWB/HAWB instruction graphics generator, and quick WhatsApp text export.
+              </p>
+
+              {/* KPI Summaries */}
+              <div className="flex-grow space-y-2 border-t border-border pt-4 text-[11px] font-semibold text-muted-foreground">
+                <div className="flex justify-between items-center">
+                  <span>Agent Directory:</span>
+                  <span className="text-[#2B5B84] font-bold bg-[#EBF3FB] px-2 py-0.5 rounded-md">Active</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>PNG Graphic Output:</span>
+                  <span className="text-[#2B5B84] font-bold bg-[#EBF3FB] px-2 py-0.5 rounded-md">Enabled</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>WhatsApp Export:</span>
+                  <span className="text-[#25D366] font-bold text-[9px] uppercase tracking-widest">1-Click Copy</span>
+                </div>
+              </div>
+
+              {/* Button */}
+              <Link 
+                href="/shipping-instructions"
+                className="mt-6 inline-flex items-center justify-center gap-1.5 w-full py-2.5 bg-[#2B5B84] hover:bg-[#1F4363] text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm shadow-[#2B5B84]/30"
+              >
+                Open Instructions
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+
         </div>
+
 
         {/* PUBLIC PORTAL PROMOTION BANNER */}
         <div className="bg-[#EEF5FA] border border-[#B0D0E8] rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

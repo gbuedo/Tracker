@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept } from "./types";
+import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept, OverseasAgent } from "./types";
 import { unstable_noStore as noStore } from "next/cache";
 import carriersSeed from "./carriers_seed.json";
 import ratesSeed from "./rates_seed.json";
@@ -2570,6 +2570,105 @@ export async function toggleShipmentFlag(id: number): Promise<boolean> {
   await setSystemValue("SYSTEM_FLAGGED_SHIPMENTS", flagged);
   return isFlagged;
 }
+
+// ----------------------------------------------------
+// OVERSEAS AGENTS DIRECTORY STORE
+// ----------------------------------------------------
+
+export async function getOverseasAgents(): Promise<OverseasAgent[]> {
+  noStore();
+  const defaultAgents: OverseasAgent[] = [
+    {
+      id: "agent-1",
+      name: "EUROPE EXPRESS CARGO GMBH",
+      contact_person: "Hans Gruber",
+      address: "Cargo City South, Bldg 534",
+      city_country: "Frankfurt 60549, Germany",
+      phone: "+49 69 690 12345",
+      email: "frankfurt.ops@euroexpress-cargo.de",
+      notes: "Primary air freight import agent for European consolidations."
+    },
+    {
+      id: "agent-2",
+      name: "ASIA PACIFIC LOGISTICS LTD",
+      contact_person: "Wei Chen",
+      address: "Building B, Pudong International Airport",
+      city_country: "Shanghai 201207, China",
+      phone: "+86 21 6834 8888",
+      email: "booking@asiapacific-logistics.cn",
+      notes: "Main agent for electronics and general cargo from China."
+    },
+    {
+      id: "agent-3",
+      name: "LATAM TRANSIT & LOGISTICS S.A.",
+      contact_person: "Gonzalo Martinez",
+      address: "Av. Corrientes 1450, Piso 8",
+      city_country: "Buenos Aires C1042, Argentina",
+      phone: "+54 11 4321 9900",
+      email: "operaciones@latamtransit.com.ar",
+      notes: "Agent for South America transits and regional connections."
+    }
+  ];
+
+  const savedAgents = await getSystemValue<OverseasAgent[]>("SYSTEM_OVERSEAS_AGENTS", defaultAgents);
+  return savedAgents;
+}
+
+export async function saveOverseasAgent(agent: Partial<OverseasAgent> & { name: string }): Promise<OverseasAgent> {
+  const current = await getOverseasAgents();
+  let updatedAgent: OverseasAgent;
+  
+  if (agent.id) {
+    const existingIndex = current.findIndex(a => a.id === agent.id);
+    if (existingIndex >= 0) {
+      updatedAgent = {
+        ...current[existingIndex],
+        ...agent,
+        updated_at: new Date().toISOString()
+      };
+      current[existingIndex] = updatedAgent;
+    } else {
+      updatedAgent = {
+        id: agent.id,
+        name: agent.name,
+        contact_person: agent.contact_person || null,
+        address: agent.address || null,
+        city_country: agent.city_country || null,
+        phone: agent.phone || null,
+        email: agent.email || null,
+        notes: agent.notes || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      current.push(updatedAgent);
+    }
+  } else {
+    updatedAgent = {
+      id: `agent-${Date.now()}`,
+      name: agent.name,
+      contact_person: agent.contact_person || null,
+      address: agent.address || null,
+      city_country: agent.city_country || null,
+      phone: agent.phone || null,
+      email: agent.email || null,
+      notes: agent.notes || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    current.push(updatedAgent);
+  }
+
+  await setSystemValue("SYSTEM_OVERSEAS_AGENTS", current);
+  return updatedAgent;
+}
+
+export async function deleteOverseasAgent(id: string): Promise<boolean> {
+  const current = await getOverseasAgents();
+  const filtered = current.filter(a => a.id !== id);
+  await setSystemValue("SYSTEM_OVERSEAS_AGENTS", filtered);
+  return true;
+}
+
 
 
 

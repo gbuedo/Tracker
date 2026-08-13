@@ -113,3 +113,17 @@ export type Shipment = {
   children?: Shipment[];
   is_flagged?: boolean;
 };
+
+export type OverseasAgent = {
+  id: string;
+  name: string;
+  contact_person?: string | null;
+  address?: string | null;
+  city_country?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  notes?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
