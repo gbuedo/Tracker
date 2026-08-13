@@ -593,12 +593,12 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
               onChange={(e) => setTypeFilter(e.target.value)}
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
             >
-              <option value="All">Type: All</option>
-              <option value="Quote">Type: Quote</option>
-              <option value="Import">Type: Import</option>
-              <option value="Export">Type: Export</option>
-              <option value="Transit">Type: Transit</option>
-              <option value="Combine">Type: Combine</option>
+              <option value="All" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Type: All</option>
+              <option value="Quote" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Type: Quote</option>
+              <option value="Import" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Type: Import</option>
+              <option value="Export" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Type: Export</option>
+              <option value="Transit" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Type: Transit</option>
+              <option value="Combine" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Type: Combine</option>
             </select>
           </div>
 
@@ -610,13 +610,13 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
             >
-              <option value="created_at">Sort: Default (Created)</option>
-              <option value="eta_asc">Sort: First ETA (Arrival)</option>
-              <option value="eta_desc">Sort: Latest ETA (Arrival)</option>
-              <option value="etd_asc">Sort: First ETD (Departure)</option>
-              <option value="etd_desc">Sort: Latest ETD (Departure)</option>
-              <option value="update_hours_desc">Sort: Longest Since Update</option>
-              <option value="update_hours_asc">Sort: Most Recently Updated</option>
+              <option value="created_at" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Sort: Default (Created)</option>
+              <option value="eta_asc" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Sort: First ETA (Arrival)</option>
+              <option value="eta_desc" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Sort: Latest ETA (Arrival)</option>
+              <option value="etd_asc" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Sort: First ETD (Departure)</option>
+              <option value="etd_desc" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Sort: Latest ETD (Departure)</option>
+              <option value="update_hours_desc" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Sort: Longest Since Update</option>
+              <option value="update_hours_asc" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Sort: Most Recently Updated</option>
             </select>
           </div>
 
@@ -628,11 +628,11 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
               onChange={(e) => setGroupBy(e.target.value)}
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
             >
-              <option value="none">Group 1: None</option>
-              <option value="customer">Group 1: Customer</option>
-              <option value="consolidation">Group 1: Consolidation AWB</option>
-              <option value="type">Group 1: Shipment Type</option>
-              <option value="status">Group 1: Status Milestone</option>
+              <option value="none" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 1: None</option>
+              <option value="customer" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 1: Customer</option>
+              <option value="consolidation" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 1: Consolidation AWB</option>
+              <option value="type" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 1: Shipment Type</option>
+              <option value="status" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 1: Status Milestone</option>
             </select>
           </div>
 
@@ -645,11 +645,11 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
               className="bg-transparent border-none outline-none cursor-pointer focus:ring-0 text-[10px] font-bold text-foreground"
               disabled={groupBy === "none"}
             >
-              <option value="none">Group 2: None</option>
-              <option value="customer">Group 2: Customer</option>
-              <option value="consolidation">Group 2: Consolidation AWB</option>
-              <option value="type">Group 2: Shipment Type</option>
-              <option value="status">Group 2: Status Milestone</option>
+              <option value="none" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 2: None</option>
+              <option value="customer" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 2: Customer</option>
+              <option value="consolidation" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 2: Consolidation AWB</option>
+              <option value="type" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 2: Shipment Type</option>
+              <option value="status" className="bg-card text-card-foreground dark:bg-[#251F1C] dark:text-slate-100 font-semibold">Group 2: Status Milestone</option>
             </select>
           </div>
         </div>

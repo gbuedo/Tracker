@@ -178,4 +178,14 @@
   html {
     @apply font-sans;
   }
+  /* Fix native select dropdown popup readability in light & dark mode */
+  select option {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    font-weight: 600;
+  }
+  .dark select option {
+    background-color: #251F1C !important;
+    color: #F3F0E6 !important;
+  }
 }
