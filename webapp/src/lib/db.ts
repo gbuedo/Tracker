@@ -2054,32 +2054,17 @@ export async function getTasks(): Promise<Task[]> {
     },
     () => {
       const data = readMockData();
-      if (!data.tasks || data.tasks.length === 0) {
-        const today = new Date();
-        const in3Days = new Date(today.getTime() + 86400000 * 3).toISOString().split("T")[0];
-        const in15Days = new Date(today.getTime() + 86400000 * 15).toISOString().split("T")[0];
-        const past2Days = new Date(today.getTime() - 86400000 * 2).toISOString().split("T")[0];
-        const in45Days = new Date(today.getTime() + 86400000 * 45).toISOString().split("T")[0];
+      const today = new Date();
+      const in3Days = new Date(today.getTime() + 86400000 * 3).toISOString().split("T")[0];
+      const in15Days = new Date(today.getTime() + 86400000 * 15).toISOString().split("T")[0];
+      const past2Days = new Date(today.getTime() - 86400000 * 2).toISOString().split("T")[0];
+      const in45Days = new Date(today.getTime() + 86400000 * 45).toISOString().split("T")[0];
 
-        data.tasks = [
-          {
-            id: 1,
-            title: "Coordinate booking with American Airlines",
-            description: "Flight AA-991 needs booking confirmation for Global Logistics Inc. cargo.",
-            assignee: "John Doe",
-            start_date: today.toISOString().split("T")[0],
-            deadline: in3Days,
-            status: "In Progress",
-            subtasks: [
-              { id: "sub-1", title: "Call AA Cargo desk", completed: true },
-              { id: "sub-2", title: "Submit AWB reference to portal", completed: false }
-            ],
-            logs: [
-              { timestamp: new Date(Date.now() - 3600000).toISOString(), author: "System", message: "Task initialized." }
-            ],
-            task_type: "regular",
-            created_at: today.toISOString()
-          },
+      if (!data.tasks) data.tasks = [];
+
+      const hasExpirations = data.tasks.some((t: any) => t.task_type === "expiration");
+      if (!hasExpirations) {
+        const seedExpirations = [
           {
             id: 2,
             title: "FMCSA Freight Forwarder License Renewal",
@@ -2149,6 +2134,7 @@ export async function getTasks(): Promise<Task[]> {
             created_at: today.toISOString()
           }
         ];
+        data.tasks = [...data.tasks, ...seedExpirations];
         writeMockData(data);
       }
       return data.tasks as Task[];
