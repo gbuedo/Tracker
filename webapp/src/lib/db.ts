@@ -2045,101 +2045,103 @@ export function calculateNextDueDate(currentDueDate: string, recurrence: string)
 
 export async function getTasks(): Promise<Task[]> {
   noStore();
-  return await queryWithFallback<Task[]>(
-    async () => {
-      return await supabase
-        .from("tasks")
-        .select("*")
-        .order("created_at", { ascending: false });
+  const today = new Date();
+  const past2Days = new Date(today.getTime() - 86400000 * 2).toISOString().split("T")[0];
+  const in3Days = new Date(today.getTime() + 86400000 * 3).toISOString().split("T")[0];
+  const in15Days = new Date(today.getTime() + 86400000 * 15).toISOString().split("T")[0];
+  const in30Days = new Date(today.getTime() + 86400000 * 30).toISOString().split("T")[0];
+  const in45Days = new Date(today.getTime() + 86400000 * 45).toISOString().split("T")[0];
+
+  const defaultSeedTasks: Task[] = [
+    {
+      id: 1,
+      title: "Quarterly IATA Agent Maintenance Fee",
+      description: "Mandatory quarterly dues payment to maintain IATA cargo agent status.",
+      assignee: "Finance Dept",
+      start_date: past2Days,
+      deadline: past2Days,
+      due_date: past2Days,
+      status: "Pending",
+      task_type: "expiration",
+      category: "Payment",
+      recurrence_period: "Quarterly",
+      reminder_days_before: 7,
+      subtasks: [],
+      logs: [],
+      created_at: today.toISOString()
     },
-    () => {
-      const data = readMockData();
-      const today = new Date();
-      const in3Days = new Date(today.getTime() + 86400000 * 3).toISOString().split("T")[0];
-      const in15Days = new Date(today.getTime() + 86400000 * 15).toISOString().split("T")[0];
-      const past2Days = new Date(today.getTime() - 86400000 * 2).toISOString().split("T")[0];
-      const in45Days = new Date(today.getTime() + 86400000 * 45).toISOString().split("T")[0];
-
-      if (!data.tasks) data.tasks = [];
-
-      const hasExpirations = data.tasks.some((t: any) => t.task_type === "expiration");
-      if (!hasExpirations) {
-        const seedExpirations = [
-          {
-            id: 2,
-            title: "FMCSA Freight Forwarder License Renewal",
-            description: "Annual renewal fee and compliance check for FMCSA operating authority.",
-            assignee: "Compliance Dept",
-            start_date: today.toISOString().split("T")[0],
-            deadline: in15Days,
-            due_date: in15Days,
-            status: "Pending",
-            task_type: "expiration",
-            category: "Renewal",
-            recurrence_period: "Annually",
-            reminder_days_before: 15,
-            subtasks: [],
-            logs: [],
-            created_at: today.toISOString()
-          },
-          {
-            id: 3,
-            title: "Miami Bonded Warehouse Storage Certification",
-            description: "Annual customs bonded warehouse safety and security inspection.",
-            assignee: "Ops Manager",
-            start_date: today.toISOString().split("T")[0],
-            deadline: in3Days,
-            due_date: in3Days,
-            status: "Pending",
-            task_type: "expiration",
-            category: "Certification",
-            recurrence_period: "Annually",
-            reminder_days_before: 7,
-            subtasks: [],
-            logs: [],
-            created_at: today.toISOString()
-          },
-          {
-            id: 4,
-            title: "Quarterly IATA Agent Maintenance Fee",
-            description: "Mandatory quarterly dues payment to maintain IATA cargo agent status.",
-            assignee: "Finance Dept",
-            start_date: past2Days,
-            deadline: past2Days,
-            due_date: past2Days,
-            status: "Pending",
-            task_type: "expiration",
-            category: "Payment",
-            recurrence_period: "Quarterly",
-            reminder_days_before: 7,
-            subtasks: [],
-            logs: [],
-            created_at: today.toISOString()
-          },
-          {
-            id: 5,
-            title: "TSA Certified Cargo Screening Facility Permit",
-            description: "Bi-annual TSA security audit and screening personnel certification.",
-            assignee: "Security Director",
-            start_date: today.toISOString().split("T")[0],
-            deadline: in45Days,
-            due_date: in45Days,
-            status: "Pending",
-            task_type: "expiration",
-            category: "License",
-            recurrence_period: "Bi-Annually",
-            reminder_days_before: 30,
-            subtasks: [],
-            logs: [],
-            created_at: today.toISOString()
-          }
-        ];
-        data.tasks = [...data.tasks, ...seedExpirations];
-        writeMockData(data);
-      }
-      return data.tasks as Task[];
+    {
+      id: 2,
+      title: "Miami Bonded Warehouse Storage Certification",
+      description: "Annual customs bonded warehouse safety and security inspection.",
+      assignee: "Ops Manager",
+      start_date: today.toISOString().split("T")[0],
+      deadline: in3Days,
+      due_date: in3Days,
+      status: "Pending",
+      task_type: "expiration",
+      category: "Certification",
+      recurrence_period: "Annually",
+      reminder_days_before: 7,
+      subtasks: [],
+      logs: [],
+      created_at: today.toISOString()
+    },
+    {
+      id: 3,
+      title: "FMCSA Freight Forwarder License Renewal",
+      description: "Annual renewal fee and compliance check for FMCSA operating authority.",
+      assignee: "Compliance Dept",
+      start_date: today.toISOString().split("T")[0],
+      deadline: in15Days,
+      due_date: in15Days,
+      status: "Pending",
+      task_type: "expiration",
+      category: "Renewal",
+      recurrence_period: "Annually",
+      reminder_days_before: 15,
+      subtasks: [],
+      logs: [],
+      created_at: today.toISOString()
+    },
+    {
+      id: 4,
+      title: "TSA Certified Cargo Screening Facility Permit",
+      description: "Bi-annual TSA security audit and screening personnel certification.",
+      assignee: "Security Director",
+      start_date: today.toISOString().split("T")[0],
+      deadline: in30Days,
+      due_date: in30Days,
+      status: "Pending",
+      task_type: "expiration",
+      category: "License",
+      recurrence_period: "Bi-Annually",
+      reminder_days_before: 30,
+      subtasks: [],
+      logs: [],
+      created_at: today.toISOString()
+    },
+    {
+      id: 5,
+      title: "Annual Customs Brokerage Bond Renewal",
+      description: "Continuous customs bond renewal filing.",
+      assignee: "Customs Compliance",
+      start_date: today.toISOString().split("T")[0],
+      deadline: in45Days,
+      due_date: in45Days,
+      status: "Pending",
+      task_type: "expiration",
+      category: "Renewal",
+      recurrence_period: "Annually",
+      reminder_days_before: 30,
+      subtasks: [],
+      logs: [],
+      created_at: today.toISOString()
     }
-  );
+  ];
+
+  const tasks = await getSystemValue<Task[]>("SYSTEM_TASKS", defaultSeedTasks);
+  return tasks;
 }
 
 export async function createTask(
@@ -2153,143 +2155,46 @@ export async function createTask(
   shipment_reference: string | null = null,
   extraFields: Partial<Task> = {}
 ): Promise<Task> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  const task_type = extraFields.task_type || "regular";
-  const category = extraFields.category || "General";
-  const due_date = extraFields.due_date || deadline;
-  const recurrence_period = extraFields.recurrence_period || "None";
-  const reminder_days_before = extraFields.reminder_days_before || 7;
-
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    if (!data.tasks) data.tasks = [];
-    const newId = data.tasks.length > 0 ? Math.max(...data.tasks.map((t: any) => t.id)) + 1 : 1;
-    const newTask: Task = {
-      id: newId,
-      title,
-      description,
-      assignee,
-      start_date,
-      deadline,
-      status: "Pending",
-      subtasks,
-      logs: [],
-      shipment_id,
-      shipment_reference,
-      task_type,
-      category,
-      due_date,
-      recurrence_period,
-      reminder_days_before,
-      created_at: new Date().toISOString()
-    };
-    data.tasks.push(newTask);
-    writeMockData(data);
-    return newTask;
-  }
-  try {
-    const payload = {
-      title,
-      description,
-      assignee,
-      start_date,
-      deadline,
-      status: "Pending",
-      subtasks,
-      logs: [],
-      shipment_id,
-      shipment_reference,
-      task_type,
-      category,
-      due_date,
-      recurrence_period,
-      reminder_days_before
-    };
-    const { data, error } = await supabase.from("tasks").insert(payload).select().single();
-    if (error) throw error;
-    return data as Task;
-  } catch (err: any) {
-    isDemo = true;
-    const data = readMockData();
-    if (!data.tasks) data.tasks = [];
-    const newId = data.tasks.length > 0 ? Math.max(...data.tasks.map((t: any) => t.id)) + 1 : 1;
-    const newTask: Task = {
-      id: newId,
-      title,
-      description,
-      assignee,
-      start_date,
-      deadline,
-      status: "Pending",
-      subtasks,
-      logs: [],
-      shipment_id,
-      shipment_reference,
-      task_type,
-      category,
-      due_date,
-      recurrence_period,
-      reminder_days_before,
-      created_at: new Date().toISOString()
-    };
-    data.tasks.push(newTask);
-    writeMockData(data);
-    return newTask;
-  }
+  const tasks = await getTasks();
+  const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id || 0)) + 1 : 1;
+  const newTask: Task = {
+    id: newId,
+    title,
+    description,
+    assignee,
+    start_date,
+    deadline,
+    status: "Pending",
+    subtasks,
+    logs: [],
+    shipment_id,
+    shipment_reference,
+    task_type: extraFields.task_type || "regular",
+    category: extraFields.category || "General",
+    due_date: extraFields.due_date || deadline,
+    recurrence_period: extraFields.recurrence_period || "None",
+    reminder_days_before: extraFields.reminder_days_before || 7,
+    created_at: new Date().toISOString()
+  };
+  const updated = [newTask, ...tasks];
+  await setSystemValue("SYSTEM_TASKS", updated);
+  return newTask;
 }
 
 export async function updateTask(id: number, fields: Partial<Task>): Promise<Task> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    const idx = data.tasks.findIndex((t: any) => t.id === id);
-    if (idx === -1) throw new Error("Task not found");
-    const updated = { ...data.tasks[idx], ...fields };
-    data.tasks[idx] = updated;
-    writeMockData(data);
-    return updated as Task;
-  }
-  try {
-    const { data, error } = await supabase
-      .from("tasks")
-      .update(fields)
-      .eq("id", id)
-      .select()
-      .single();
-    if (error) throw error;
-    return data as Task;
-  } catch (err: any) {
-    isDemo = true;
-    const data = readMockData();
-    const idx = data.tasks.findIndex((t: any) => t.id === id);
-    if (idx === -1) throw new Error("Task not found");
-    const updated = { ...data.tasks[idx], ...fields };
-    data.tasks[idx] = updated;
-    writeMockData(data);
-    return updated as Task;
-  }
+  const tasks = await getTasks();
+  const idx = tasks.findIndex(t => t.id === id);
+  if (idx === -1) throw new Error("Task not found");
+  const updatedTask = { ...tasks[idx], ...fields };
+  tasks[idx] = updatedTask;
+  await setSystemValue("SYSTEM_TASKS", tasks);
+  return updatedTask;
 }
 
 export async function deleteTask(id: number): Promise<void> {
-  const isDefaultUrl = checkIsDefaultUrl();
-  if (isDemo || isDefaultUrl) {
-    isDemo = true;
-    const data = readMockData();
-    data.tasks = (data.tasks || []).filter((t: any) => t.id !== id);
-    writeMockData(data);
-    return;
-  }
-  try {
-    const { error } = await supabase.from("tasks").delete().eq("id", id);
-    if (error) throw error;
-  } catch (err: any) {
-    isDemo = true;
-    const data = readMockData();
-    data.tasks = (data.tasks || []).filter((t: any) => t.id !== id);
-    writeMockData(data);
-  }
+  const tasks = await getTasks();
+  const updated = tasks.filter(t => t.id !== id);
+  await setSystemValue("SYSTEM_TASKS", updated);
 }
 
 export async function toggleTaskCompleteWithRollover(id: number): Promise<Task> {
