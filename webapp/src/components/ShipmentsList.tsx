@@ -532,7 +532,7 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
       <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center justify-between bg-card border border-border p-2.5 rounded-xl">
         
         {/* Left: Milestone Multi-Select, Type Filter, Sort, Primary Group, and Secondary Group in 1 row */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap overflow-x-auto py-0.5">
+        <div className="flex items-center gap-2 flex-wrap py-0.5">
           
           {/* Milestone Multi-Select Dropdown */}
           <MilestoneMultiSelect

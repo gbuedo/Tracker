@@ -5,7 +5,7 @@ import { Task } from "@/lib/types";
 import { getTasksAction, toggleTaskCompleteWithRolloverAction } from "@/actions/tasks";
 import { 
   ShieldAlert, Calendar, CheckCircle2, Circle, Clock, ChevronDown, ChevronUp, 
-  AlertTriangle, Bell, Sparkles, RefreshCw, FileText, ExternalLink
+  AlertTriangle, Bell, Sparkles, RefreshCw, FileText, ExternalLink, Flame
 } from "lucide-react";
 import Link from "next/link";
 
@@ -15,7 +15,6 @@ interface Props {
 
 export function GlobalExpirationHeader({ initialTasks }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks || []);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [loadingTaskId, setLoadingTaskId] = useState<number | null>(null);
 
   // Sync tasks on mount or polling
@@ -50,111 +49,127 @@ export function GlobalExpirationHeader({ initialTasks }: Props) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // 1. Overdue Items (due_date < today) - sort by oldest due date first (up to 2)
+  // 1. Up to 2 Previous Overdue Items (due_date < today)
   const overdueItems = expirationTasks
     .filter(t => getDaysDiff(t.due_date || t.deadline) < 0)
     .sort((a, b) => getDaysDiff(a.due_date || a.deadline) - getDaysDiff(b.due_date || b.deadline))
     .slice(0, 2);
 
-  // 2. Upcoming Items (due_date >= today) - sort by closest due date first (up to 3)
-  const upcomingItems = expirationTasks
+  // 2. Next Immediate Expiration (due_date >= today, 1st item)
+  const sortedUpcoming = expirationTasks
     .filter(t => getDaysDiff(t.due_date || t.deadline) >= 0)
-    .sort((a, b) => getDaysDiff(a.due_date || a.deadline) - getDaysDiff(b.due_date || b.deadline))
-    .slice(0, 3);
+    .sort((a, b) => getDaysDiff(a.due_date || a.deadline) - getDaysDiff(b.due_date || b.deadline));
 
-  const displayItems = [...overdueItems, ...upcomingItems];
+  const immediateNext = sortedUpcoming.slice(0, 1);
+  const next3After = sortedUpcoming.slice(1, 4);
+
+  const allHeaderItems = [
+    ...overdueItems.map(item => ({ ...item, isOverdueCategory: true })),
+    ...immediateNext.map(item => ({ ...item, isImmediateNextCategory: true })),
+    ...next3After.map(item => ({ ...item, isUpcomingCategory: true }))
+  ];
 
   if (expirationTasks.length === 0) return null;
 
   return (
-    <div className="bg-slate-950 text-slate-100 border-b border-slate-800 sticky top-0 z-50 shadow-md font-sans text-xs select-none">
-      <div className="max-w-7xl mx-auto px-3 py-1.5 flex flex-col md:flex-row items-center justify-between gap-2">
+    <div className="bg-slate-950 text-slate-100 border-b border-rose-950/80 sticky top-0 z-50 shadow-xl font-sans select-none">
+      
+      {/* DAILY EXPIRATION ALERT BAR */}
+      <div className="max-w-7xl mx-auto px-3 py-2 flex flex-col lg:flex-row items-center justify-between gap-3">
         
-        {/* LEFT BRANDING BADGE */}
+        {/* BRANDING BADGE */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px] animate-pulse">
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Expirations Alert</span>
+          <div className="flex items-center gap-1.5 bg-rose-600 text-white px-2.5 py-1 rounded-lg font-black uppercase tracking-wider text-[11px] shadow-sm shadow-rose-900/50 animate-pulse">
+            <Flame className="w-4 h-4 text-amber-300 fill-amber-300" />
+            <span>DAILY EXPIRATION ALERTS</span>
           </div>
-          <span className="text-[11px] font-semibold text-slate-400 hidden lg:inline">
-            Priority Certifications & Renewals Agenda
-          </span>
         </div>
 
-        {/* CENTER ITEMS CAROUSEL / ROW */}
-        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 overflow-x-auto py-0.5 max-w-full">
-          {displayItems.map(item => {
+        {/* ITEMS CAROUSEL / GRID WITH BIG COUNTDOWN NUMBERS */}
+        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 max-w-full overflow-x-auto py-0.5">
+          {allHeaderItems.map(item => {
             const daysLeft = getDaysDiff(item.due_date || item.deadline);
             const isOverdue = daysLeft < 0;
             const isToday = daysLeft === 0;
 
-            let badgeBg = "bg-sky-500/20 text-sky-300 border-sky-500/40";
-            let daysText = `In ${daysLeft} days`;
+            let cardBg = "bg-slate-900 border-slate-700/80 text-slate-100";
+            let numberBg = "bg-slate-800 text-sky-300 border-slate-700";
+            let labelText = "DAYS LEFT";
 
             if (isOverdue) {
-              badgeBg = "bg-rose-600 text-white border-rose-400 font-extrabold animate-bounce";
-              daysText = `Overdue ${Math.abs(daysLeft)}d`;
+              cardBg = "bg-rose-950/80 border-rose-600/80 text-rose-100 shadow-md shadow-rose-950";
+              numberBg = "bg-rose-600 text-white border-rose-400 animate-bounce";
+              labelText = "DAYS OVERDUE";
             } else if (isToday) {
-              badgeBg = "bg-amber-500 text-slate-950 font-black animate-pulse";
-              daysText = "Due Today!";
-            } else if (daysLeft <= 7) {
-              badgeBg = "bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold";
+              cardBg = "bg-amber-950/80 border-amber-500/80 text-amber-100";
+              numberBg = "bg-amber-500 text-slate-950 border-amber-300 animate-pulse font-black";
+              labelText = "DUE TODAY";
+            } else if ("isImmediateNextCategory" in item && item.isImmediateNextCategory) {
+              cardBg = "bg-[#1E293B] border-sky-500/60 text-slate-100 shadow-sm";
+              numberBg = "bg-sky-500 text-slate-950 border-sky-300 font-black";
+              labelText = "NEXT EXPIRATION";
             }
 
             return (
               <div 
                 key={item.id}
-                className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border text-[11px] transition-all shrink-0 ${
-                  isOverdue 
-                    ? "bg-rose-950/60 border-rose-600/60 text-rose-100 shadow-sm shadow-rose-900/50" 
-                    : "bg-slate-900/90 border-slate-700/80 text-slate-200 hover:border-slate-500"
-                }`}
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border text-xs transition-all shrink-0 ${cardBg}`}
               >
-                {/* Radio Button to Complete */}
+                {/* Radio Button to Mark Complete */}
                 <button
                   onClick={() => handleToggleComplete(item.id)}
                   disabled={loadingTaskId === item.id}
                   className="group relative focus:outline-none shrink-0"
-                  title="Mark as completed & auto-rollover to next recurrence period"
+                  title="Radio button: Mark completed & auto-rollover to next cycle"
                 >
                   {loadingTaskId === item.id ? (
                     <RefreshCw className="w-4 h-4 animate-spin text-sky-400" />
                   ) : (
-                    <Circle className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                    <div className="w-4 h-4 rounded-full border-2 border-slate-400 group-hover:border-emerald-400 group-hover:bg-emerald-500/20 transition-all flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-transparent group-hover:bg-emerald-400" />
+                    </div>
                   )}
                 </button>
 
-                {/* Days Remaining Large Badge */}
-                <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-extrabold border ${badgeBg}`}>
-                  {daysText}
-                </span>
+                {/* BIG COUNTDOWN NUMBER BADGE */}
+                <div className={`flex flex-col items-center justify-center px-2 py-0.5 rounded-lg border font-mono shrink-0 ${numberBg}`}>
+                  <span className="text-sm sm:text-base font-black leading-none">
+                    {isOverdue ? Math.abs(daysLeft) : isToday ? "0" : daysLeft}
+                  </span>
+                  <span className="text-[7.5px] font-black uppercase tracking-tighter leading-none pt-0.5">
+                    {labelText}
+                  </span>
+                </div>
 
                 {/* Title & Category */}
-                <div className="flex items-center gap-1.5 truncate max-w-[200px] md:max-w-[240px]">
-                  <span className="font-bold text-slate-100 truncate">{item.title}</span>
-                  {item.category && (
-                    <span className="text-[9px] font-bold bg-slate-800 text-slate-300 px-1 py-0.25 rounded border border-slate-700 uppercase shrink-0">
-                      {item.category}
-                    </span>
-                  )}
+                <div className="flex flex-col truncate max-w-[170px] sm:max-w-[210px]">
+                  <span className="font-extrabold text-slate-100 truncate text-[11px] leading-tight">{item.title}</span>
+                  <div className="flex items-center gap-1 text-[9px] text-slate-400 font-bold">
+                    {item.category && (
+                      <span className="text-amber-300 uppercase">{item.category}</span>
+                    )}
+                    <span>· Due: {item.due_date || item.deadline}</span>
+                  </div>
                 </div>
+
               </div>
             );
           })}
         </div>
 
-        {/* RIGHT LINK TO TASKS MODULE */}
+        {/* LINK TO ALL TASKS */}
         <div className="flex items-center gap-2 shrink-0">
           <Link
-            href="/task-tracker"
-            className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-700 transition-colors"
+            href="/task-tracker?tab=expirations"
+            className="flex items-center gap-1.5 bg-rose-600/30 hover:bg-rose-600/50 text-rose-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border border-rose-500/50 transition-colors shadow-sm"
           >
-            <span>All Tasks ({expirationTasks.length})</span>
-            <ExternalLink className="w-3 h-3 text-sky-400" />
+            <span>View All Agenda ({expirationTasks.length})</span>
+            <ExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
 
       </div>
+
     </div>
   );
 }

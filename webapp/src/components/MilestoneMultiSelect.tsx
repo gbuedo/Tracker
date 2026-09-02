@@ -95,7 +95,7 @@ export function MilestoneMultiSelect({
           </div>
 
           {/* Options Checklist */}
-          <div className="max-h-48 overflow-y-auto space-y-0.5 pr-0.5">
+          <div className="max-h-64 overflow-y-auto space-y-1 pr-1 border-t border-border pt-1">
             {filteredStatuses.map(status => {
               const isChecked = selectedStatuses.includes(status.name);
               const count = globalStatusCounts[status.name] || 0;
@@ -104,9 +104,9 @@ export function MilestoneMultiSelect({
                 <label
                   key={status.id}
                   onClick={() => onToggleStatus(status.name)}
-                  className={`flex items-center justify-between px-2 py-1 rounded-md text-[10px] cursor-pointer transition-colors ${
+                  className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] cursor-pointer transition-colors ${
                     isChecked
-                      ? "bg-[#F2F0F8] dark:bg-slate-800 text-foreground font-bold"
+                      ? "bg-[#F2F0F8] dark:bg-slate-800 text-foreground font-bold border border-[#C8C0E0]/60"
                       : "hover:bg-muted text-muted-foreground"
                   }`}
                 >
