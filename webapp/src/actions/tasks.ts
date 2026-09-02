@@ -47,8 +47,60 @@ export async function toggleSubtaskAction(taskId: number, subtaskId: string, com
   return data;
 }
 
+export async function getTasksAction() {
+  return await db.getTasks();
+}
+
+export async function createExpirationTaskAction(
+  title: string,
+  description: string | null,
+  assignee: string | null,
+  due_date: string,
+  category: any,
+  recurrence_period: any,
+  reminder_days_before: number = 7
+) {
+  const data = await db.createTask(
+    title,
+    description,
+    assignee,
+    new Date().toISOString().split("T")[0],
+    due_date,
+    [],
+    null,
+    null,
+    {
+      task_type: "expiration",
+      category,
+      due_date,
+      recurrence_period,
+      reminder_days_before
+    }
+  );
+  revalidatePath("/task-tracker");
+  revalidatePath("/");
+  revalidatePath("/operations");
+  revalidatePath("/ratesheet-tracker");
+  revalidatePath("/shipping-instructions");
+  return data;
+}
+
+export async function toggleTaskCompleteWithRolloverAction(id: number) {
+  const data = await db.toggleTaskCompleteWithRollover(id);
+  revalidatePath("/task-tracker");
+  revalidatePath("/");
+  revalidatePath("/operations");
+  revalidatePath("/ratesheet-tracker");
+  revalidatePath("/shipping-instructions");
+  return data;
+}
+
 export async function deleteTaskAction(id: number) {
   await db.deleteTask(id);
   revalidatePath("/task-tracker");
   revalidatePath("/");
+  revalidatePath("/operations");
+  revalidatePath("/ratesheet-tracker");
+  revalidatePath("/shipping-instructions");
 }
+

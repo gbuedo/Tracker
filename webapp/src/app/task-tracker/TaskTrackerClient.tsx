@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo, useEffect } from "react";
-import { Task, Subtask } from "@/lib/types";
+import { Task, Subtask, TaskCategory, RecurrencePeriod } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +11,12 @@ import {
 import { 
   Search, Plus, List, Kanban, ArrowUpDown, Layers, Clipboard, 
   Trash2, ChevronDown, ChevronUp, Clock, CheckCircle2, User, 
-  Calendar, Check, Copy, AlertTriangle, ExternalLink, CheckSquare, Edit
+  Calendar, Check, Copy, AlertTriangle, ExternalLink, CheckSquare, Edit,
+  ShieldAlert, RefreshCw, Sparkles, FileText, Circle, Repeat
 } from "lucide-react";
 import { 
-  createTaskAction, updateTaskAction, deleteTaskAction, toggleSubtaskAction 
+  createTaskAction, updateTaskAction, deleteTaskAction, toggleSubtaskAction,
+  createExpirationTaskAction, toggleTaskCompleteWithRolloverAction
 } from "@/actions/tasks";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -26,11 +28,23 @@ interface TaskTrackerClientProps {
 
 export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [taskTab, setTaskTab] = useState<"workflow" | "expirations">("workflow");
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("kanban");
   const [sortBy, setSortBy] = useState<"created_at" | "deadline">("deadline");
   const [groupBy, setGroupBy] = useState<"status" | "assignee">("status");
   const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
+
+  // Expiration Dialog States
+  const [expDialogOpen, setExpDialogOpen] = useState(false);
+  const [expTitle, setExpTitle] = useState("");
+  const [expDescription, setExpDescription] = useState("");
+  const [expAssignee, setExpAssignee] = useState("");
+  const [expDueDate, setExpDueDate] = useState("");
+  const [expCategory, setExpCategory] = useState<TaskCategory>("Renewal");
+  const [expRecurrence, setExpRecurrence] = useState<RecurrencePeriod>("Annually");
+  const [expReminderDays, setExpReminderDays] = useState(7);
+
 
   // Linkage states
   const [taskShipmentId, setTaskShipmentId] = useState("");
@@ -116,10 +130,39 @@ export function TaskTrackerClient({ initialTasks }: TaskTrackerClientProps) {
         taskShipmentRef.trim() || null
       );
 
-      // Optimistic update
       setTasks(prev => [newTask, ...prev]);
       setDialogOpen(false);
       resetForm();
+    });
+  };
+
+  const handleCreateExpirationTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!expTitle.trim() || !expDueDate) return;
+
+    startTransition(async () => {
+      const newExp = await createExpirationTaskAction(
+        expTitle.trim(),
+        expDescription.trim() || null,
+        expAssignee.trim() || null,
+        expDueDate,
+        expCategory,
+        expRecurrence,
+        Number(expReminderDays)
+      );
+      setTasks(prev => [newExp, ...prev]);
+      setExpDialogOpen(false);
+      setExpTitle("");
+      setExpDescription("");
+      setExpAssignee("");
+      setExpDueDate("");
+    });
+  };
+
+  const handleToggleRolloverTask = (id: number) => {
+    startTransition(async () => {
+      const updated = await toggleTaskCompleteWithRolloverAction(id);
+      setTasks(prev => prev.map(t => t.id === id ? updated : t));
     });
   };
 
@@ -413,7 +456,264 @@ Please review and update this task as soon as possible!`;
 
   return (
     <div className="space-y-6">
-      
+
+      {/* TOP NAVIGATION TABS: WORKFLOW VS EXPIRATIONS AGENDA */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-card border border-border p-2.5 rounded-xl">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-lg border border-border">
+          <button
+            onClick={() => setTaskTab("workflow")}
+            className={`px-4 py-1.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all ${
+              taskTab === "workflow"
+                ? "bg-[#A89ACC] text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Kanban className="w-3.5 h-3.5" />
+            <span>Workflow Tasks Board</span>
+            <span className="bg-white/20 px-1.5 py-0.25 rounded text-[10px]">
+              {tasks.filter(t => t.task_type !== "expiration").length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setTaskTab("expirations")}
+            className={`px-4 py-1.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all ${
+              taskTab === "expirations"
+                ? "bg-[#5A4F7A] text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-300" />
+            <span>Certifications & Expirations</span>
+            <span className="bg-rose-500/30 text-rose-200 px-1.5 py-0.25 rounded text-[10px] font-mono">
+              {tasks.filter(t => t.task_type === "expiration" && t.status !== "Completed").length} Active
+            </span>
+          </button>
+        </div>
+
+        {/* Action button based on active tab */}
+        {taskTab === "expirations" && (
+          <Dialog open={expDialogOpen} onOpenChange={setExpDialogOpen}>
+            <DialogTrigger className="bg-[#5A4F7A] hover:bg-[#473E63] text-white text-xs font-bold gap-1.5 shadow-sm px-3 py-2 rounded-lg inline-flex items-center">
+              <Plus className="w-4 h-4 text-emerald-300" />
+              Add Expiration / Renewal
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-base font-bold flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5 text-rose-500" />
+                  New Certification, Renewal or Payment
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  Schedule recurring expirations, licenses, and payments with automatic rollover logic.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleCreateExpirationTask} className="space-y-3 pt-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Title / Description *</Label>
+                  <Input
+                    required
+                    value={expTitle}
+                    onChange={e => setExpTitle(e.target.value)}
+                    placeholder="e.g. FMCSA Freight Forwarder License Renewal"
+                    className="text-xs font-semibold"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold">Category</Label>
+                    <select
+                      value={expCategory}
+                      onChange={e => setExpCategory(e.target.value as any)}
+                      className="w-full h-9 bg-background border border-input rounded-md px-2 text-xs font-semibold"
+                    >
+                      <option value="Certification">Certification</option>
+                      <option value="Renewal">Renewal</option>
+                      <option value="Payment">Payment</option>
+                      <option value="License">License</option>
+                      <option value="General">General</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold">Recurrence Period</Label>
+                    <select
+                      value={expRecurrence}
+                      onChange={e => setExpRecurrence(e.target.value as any)}
+                      className="w-full h-9 bg-background border border-input rounded-md px-2 text-xs font-semibold"
+                    >
+                      <option value="None">None (One-time)</option>
+                      <option value="Monthly">Monthly</option>
+                      <option value="Quarterly">Quarterly</option>
+                      <option value="Bi-Annually">Bi-Annually (6 Mo)</option>
+                      <option value="Annually">Annually (1 Year)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold">Expiration Due Date *</Label>
+                    <Input
+                      required
+                      type="date"
+                      value={expDueDate}
+                      onChange={e => setExpDueDate(e.target.value)}
+                      className="text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold">Reminder Lead (Days)</Label>
+                    <select
+                      value={expReminderDays}
+                      onChange={e => setExpReminderDays(Number(e.target.value))}
+                      className="w-full h-9 bg-background border border-input rounded-md px-2 text-xs font-semibold"
+                    >
+                      <option value={3}>3 Days Before</option>
+                      <option value={7}>7 Days Before</option>
+                      <option value={15}>15 Days Before</option>
+                      <option value={30}>30 Days Before</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Assignee / Department</Label>
+                  <Input
+                    value={expAssignee}
+                    onChange={e => setExpAssignee(e.target.value)}
+                    placeholder="e.g. Compliance Dept / Finance"
+                    className="text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Additional Details</Label>
+                  <Input
+                    value={expDescription}
+                    onChange={e => setExpDescription(e.target.value)}
+                    placeholder="e.g. Mandatory audit and state filing fees"
+                    className="text-xs"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-border">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setExpDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" size="sm" className="bg-[#5A4F7A] hover:bg-[#473E63] text-white font-bold">
+                    Save Expiration Reminder
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      {/* EXPIRATIONS TAB AGENDA VIEW */}
+      {taskTab === "expirations" ? (
+        <div className="space-y-6">
+          <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <div>
+                <h2 className="text-base font-extrabold text-foreground flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5 text-rose-500" />
+                  Certifications, Renewals & Payments Agenda
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Track permits, license renewals, and recurring payments. Marking an item completed automatically advances its due date to the next period.
+                </p>
+              </div>
+            </div>
+
+            {/* EXPIRATIONS LIST CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tasks.filter(t => t.task_type === "expiration").map(item => {
+                const todayStr = new Date().toISOString().split("T")[0];
+                const dueStr = item.due_date || item.deadline || todayStr;
+                const diffDays = Math.ceil((new Date(dueStr).getTime() - new Date(todayStr).getTime()) / (86400000));
+                const isCompleted = item.status === "Completed";
+                const isOverdue = !isCompleted && diffDays < 0;
+                const isToday = !isCompleted && diffDays === 0;
+
+                let cardBorder = "border-border";
+                let badgeBg = "bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300";
+                let statusText = `In ${diffDays} days`;
+
+                if (isCompleted) {
+                  badgeBg = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300";
+                  statusText = "Completed / Rolled Over";
+                } else if (isOverdue) {
+                  cardBorder = "border-rose-500/50 bg-rose-50/20 dark:bg-rose-950/20";
+                  badgeBg = "bg-rose-600 text-white font-black animate-pulse";
+                  statusText = `Overdue by ${Math.abs(diffDays)}d`;
+                } else if (isToday) {
+                  cardBorder = "border-amber-500/50 bg-amber-50/20 dark:bg-amber-950/20";
+                  badgeBg = "bg-amber-500 text-slate-950 font-black";
+                  statusText = "Due Today!";
+                }
+
+                return (
+                  <div key={item.id} className={`bg-card border ${cardBorder} p-4 rounded-xl shadow-sm space-y-3 flex flex-col justify-between`}>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ${badgeBg}`}>
+                          {statusText}
+                        </span>
+                        {item.category && (
+                          <span className="text-[9px] font-bold bg-muted px-2 py-0.5 rounded border border-border text-muted-foreground uppercase">
+                            {item.category}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-sm font-bold text-foreground leading-snug">{item.title}</h3>
+                      {item.description && (
+                        <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-border space-y-2 text-[11px] text-muted-foreground">
+                      <div className="flex justify-between items-center">
+                        <span>Due Date:</span>
+                        <span className="font-bold text-foreground font-mono">{dueStr}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Recurrence:</span>
+                        <span className="font-bold text-[#5A4F7A] bg-[#F2F0F8] dark:bg-slate-800 px-2 py-0.5 rounded text-[10px]">
+                          <Repeat className="w-3 h-3 inline mr-1" />
+                          {item.recurrence_period || "None"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Assignee:</span>
+                        <span className="font-bold text-foreground">{item.assignee || "Unassigned"}</span>
+                      </div>
+
+                      <div className="pt-2 flex justify-between items-center">
+                        <button
+                          onClick={() => handleToggleRolloverTask(item.id)}
+                          className="w-full py-2 px-3 bg-[#5A4F7A] hover:bg-[#473E63] text-white font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                        >
+                          <Circle className="w-4 h-4 text-emerald-300" />
+                          <span>Complete & Auto-Rollover Cycle</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : (
+
+      /* REGULAR KANBAN / WORKFLOW BOARD VIEW */
+      <>
       {/* CONTROLS HEADER ROW */}
       <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between bg-card border border-border p-3.5 rounded-xl">
         
@@ -1263,6 +1563,8 @@ Please review and update this task as soon as possible!`;
             );
           })}
         </div>
+      )}
+      </>
       )}
 
     </div>

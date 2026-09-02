@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept, OverseasAgent } from "./types";
+import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept, OverseasAgent, TaskLog } from "./types";
 import { unstable_noStore as noStore } from "next/cache";
 import carriersSeed from "./carriers_seed.json";
 import ratesSeed from "./rates_seed.json";
@@ -2022,6 +2022,27 @@ export async function deleteCarrier(id: number): Promise<void> {
 // TASK TRACKER MODULE METHODS
 // ----------------------------------------------------
 
+export function calculateNextDueDate(currentDueDate: string, recurrence: string): string {
+  const d = new Date(currentDueDate);
+  if (isNaN(d.getTime())) return currentDueDate;
+
+  const rec = (recurrence || "").toLowerCase();
+  if (rec.includes("monthly")) {
+    d.setMonth(d.getMonth() + 1);
+  } else if (rec.includes("quarterly")) {
+    d.setMonth(d.getMonth() + 3);
+  } else if (rec.includes("bi-annually") || rec.includes("semi-annually")) {
+    d.setMonth(d.getMonth() + 6);
+  } else if (rec.includes("annually") || rec.includes("yearly")) {
+    d.setFullYear(d.getFullYear() + 1);
+  } else if (!isNaN(Number(recurrence))) {
+    d.setDate(d.getDate() + Number(recurrence));
+  } else {
+    d.setMonth(d.getMonth() + 1);
+  }
+  return d.toISOString().split("T")[0];
+}
+
 export async function getTasks(): Promise<Task[]> {
   noStore();
   return await queryWithFallback<Task[]>(
@@ -2033,36 +2054,99 @@ export async function getTasks(): Promise<Task[]> {
     },
     () => {
       const data = readMockData();
-      if (!data.tasks) {
+      if (!data.tasks || data.tasks.length === 0) {
+        const today = new Date();
+        const in3Days = new Date(today.getTime() + 86400000 * 3).toISOString().split("T")[0];
+        const in15Days = new Date(today.getTime() + 86400000 * 15).toISOString().split("T")[0];
+        const past2Days = new Date(today.getTime() - 86400000 * 2).toISOString().split("T")[0];
+        const in45Days = new Date(today.getTime() + 86400000 * 45).toISOString().split("T")[0];
+
         data.tasks = [
           {
             id: 1,
             title: "Coordinate booking with American Airlines",
             description: "Flight AA-991 needs booking confirmation for Global Logistics Inc. cargo.",
             assignee: "John Doe",
-            start_date: new Date().toISOString().split("T")[0],
-            deadline: new Date(Date.now() + 86400000 * 2).toISOString().split("T")[0],
+            start_date: today.toISOString().split("T")[0],
+            deadline: in3Days,
             status: "In Progress",
             subtasks: [
               { id: "sub-1", title: "Call AA Cargo desk", completed: true },
               { id: "sub-2", title: "Submit AWB reference to portal", completed: false }
             ],
             logs: [
-              { timestamp: new Date(Date.now() - 3600000).toISOString(), author: "System", message: "Task initialized by automated operational flow." }
+              { timestamp: new Date(Date.now() - 3600000).toISOString(), author: "System", message: "Task initialized." }
             ],
-            created_at: new Date().toISOString()
+            task_type: "regular",
+            created_at: today.toISOString()
           },
           {
             id: 2,
-            title: "Inspect Customs clearance delay in Miami",
-            description: "Check HAWB-8812 clearance status with Alliance Ground.",
-            assignee: "Alice Smith",
-            start_date: new Date().toISOString().split("T")[0],
-            deadline: new Date().toISOString().split("T")[0],
+            title: "FMCSA Freight Forwarder License Renewal",
+            description: "Annual renewal fee and compliance check for FMCSA operating authority.",
+            assignee: "Compliance Dept",
+            start_date: today.toISOString().split("T")[0],
+            deadline: in15Days,
+            due_date: in15Days,
             status: "Pending",
+            task_type: "expiration",
+            category: "Renewal",
+            recurrence_period: "Annually",
+            reminder_days_before: 15,
             subtasks: [],
             logs: [],
-            created_at: new Date().toISOString()
+            created_at: today.toISOString()
+          },
+          {
+            id: 3,
+            title: "Miami Bonded Warehouse Storage Certification",
+            description: "Annual customs bonded warehouse safety and security inspection.",
+            assignee: "Ops Manager",
+            start_date: today.toISOString().split("T")[0],
+            deadline: in3Days,
+            due_date: in3Days,
+            status: "Pending",
+            task_type: "expiration",
+            category: "Certification",
+            recurrence_period: "Annually",
+            reminder_days_before: 7,
+            subtasks: [],
+            logs: [],
+            created_at: today.toISOString()
+          },
+          {
+            id: 4,
+            title: "Quarterly IATA Agent Maintenance Fee",
+            description: "Mandatory quarterly dues payment to maintain IATA cargo agent status.",
+            assignee: "Finance Dept",
+            start_date: past2Days,
+            deadline: past2Days,
+            due_date: past2Days,
+            status: "Pending",
+            task_type: "expiration",
+            category: "Payment",
+            recurrence_period: "Quarterly",
+            reminder_days_before: 7,
+            subtasks: [],
+            logs: [],
+            created_at: today.toISOString()
+          },
+          {
+            id: 5,
+            title: "TSA Certified Cargo Screening Facility Permit",
+            description: "Bi-annual TSA security audit and screening personnel certification.",
+            assignee: "Security Director",
+            start_date: today.toISOString().split("T")[0],
+            deadline: in45Days,
+            due_date: in45Days,
+            status: "Pending",
+            task_type: "expiration",
+            category: "License",
+            recurrence_period: "Bi-Annually",
+            reminder_days_before: 30,
+            subtasks: [],
+            logs: [],
+            created_at: today.toISOString()
           }
         ];
         writeMockData(data);
@@ -2080,9 +2164,16 @@ export async function createTask(
   deadline: string | null,
   subtasks: Subtask[] = [],
   shipment_id: number | null = null,
-  shipment_reference: string | null = null
+  shipment_reference: string | null = null,
+  extraFields: Partial<Task> = {}
 ): Promise<Task> {
   const isDefaultUrl = checkIsDefaultUrl();
+  const task_type = extraFields.task_type || "regular";
+  const category = extraFields.category || "General";
+  const due_date = extraFields.due_date || deadline;
+  const recurrence_period = extraFields.recurrence_period || "None";
+  const reminder_days_before = extraFields.reminder_days_before || 7;
+
   if (isDemo || isDefaultUrl) {
     isDemo = true;
     const data = readMockData();
@@ -2100,6 +2191,11 @@ export async function createTask(
       logs: [],
       shipment_id,
       shipment_reference,
+      task_type,
+      category,
+      due_date,
+      recurrence_period,
+      reminder_days_before,
       created_at: new Date().toISOString()
     };
     data.tasks.push(newTask);
@@ -2107,7 +2203,7 @@ export async function createTask(
     return newTask;
   }
   try {
-    const { data, error } = await supabase.from("tasks").insert({
+    const payload = {
       title,
       description,
       assignee,
@@ -2117,8 +2213,14 @@ export async function createTask(
       subtasks,
       logs: [],
       shipment_id,
-      shipment_reference
-    }).select().single();
+      shipment_reference,
+      task_type,
+      category,
+      due_date,
+      recurrence_period,
+      reminder_days_before
+    };
+    const { data, error } = await supabase.from("tasks").insert(payload).select().single();
     if (error) throw error;
     return data as Task;
   } catch (err: any) {
@@ -2138,6 +2240,11 @@ export async function createTask(
       logs: [],
       shipment_id,
       shipment_reference,
+      task_type,
+      category,
+      due_date,
+      recurrence_period,
+      reminder_days_before,
       created_at: new Date().toISOString()
     };
     data.tasks.push(newTask);
@@ -2196,6 +2303,40 @@ export async function deleteTask(id: number): Promise<void> {
     const data = readMockData();
     data.tasks = (data.tasks || []).filter((t: any) => t.id !== id);
     writeMockData(data);
+  }
+}
+
+export async function toggleTaskCompleteWithRollover(id: number): Promise<Task> {
+  const tasks = await getTasks();
+  const task = tasks.find(t => t.id === id);
+  if (!task) throw new Error("Task not found");
+
+  if (task.task_type === "expiration" && task.recurrence_period && task.recurrence_period !== "None") {
+    const currentDue = task.due_date || task.deadline || new Date().toISOString().split("T")[0];
+    const nextDue = calculateNextDueDate(currentDue, task.recurrence_period);
+    const newLog: TaskLog = {
+      timestamp: new Date().toISOString(),
+      author: "System",
+      message: `Occurrence completed. Auto-rolled over to next due date: ${nextDue}`
+    };
+
+    const updatedFields: Partial<Task> = {
+      due_date: nextDue,
+      deadline: nextDue,
+      start_date: new Date().toISOString().split("T")[0],
+      status: "Pending",
+      completed_at: new Date().toISOString(),
+      logs: [...(task.logs || []), newLog]
+    };
+
+    return await updateTask(id, updatedFields);
+  } else {
+    const newStatus = task.status === "Completed" ? "Pending" : "Completed";
+    const updatedFields: Partial<Task> = {
+      status: newStatus,
+      completed_at: newStatus === "Completed" ? new Date().toISOString() : null
+    };
+    return await updateTask(id, updatedFields);
   }
 }
 

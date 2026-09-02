@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { CarrierDirectoryDialog } from "@/components/CarrierDirectoryDialog";
+import { MilestoneMultiSelect } from "@/components/MilestoneMultiSelect";
 import { Label } from "@/components/ui/label";
 import { addCustomer, addStatus, updateAppConfig, deleteShipment, deleteStatus, addCarrier, deleteCarrier, getFullBackupData, importFullBackupAction, toggleShipmentFlag } from "@/actions/shipments";
 
@@ -513,58 +514,6 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
   return (
     <div className="space-y-4">
 
-      {/* --- STATUS DYNAMIC CARDS ROW & VOLUME INDICATORS --- */}
-      <div className="space-y-1.5">
-        <div className="flex justify-between items-center">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-            <Layers className="w-3 h-3" />
-            Operational Milestones Counters
-          </h3>
-          {selectedStatuses.length > 0 && (
-            <Button 
-              variant="ghost" 
-              onClick={handleClearStatusFilters} 
-              className="h-5 px-1.5 text-[9px] text-sky-400 hover:text-white uppercase font-bold"
-            >
-              Clear Filters ({selectedStatuses.length})
-            </Button>
-          )}
-        </div>
-        
-        {/* Horizontal Status Pills Container - Wrapping Flexbar (No Scroll) */}
-        <div className="flex flex-row flex-wrap gap-1.5 pb-1 max-w-full">
-          {statusesState.map((status) => {
-            const count = globalStatusCounts[status.name] || 0;
-            const isSelected = selectedStatuses.includes(status.name);
-            return (
-              <button
-                key={status.id}
-                onClick={() => handleToggleStatus(status.name)}
-                className={`py-0.5 px-2 rounded-lg border flex items-center gap-1.5 transition-all duration-200 relative overflow-hidden group shrink-0 h-[28px] ${
-                  isSelected 
-                    ? "bg-[#FDF1EE] border-[#F0C5BC] shadow-sm"
-                    : "bg-card border-border hover:border-[#F0C5BC] hover:bg-[#FDF8F5]"
-                }`}
-              >
-                {/* Visual Accent Dot */}
-                <span 
-                  className="w-1.5 h-1.5 rounded-full shrink-0" 
-                  style={{ backgroundColor: status.color_code }}
-                />
-
-                <span className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground group-hover:text-foreground transition-colors truncate max-w-[100px]">
-                  {status.name}
-                </span>
-
-                <span className="text-[9px] font-bold font-mono text-foreground bg-muted px-1 py-0.25 rounded border border-border ml-0.5">
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* --- SEARCH BAR & CARRIERS DIRECTORY BUTTON --- */}
       <div className="flex gap-3 items-center">
         <div className="relative flex-grow">
@@ -582,9 +531,18 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
       {/* --- CONTROLS & UTILITIES TOOLBAR (SINGLE LINE) --- */}
       <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center justify-between bg-card border border-border p-2.5 rounded-xl">
         
-        {/* Left: Type Filter, Sort, Primary Group, and Secondary Group in 1 row */}
+        {/* Left: Milestone Multi-Select, Type Filter, Sort, Primary Group, and Secondary Group in 1 row */}
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap overflow-x-auto py-0.5">
           
+          {/* Milestone Multi-Select Dropdown */}
+          <MilestoneMultiSelect
+            statuses={statusesState}
+            selectedStatuses={selectedStatuses}
+            globalStatusCounts={globalStatusCounts}
+            onToggleStatus={handleToggleStatus}
+            onClearFilters={handleClearStatusFilters}
+          />
+
           {/* Shipment Type filter dropdown */}
           <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-lg border border-border text-[10px] font-bold text-muted-foreground h-8 shrink-0">
             <Filter className="w-3 h-3 text-[#7BB5A0]" />

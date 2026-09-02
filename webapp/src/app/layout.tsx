@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { GlobalExpirationHeader } from "@/components/GlobalExpirationHeader";
 
 const outfit = Outfit({
   variable: "--font-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({
       className={`${outfit.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden w-full max-w-full bg-background text-foreground transition-colors duration-200 selection:bg-[#E8A99A]/30 selection:text-[#8B4E43]">
+        <GlobalExpirationHeader />
         {children}
         <ThemeToggle />
       </body>

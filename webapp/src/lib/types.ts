@@ -32,6 +32,9 @@ export type TaskLog = {
   message: string;
 };
 
+export type TaskCategory = 'Certification' | 'Renewal' | 'Expiration' | 'Payment' | 'License' | 'General';
+export type RecurrencePeriod = 'None' | 'Monthly' | 'Quarterly' | 'Bi-Annually' | 'Annually';
+
 export type Task = {
   id: number;
   title: string;
@@ -44,6 +47,13 @@ export type Task = {
   logs?: TaskLog[];
   shipment_id?: number | null;
   shipment_reference?: string | null;
+  // Expiration & Recurring Reminders Fields
+  task_type?: 'regular' | 'expiration';
+  category?: TaskCategory;
+  due_date?: string | null; // Exact expiration date
+  recurrence_period?: RecurrencePeriod | string;
+  reminder_days_before?: number;
+  completed_at?: string | null;
   created_at: string;
 };
 
