@@ -32,8 +32,8 @@ export type TaskLog = {
   message: string;
 };
 
-export type TaskCategory = 'Certification' | 'Renewal' | 'Expiration' | 'Payment' | 'License' | 'General';
-export type RecurrencePeriod = 'None' | 'Monthly' | 'Quarterly' | 'Bi-Annually' | 'Annually';
+export type TaskCategory = 'Certification' | 'Renewal' | 'Expiration' | 'Payment' | 'License' | 'Inspection' | 'Permit' | 'Compliance' | 'Maintenance' | 'General';
+export type RecurrencePeriod = 'None' | 'Monthly' | 'Every 2 Months' | 'Quarterly' | 'Every 4 Months' | 'Bi-Annually' | 'Annually' | 'Every 2 Years' | 'Every 3 Years' | 'Every 5 Years' | string;
 
 export type Task = {
   id: number;

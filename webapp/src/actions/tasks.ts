@@ -27,6 +27,37 @@ export async function updateTaskAction(id: number, fields: Partial<Task>) {
   const data = await db.updateTask(id, fields);
   revalidatePath("/task-tracker");
   revalidatePath("/");
+  revalidatePath("/operations");
+  revalidatePath("/ratesheet-tracker");
+  revalidatePath("/shipping-instructions");
+  return data;
+}
+
+export async function updateExpirationTaskAction(
+  id: number,
+  title: string,
+  description: string | null,
+  assignee: string | null,
+  due_date: string,
+  category: any,
+  recurrence_period: any,
+  reminder_days_before: number = 7
+) {
+  const data = await db.updateTask(id, {
+    title,
+    description,
+    assignee,
+    due_date,
+    deadline: due_date,
+    category,
+    recurrence_period,
+    reminder_days_before
+  });
+  revalidatePath("/task-tracker");
+  revalidatePath("/");
+  revalidatePath("/operations");
+  revalidatePath("/ratesheet-tracker");
+  revalidatePath("/shipping-instructions");
   return data;
 }
 
