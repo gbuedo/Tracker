@@ -117,7 +117,7 @@ export function GlobalExpirationHeader({ initialTasks }: Props) {
       <div 
         key={item.id}
         onClick={() => setSelectedTask(item)}
-        className={`flex items-center gap-2 px-2 py-0.5 rounded-md border text-[11px] transition-all cursor-pointer shrink-0 ${cardBg}`}
+        className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-lg border text-[11px] transition-all cursor-pointer hover:scale-[1.01] ${cardBg}`}
         title="Click to view full details & actions"
       >
         {/* Radio Button to Mark Complete & Rollover */}
@@ -192,20 +192,20 @@ export function GlobalExpirationHeader({ initialTasks }: Props) {
             </div>
           </div>
 
-          {/* 3 STRUCTURED ROWS OF DUE AND NEXT REMINDERS */}
-          <div className="space-y-1">
+          {/* 3 STRUCTURED ROWS OF DUE AND NEXT REMINDERS (WRAPPED, NO H-SCROLL) */}
+          <div className="space-y-1.5">
             
             {/* ROW 1: OVERDUE & DUE TODAY */}
-            <div className="flex items-center gap-2">
-              <div className="w-24 shrink-0 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-rose-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+            <div className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-2">
+              <div className="w-24 shrink-0 sm:pt-1 flex items-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider text-rose-400">
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
                 <span>Due / Today:</span>
               </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-full scrollbar-none">
+              <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
                 {row1Items.length > 0 ? (
                   row1Items.map(renderBadgeItem)
                 ) : (
-                  <span className="text-[10px] text-emerald-400/80 italic flex items-center gap-1">
+                  <span className="text-[10px] text-emerald-400/80 italic flex items-center gap-1 py-0.5">
                     <Check className="w-3 h-3 text-emerald-400" />
                     No urgent overdue reminders!
                   </span>
@@ -214,31 +214,31 @@ export function GlobalExpirationHeader({ initialTasks }: Props) {
             </div>
 
             {/* ROW 2: NEXT UPCOMING (1 - 30 DAYS) */}
-            <div className="flex items-center gap-2">
-              <div className="w-24 shrink-0 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-sky-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+            <div className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-2">
+              <div className="w-24 shrink-0 sm:pt-1 flex items-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider text-sky-400">
+                <span className="w-2 h-2 rounded-full bg-sky-500" />
                 <span>Next 30 Days:</span>
               </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-full scrollbar-none">
+              <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
                 {row2Items.length > 0 ? (
                   row2Items.map(renderBadgeItem)
                 ) : (
-                  <span className="text-[10px] text-slate-500 italic">No reminders scheduled in the next 30 days</span>
+                  <span className="text-[10px] text-slate-500 italic py-0.5">No reminders scheduled in the next 30 days</span>
                 )}
               </div>
             </div>
 
             {/* ROW 3: FUTURE CYCLES (> 30 DAYS) */}
-            <div className="flex items-center gap-2">
-              <div className="w-24 shrink-0 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-slate-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+            <div className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-2">
+              <div className="w-24 shrink-0 sm:pt-1 flex items-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-slate-500" />
                 <span>Next Cycles:</span>
               </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-full scrollbar-none">
+              <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
                 {row3Items.length > 0 ? (
                   row3Items.map(renderBadgeItem)
                 ) : (
-                  <span className="text-[10px] text-slate-500 italic">No future reminders beyond 30 days</span>
+                  <span className="text-[10px] text-slate-500 italic py-0.5">No future reminders beyond 30 days</span>
                 )}
               </div>
             </div>
