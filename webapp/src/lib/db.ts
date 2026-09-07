@@ -2022,26 +2022,8 @@ export async function deleteCarrier(id: number): Promise<void> {
 // TASK TRACKER MODULE METHODS
 // ----------------------------------------------------
 
-export function calculateNextDueDate(currentDueDate: string, recurrence: string): string {
-  const d = new Date(currentDueDate);
-  if (isNaN(d.getTime())) return currentDueDate;
-
-  const rec = (recurrence || "").toLowerCase();
-  if (rec.includes("monthly")) {
-    d.setMonth(d.getMonth() + 1);
-  } else if (rec.includes("quarterly")) {
-    d.setMonth(d.getMonth() + 3);
-  } else if (rec.includes("bi-annually") || rec.includes("semi-annually")) {
-    d.setMonth(d.getMonth() + 6);
-  } else if (rec.includes("annually") || rec.includes("yearly")) {
-    d.setFullYear(d.getFullYear() + 1);
-  } else if (!isNaN(Number(recurrence))) {
-    d.setDate(d.getDate() + Number(recurrence));
-  } else {
-    d.setMonth(d.getMonth() + 1);
-  }
-  return d.toISOString().split("T")[0];
-}
+import { calculateNextDueDate, getExactDaysRemaining } from "./utils";
+export { getExactDaysRemaining, calculateNextDueDate };
 
 export async function getTasks(): Promise<Task[]> {
   noStore();
