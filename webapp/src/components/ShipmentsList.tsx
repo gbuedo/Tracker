@@ -13,14 +13,15 @@ import {
 import { format } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Shipment, Status, Carrier } from "@/lib/types";
+import { Shipment, Status, Carrier, EmailSettings } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { CarrierDirectoryDialog } from "@/components/CarrierDirectoryDialog";
 import { MilestoneMultiSelect } from "@/components/MilestoneMultiSelect";
 import { Label } from "@/components/ui/label";
-import { addCustomer, addStatus, updateAppConfig, deleteShipment, deleteStatus, addCarrier, deleteCarrier, getFullBackupData, importFullBackupAction, toggleShipmentFlag } from "@/actions/shipments";
+import { addCustomer, addStatus, updateAppConfig, deleteShipment, deleteStatus, addCarrier, deleteCarrier, getFullBackupData, importFullBackupAction, toggleShipmentFlag, saveClientEmailsAction, saveEmailSettingsAction, sendTestEmailAction } from "@/actions/shipments";
+import { parseEmailList } from "@/lib/email";
 
 interface ShipmentsListProps {
   initialShipments: Shipment[];
@@ -28,19 +29,79 @@ interface ShipmentsListProps {
   initialCustomers: string[];
   initialCarriers: Carrier[];
   initialConfig: { next_shipment_id: number };
+  initialClientEmails?: Record<string, string>;
+  initialEmailSettings?: EmailSettings;
 }
 
-export function ShipmentsList({ initialShipments, initialStatuses, initialCustomers, initialCarriers, initialConfig }: ShipmentsListProps) {
+export function ShipmentsList({ 
+  initialShipments, 
+  initialStatuses, 
+  initialCustomers, 
+  initialCarriers, 
+  initialConfig,
+  initialClientEmails,
+  initialEmailSettings
+}: ShipmentsListProps) {
   const router = useRouter();
   
   // Local state for instant feedback on status and carrier modifications
   const [statusesState, setStatusesState] = useState<Status[]>(initialStatuses);
   const [customersState, setCustomersState] = useState<string[]>(initialCustomers);
   const [carriersState, setCarriersState] = useState<Carrier[]>(initialCarriers);
+  const [clientEmailsState, setClientEmailsState] = useState<Record<string, string>>(initialClientEmails || {});
+  const [emailSettingsState, setEmailSettingsState] = useState<EmailSettings>(initialEmailSettings || {});
+  const [clientSearchFilter, setClientSearchFilter] = useState("");
+  const [testEmailAddress, setTestEmailAddress] = useState("");
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
+  const [isSavingEmails, setIsSavingEmails] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<"general" | "emails">("general");
   
   // Backup / Import loading states
   const [backingUp, setBackingUp] = useState(false);
   const [importing, setImporting] = useState(false);
+
+  const handleUpdateClientEmail = (client: string, value: string) => {
+    setClientEmailsState(prev => ({
+      ...prev,
+      [client]: value
+    }));
+  };
+
+  const handleSaveAllEmails = async () => {
+    setIsSavingEmails(true);
+    try {
+      await saveClientEmailsAction(clientEmailsState);
+      await saveEmailSettingsAction(emailSettingsState);
+      alert("✅ Parametrización de correos y ajustes de email guardados exitosamente.");
+    } catch (e: any) {
+      console.error(e);
+      alert("Error al guardar correos: " + e.message);
+    } finally {
+      setIsSavingEmails(false);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmailAddress.trim()) {
+      alert("Por favor ingresa un correo para enviar la prueba.");
+      return;
+    }
+    setIsSendingTestEmail(true);
+    try {
+      const res = await sendTestEmailAction(testEmailAddress.trim());
+      if (res.status === 'sent') {
+        alert(`✅ Correo de prueba enviado con éxito a ${testEmailAddress}!`);
+      } else if (res.status === 'simulated') {
+        alert(`ℹ️ Envío simulado exitoso a ${testEmailAddress}.\n\nPara envíos reales a casillas de correo por internet, ingresa tu API Key de Resend en el campo de configuración.`);
+      } else {
+        alert(`⚠️ Error al enviar correo de prueba: ${res.error || 'Fallo de entrega'}`);
+      }
+    } catch (err: any) {
+      alert(`Error al enviar prueba: ${err?.message || 'Fallo desconocido'}`);
+    } finally {
+      setIsSendingTestEmail(false);
+    }
+  };
 
   const getHoursSinceLastUpdate = (ship: Shipment) => {
     const dates = [
@@ -658,206 +719,414 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
                 </DialogDescription>
               </DialogHeader>
 
-              <form onSubmit={handleSaveConfig} className="space-y-6 pt-4 text-xs font-semibold text-muted-foreground">
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* --- LEFT COLUMN --- */}
-                  <div className="space-y-6">
-                    {/* Autonumeric seeding */}
-                    <div className="space-y-2">
-                      <Label htmlFor="next_id" className="text-muted-foreground uppercase tracking-wider text-[10px]">Autonumeric shipment File ID seed</Label>
-                      <div className="flex gap-2">
-                        <Input 
-                          id="next_id"
-                          type="number"
-                          value={nextAutonumeric}
-                          onChange={(e) => setNextAutonumeric(e.target.value)}
-                          className="bg-background border-border font-mono text-foreground"
-                          placeholder="e.g. 1000"
-                        />
-                        <span className="text-[10px] text-muted-foreground self-center shrink-0">Current: {initialConfig?.next_shipment_id || 1}</span>
-                      </div>
-                    </div>
+              {/* Settings Tab Navigation */}
+              <div className="flex border-b border-border mt-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSettingsTab("general")}
+                  className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+                    settingsTab === "general"
+                      ? "border-[#E8A99A] text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Configuración General & Hitos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSettingsTab("emails")}
+                  className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+                    settingsTab === "emails"
+                      ? "border-[#E8A99A] text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  Notificaciones por Email
+                  <span className="bg-[#EEF6F3] text-[#3D6E61] dark:bg-emerald-950/50 dark:text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full font-mono">
+                    {Object.values(clientEmailsState).filter(val => val && val.trim().length > 0).length} clientes activos
+                  </span>
+                </button>
+              </div>
 
-                    {/* Clients Catalogs */}
-                    <div className="space-y-2 border-t border-border pt-4">
-                      <Label htmlFor="add_cust" className="text-muted-foreground uppercase tracking-wider text-[10px]">Add Customer Profile</Label>
-                      <div className="flex gap-2">
-                        <Input 
-                          id="add_cust"
-                          value={newCustomer}
-                          onChange={(e) => setNewCustomer(e.target.value)}
-                          className="bg-background border-border text-foreground"
-                          placeholder="e.g. Kuehne Nagel Logistics"
-                        />
-                        <Button 
-                          type="button"
-                          onClick={handleAddCustomer}
-                          className="bg-[#A89ACC] hover:bg-[#9080BA] text-white px-3 font-bold h-9"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      
-                      <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1 text-muted-foreground">
-                        <span className="block font-bold uppercase text-[9px] mb-1">Registered Clients ({customersState.length})</span>
-                        {customersState.map(c => (
-                          <div key={c} className="py-0.5 border-b border-border/50 last:border-b-0">
-                            • {c}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Removed Initial Demo Setup & Danger Zone */}
-                  </div>
-
-                  {/* --- RIGHT COLUMN --- */}
-                  <div className="space-y-6">
-                    {/* Milestone Status tags */}
-                    <div className="space-y-3">
-                      <Label className="text-muted-foreground uppercase tracking-wider text-[10px]">Create Custom Milestone Status Tag</Label>
-                      
-                      <div className="flex gap-2">
-                        <Input 
-                          id="status_name"
-                          value={newStatusName}
-                          onChange={(e) => setNewStatusName(e.target.value)}
-                          className="bg-background border-border text-foreground"
-                          placeholder="e.g. Cleared Customs"
-                        />
-                        <Button
-                          type="button"
-                          onClick={handleAddStatus}
-                          className="bg-[#8BBAD4] hover:bg-[#6EA0BC] text-white px-3 font-bold h-9 shrink-0"
-                        >
-                          Add
-                        </Button>
+              {settingsTab === "general" ? (
+                <form onSubmit={handleSaveConfig} className="space-y-6 pt-4 text-xs font-semibold text-muted-foreground">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* --- LEFT COLUMN --- */}
+                    <div className="space-y-6">
+                      {/* Autonumeric seeding */}
+                      <div className="space-y-2">
+                        <Label htmlFor="next_id" className="text-muted-foreground uppercase tracking-wider text-[10px]">Autonumeric shipment File ID seed</Label>
+                        <div className="flex gap-2">
+                          <Input 
+                            id="next_id"
+                            type="number"
+                            value={nextAutonumeric}
+                            onChange={(e) => setNextAutonumeric(e.target.value)}
+                            className="bg-background border-border font-mono text-foreground"
+                            placeholder="e.g. 1000"
+                          />
+                          <span className="text-[10px] text-muted-foreground self-center shrink-0">Current: {initialConfig?.next_shipment_id || 1}</span>
+                        </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <Label className="text-[10px] text-muted-foreground">Color Accent Dot</Label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {statusColors.map((color) => (
-                            <button
-                              key={color.hex}
-                              type="button"
-                              onClick={() => setNewStatusColor(color.hex)}
-                              className={`w-5.5 h-5.5 rounded-full border transition-all relative ${
-                                newStatusColor === color.hex ? "border-foreground ring-1 ring-[#E8A99A]" : "border-border"
-                              }`}
-                              style={{ backgroundColor: color.hex }}
-                              title={color.name}
-                            >
-                              {newStatusColor === color.hex && <Check className="w-2.5 h-2.5 text-white absolute inset-0 m-auto font-black" />}
-                            </button>
+                      {/* Clients Catalogs */}
+                      <div className="space-y-2 border-t border-border pt-4">
+                        <Label htmlFor="add_cust" className="text-muted-foreground uppercase tracking-wider text-[10px]">Add Customer Profile</Label>
+                        <div className="flex gap-2">
+                          <Input 
+                            id="add_cust"
+                            value={newCustomer}
+                            onChange={(e) => setNewCustomer(e.target.value)}
+                            className="bg-background border-border text-foreground"
+                            placeholder="e.g. Kuehne Nagel Logistics"
+                          />
+                          <Button 
+                            type="button"
+                            onClick={handleAddCustomer}
+                            className="bg-[#A89ACC] hover:bg-[#9080BA] text-white px-3 font-bold h-9"
+                          >
+                            Add
+                          </Button>
+                        </div>
+                        
+                        <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1 text-muted-foreground">
+                          <span className="block font-bold uppercase text-[9px] mb-1">Registered Clients ({customersState.length})</span>
+                          {customersState.map(c => (
+                            <div key={c} className="py-0.5 border-b border-border/50 last:border-b-0">
+                              • {c}
+                            </div>
                           ))}
                         </div>
                       </div>
 
-                      <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1.5 text-muted-foreground">
-                        <span className="block font-bold uppercase text-[9px] mb-1">Registered Milestones ({statusesState.length})</span>
-                        {statusesState.map(st => (
-                          <div key={st.id} className="flex justify-between items-center py-0.5 border-b border-border/50 last:border-b-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: st.color_code }} />
-                              <span className="text-foreground">{st.name}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteStatus(st.id)}
-                              className="text-rose-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
-                              title="Delete milestone"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                      {/* Removed Initial Demo Setup & Danger Zone */}
                     </div>
 
-                    {/* Carrier Database Settings */}
-                    <div className="space-y-3 border-t border-border pt-4">
-                      <Label className="text-muted-foreground uppercase tracking-wider text-[10px]">Carrier Database Lookup (Air Prefix / Ocean SCAC)</Label>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <Input
-                          value={newCarrierCode}
-                          onChange={(e) => setNewCarrierCode(e.target.value)}
-                          placeholder="Code (E.g. 001, MAEU)"
-                          className="bg-background border-border text-foreground text-xs col-span-1"
-                        />
-                        <Input
-                          value={newCarrierName}
-                          onChange={(e) => setNewCarrierName(e.target.value)}
-                          placeholder="Carrier Name (E.g. Maersk)"
-                          className="bg-background border-border text-foreground text-xs col-span-2"
-                        />
-                      </div>
-                      
-                      <div className="flex justify-end">
-                        <Button
-                          type="button"
-                          onClick={handleAddCarrier}
-                          className="bg-[#7BB5A0] hover:bg-[#5E9E89] text-white text-xs font-bold h-8 px-4"
-                        >
-                          + Add Carrier
-                        </Button>
-                      </div>
+                    {/* --- RIGHT COLUMN --- */}
+                    <div className="space-y-6">
+                      {/* Milestone Status tags */}
+                      <div className="space-y-3">
+                        <Label className="text-muted-foreground uppercase tracking-wider text-[10px]">Create Custom Milestone Status Tag</Label>
+                        
+                        <div className="flex gap-2">
+                          <Input 
+                            id="status_name"
+                            value={newStatusName}
+                            onChange={(e) => setNewStatusName(e.target.value)}
+                            className="bg-background border-border text-foreground"
+                            placeholder="e.g. Cleared Customs"
+                          />
+                          <Button
+                            type="button"
+                            onClick={handleAddStatus}
+                            className="bg-[#8BBAD4] hover:bg-[#6EA0BC] text-white px-3 font-bold h-9 shrink-0"
+                          >
+                            Add
+                          </Button>
+                        </div>
 
-                      <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1.5 text-muted-foreground">
-                        <span className="block font-bold uppercase text-[9px] mb-1">Carrier Mapping Index ({carriersState.length})</span>
-                        {carriersState.length === 0 ? (
-                          <div className="italic text-center py-2">No Carrier profiles loaded.</div>
-                        ) : (
-                          carriersState.map(c => (
-                            <div key={c.id} className="flex justify-between items-center py-0.5 border-b border-border/50 last:border-b-0">
-                              <div className="flex items-center gap-2">
-                                <span className="bg-[#EEF5FA] text-[#3A6580] px-1 py-0.25 rounded border border-[#B0D0E8] font-bold shrink-0">{c.code}</span>
-                                <span className="text-foreground truncate max-w-[170px]">{c.name}</span>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">Color Accent Dot</Label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {statusColors.map((color) => (
+                              <button
+                                key={color.hex}
+                                type="button"
+                                onClick={() => setNewStatusColor(color.hex)}
+                                className={`w-5.5 h-5.5 rounded-full border transition-all relative ${
+                                  newStatusColor === color.hex ? "border-foreground ring-1 ring-[#E8A99A]" : "border-border"
+                                }`}
+                                style={{ backgroundColor: color.hex }}
+                                title={color.name}
+                              >
+                                {newStatusColor === color.hex && <Check className="w-2.5 h-2.5 text-white absolute inset-0 m-auto font-black" />}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1.5 text-muted-foreground">
+                          <span className="block font-bold uppercase text-[9px] mb-1">Registered Milestones ({statusesState.length})</span>
+                          {statusesState.map(st => (
+                            <div key={st.id} className="flex justify-between items-center py-0.5 border-b border-border/50 last:border-b-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: st.color_code }} />
+                                <span className="text-foreground">{st.name}</span>
                               </div>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteCarrier(c.id)}
+                                onClick={() => handleDeleteStatus(st.id)}
                                 className="text-rose-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
-                                title="Delete carrier mapping"
+                                title="Delete milestone"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
-                          ))
-                        )}
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Carrier Database Settings */}
+                      <div className="space-y-3 border-t border-border pt-4">
+                        <Label className="text-muted-foreground uppercase tracking-wider text-[10px]">Carrier Database Lookup (Air Prefix / Ocean SCAC)</Label>
+                        
+                        <div className="grid grid-cols-3 gap-2">
+                          <Input
+                            value={newCarrierCode}
+                            onChange={(e) => setNewCarrierCode(e.target.value)}
+                            placeholder="Code (E.g. 001, MAEU)"
+                            className="bg-background border-border text-foreground text-xs col-span-1"
+                          />
+                          <Input
+                            value={newCarrierName}
+                            onChange={(e) => setNewCarrierName(e.target.value)}
+                            placeholder="Carrier Name (E.g. Maersk)"
+                            className="bg-background border-border text-foreground text-xs col-span-2"
+                          />
+                        </div>
+                        
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            onClick={handleAddCarrier}
+                            className="bg-[#7BB5A0] hover:bg-[#5E9E89] text-white text-xs font-bold h-8 px-4"
+                          >
+                            + Add Carrier
+                          </Button>
+                        </div>
+
+                        <div className="max-h-36 overflow-y-auto bg-muted p-3 rounded-xl border border-border text-[10px] font-mono font-semibold space-y-1.5 text-muted-foreground">
+                          <span className="block font-bold uppercase text-[9px] mb-1">Carrier Mapping Index ({carriersState.length})</span>
+                          {carriersState.length === 0 ? (
+                            <div className="italic text-center py-2">No Carrier profiles loaded.</div>
+                          ) : (
+                            carriersState.map(c => (
+                              <div key={c.id} className="flex justify-between items-center py-0.5 border-b border-border/50 last:border-b-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="bg-[#EEF5FA] text-[#3A6580] px-1 py-0.25 rounded border border-[#B0D0E8] font-bold shrink-0">{c.code}</span>
+                                  <span className="text-foreground truncate max-w-[170px]">{c.name}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCarrier(c.id)}
+                                  className="text-rose-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
+                                  title="Delete carrier mapping"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {saveSuccessMsg && (
-                  <div className="p-3 bg-[#EEF6F3] border border-[#B0D4C8] text-[#3D6E61] font-bold rounded-lg text-center">
-                    {saveSuccessMsg}
+                  {saveSuccessMsg && (
+                    <div className="p-3 bg-[#EEF6F3] border border-[#B0D4C8] text-[#3D6E61] font-bold rounded-lg text-center">
+                      {saveSuccessMsg}
+                    </div>
+                  )}
+
+                  {/* Footer Controls */}
+                  <div className="flex justify-end gap-2 border-t border-border pt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setDialogOpen(false)} 
+                      className="bg-transparent border-border text-muted-foreground hover:text-foreground"
+                    >
+                      Close
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="bg-[#E8A99A] hover:bg-[#D4907F] text-white font-bold"
+                      disabled={savingSettings}
+                    >
+                      {savingSettings ? <RefreshCw className="animate-spin w-4 h-4" /> : "Save Index Seed"}
+                    </Button>
                   </div>
-                )}
 
-                {/* Footer Controls */}
-                <div className="flex justify-end gap-2 border-t border-border pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setDialogOpen(false)} 
-                    className="bg-transparent border-border text-muted-foreground hover:text-foreground"
-                  >
-                    Close
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-[#E8A99A] hover:bg-[#D4907F] text-white font-bold"
-                    disabled={savingSettings}
-                  >
-                    {savingSettings ? <RefreshCw className="animate-spin w-4 h-4" /> : "Save Index Seed"}
-                  </Button>
+                </form>
+              ) : (
+                <div className="space-y-6 pt-4 text-xs font-semibold text-muted-foreground">
+                  {/* Top: Provider & API Key Card */}
+                  <div className="p-5 rounded-2xl bg-muted/60 border border-border space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-[#8BBAD4]" />
+                          Servicio de Envío de Correos (Resend API)
+                        </h3>
+                        <p className="text-[11px] text-muted-foreground font-normal mt-0.5">
+                          Despacha correos automáticos cuando se guarden logs con casilla <strong>"Visible to Client"</strong>.
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto ${
+                        emailSettingsState.resend_api_key ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200' : 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200'
+                      }`}>
+                        {emailSettingsState.resend_api_key ? '● Envíos Activos' : '○ Modo Simulado'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Resend API Key</Label>
+                        <Input 
+                          type="password"
+                          placeholder="re_xxxxxxxxxxxxxx"
+                          value={emailSettingsState.resend_api_key || ""}
+                          onChange={(e) => setEmailSettingsState(prev => ({ ...prev, resend_api_key: e.target.value }))}
+                          className="bg-background border-border text-foreground font-mono text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nombre Remitente</Label>
+                        <Input 
+                          placeholder="e.g. WCS Tracker"
+                          value={emailSettingsState.sender_name || ""}
+                          onChange={(e) => setEmailSettingsState(prev => ({ ...prev, sender_name: e.target.value }))}
+                          className="bg-background border-border text-foreground text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Correo Remitente (From)</Label>
+                        <Input 
+                          placeholder="onboarding@resend.dev"
+                          value={emailSettingsState.sender_email || ""}
+                          onChange={(e) => setEmailSettingsState(prev => ({ ...prev, sender_email: e.target.value }))}
+                          className="bg-background border-border text-foreground text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Test Email Section */}
+                    <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Input 
+                          placeholder="Tu correo para prueba..."
+                          value={testEmailAddress}
+                          onChange={(e) => setTestEmailAddress(e.target.value)}
+                          className="bg-background border-border text-foreground text-xs h-8 sm:w-64"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleSendTestEmail}
+                          disabled={isSendingTestEmail}
+                          className="h-8 bg-[#8BBAD4] hover:bg-[#6EA0BC] text-white text-[11px] font-bold px-3 shrink-0 rounded-lg"
+                        >
+                          {isSendingTestEmail ? "Enviando..." : "Enviar Correo de Prueba"}
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground italic">
+                        * Sin API Key, el sistema simula el envío y lo registra sin fallos para pruebas seguras.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Client Email Parameterization */}
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground">
+                          Parametrización de Correos por Cliente
+                        </h3>
+                        <p className="text-[11px] text-muted-foreground font-normal">
+                          Ingresa uno o más correos separados por comas. Solo los clientes con emails recibirán avisos de logs externos.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          placeholder="Filtrar cliente..."
+                          value={clientSearchFilter}
+                          onChange={(e) => setClientSearchFilter(e.target.value)}
+                          className="bg-background border-border text-foreground text-xs h-8 w-44"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleSaveAllEmails}
+                          disabled={isSavingEmails}
+                          className="h-8 bg-[#7BB5A0] hover:bg-[#5E9E89] text-white text-[11px] font-bold px-4 shrink-0 shadow-sm rounded-lg"
+                        >
+                          {isSavingEmails ? "Guardando..." : "Guardar Todos los Correos"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Client List Grid */}
+                    <div className="max-h-[380px] overflow-y-auto border border-border rounded-xl bg-card divide-y divide-border">
+                      {customersState
+                        .filter(c => !clientSearchFilter || c.toLowerCase().includes(clientSearchFilter.toLowerCase()))
+                        .map(clientName => {
+                          const rawVal = clientEmailsState[clientName] || "";
+                          const parsed = parseEmailList(rawVal);
+                          return (
+                            <div key={clientName} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+                              <div className="sm:w-1/3 shrink-0">
+                                <div className="font-bold text-foreground text-xs flex items-center gap-1.5">
+                                  <User className="w-3.5 h-3.5 text-muted-foreground" />
+                                  {clientName}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground mt-0.5">
+                                  {parsed.length > 0 ? (
+                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                      {parsed.length} destinatario(s) activo(s)
+                                    </span>
+                                  ) : (
+                                    <span className="text-muted-foreground italic">
+                                      Sin notificaciones (inactivo)
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex-grow space-y-1.5">
+                                <Input 
+                                  placeholder="ej: compras@cliente.com, logistica@cliente.com"
+                                  value={rawVal}
+                                  onChange={(e) => handleUpdateClientEmail(clientName, e.target.value)}
+                                  className="bg-background border-border text-foreground text-xs h-8"
+                                />
+                                {parsed.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {parsed.map(email => (
+                                      <span key={email} className="inline-flex items-center gap-1 text-[9px] font-mono bg-[#EEF5FA] text-[#3A6580] dark:bg-sky-950/40 dark:text-sky-300 border border-[#B0D0E8] dark:border-sky-800 px-1.5 py-0.2 rounded font-semibold">
+                                        ✉️ {email}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+
+                  {/* Footer Controls for Emails Tab */}
+                  <div className="flex justify-end gap-2 border-t border-border pt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setDialogOpen(false)} 
+                      className="bg-transparent border-border text-muted-foreground hover:text-foreground"
+                    >
+                      Cerrar
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={handleSaveAllEmails}
+                      disabled={isSavingEmails}
+                      className="bg-[#7BB5A0] hover:bg-[#5E9E89] text-white font-bold"
+                    >
+                      {isSavingEmails ? "Guardando..." : "Guardar Cambios de Correos"}
+                    </Button>
+                  </div>
                 </div>
-
-              </form>
+              )}
             </DialogContent>
           </Dialog>
 

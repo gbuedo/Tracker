@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { updateLog, deleteLog } from "@/actions/shipments";
+import { updateLog, deleteLog, resendLogEmailAction } from "@/actions/shipments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Trash2, Check, X, Globe, Lock, DollarSign, Tag, Circle } from "lucide-react";
+import { Edit2, Trash2, Check, X, Globe, Lock, DollarSign, Tag, Circle, MailCheck, MailX, Mail, AlertCircle, Send } from "lucide-react";
 import { Log } from "@/lib/types";
 
 interface EditableLogItemProps {
@@ -19,6 +19,20 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
   const [amount, setAmount] = useState<string>(log.amount !== null ? String(log.amount) : "");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResendEmail = async () => {
+    setIsResending(true);
+    try {
+      await resendLogEmailAction(shipmentId, log.id);
+      alert("Aviso de email procesado exitosamente.");
+    } catch (err: any) {
+      console.error(err);
+      alert(`Error al reenviar email: ${err?.message || "Fallo de conexión"}`);
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!eventText.trim()) return;
@@ -117,10 +131,52 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
               </button>
             ) : (
               log.is_external ? (
-                <span className="inline-flex items-center gap-1 text-[10px] bg-[#EEF6F3] text-[#3D6E61] border border-[#B0D4C8] px-2 py-0.5 rounded font-bold uppercase">
-                  <Globe className="w-2.5 h-2.5" />
-                  Visible to Client
-                </span>
+                <>
+                  <span className="inline-flex items-center gap-1 text-[10px] bg-[#EEF6F3] text-[#3D6E61] border border-[#B0D4C8] px-2 py-0.5 rounded font-bold uppercase">
+                    <Globe className="w-2.5 h-2.5" />
+                    Visible to Client
+                  </span>
+
+                  {log.email_notification?.status === "sent" && (
+                    <span 
+                      className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded font-bold uppercase"
+                      title={`Notificado por email el ${new Date(log.email_notification.sent_at || log.created_at).toLocaleString()} a: ${log.email_notification.recipients?.join(', ')}`}
+                    >
+                      <MailCheck className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                      Email Enviado
+                    </span>
+                  )}
+
+                  {log.email_notification?.status === "simulated" && (
+                    <span 
+                      className="inline-flex items-center gap-1 text-[10px] bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800 px-2 py-0.5 rounded font-bold uppercase"
+                      title={`Simulado (destinatarios: ${log.email_notification.recipients?.join(', ')}). Configure RESEND_API_KEY para envíos reales.`}
+                    >
+                      <Mail className="w-2.5 h-2.5 text-sky-600 dark:text-sky-400" />
+                      Email Listo (Sim)
+                    </span>
+                  )}
+
+                  {log.email_notification?.status === "no_recipient" && (
+                    <span 
+                      className="inline-flex items-center gap-1 text-[10px] bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded font-bold uppercase"
+                      title="El cliente no tiene correos configurados. Ingréselos desde la configuración para activar notificaciones automáticas."
+                    >
+                      <MailX className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                      Sin Email
+                    </span>
+                  )}
+
+                  {log.email_notification?.status === "error" && (
+                    <span 
+                      className="inline-flex items-center gap-1 text-[10px] bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-2 py-0.5 rounded font-bold uppercase"
+                      title={`Error de envío: ${log.email_notification.error_message || 'Fallo de entrega'}`}
+                    >
+                      <AlertCircle className="w-2.5 h-2.5 text-rose-600 dark:text-rose-400" />
+                      Error Email
+                    </span>
+                  )}
+                </>
               ) : (
                 <span className="inline-flex items-center gap-1 text-[10px] bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded font-bold uppercase">
                   <Lock className="w-2.5 h-2.5" />
@@ -132,6 +188,17 @@ export function EditableLogItem({ log, shipmentId }: EditableLogItemProps) {
             {/* Action buttons */}
             {!isEditing ? (
               <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 ml-2">
+                {log.is_external && (
+                  <button
+                    type="button"
+                    disabled={isResending}
+                    onClick={handleResendEmail}
+                    className="p-1 rounded text-muted-foreground hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
+                    title="Reenviar / Notificar por email al cliente"
+                  >
+                    <Send className={`w-3.5 h-3.5 ${isResending ? 'animate-spin' : ''}`} />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}

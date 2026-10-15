@@ -29,6 +29,8 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
   const isDemoMode = db.checkIsDemoMode();
   const initialNotes = await db.getShipmentNotes(shipmentId);
   const carriers = await db.getCarriers();
+  const clientEmailsMap = await db.getClientEmails();
+  const currentClientEmails = shipment ? (clientEmailsMap[shipment.client_name] || "") : "";
 
   // Resolve associated carrier using prefix matching
   const getCarrierForShipment = (mawb: string | null) => {
@@ -495,7 +497,13 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
               <CardContent className="space-y-6 pt-6">
                 
                 {/* Form to submit updates */}
-                <AddLogForm shipmentId={shipment.id} billableConcepts={billableConcepts} statuses={statuses} />
+                <AddLogForm 
+                  shipmentId={shipment.id} 
+                  billableConcepts={billableConcepts} 
+                  statuses={statuses} 
+                  clientEmails={currentClientEmails}
+                  clientName={shipment.client_name}
+                />
 
                 {/* Timeline graph */}
                 <div className="space-y-6 relative border-l border-border ml-4 pl-6 pt-2">

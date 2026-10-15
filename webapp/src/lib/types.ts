@@ -81,6 +81,20 @@ export type BillableConcept = {
   description: string;
 };
 
+export type LogEmailNotification = {
+  sent: boolean;
+  sent_at?: string;
+  recipients?: string[];
+  status: 'sent' | 'no_recipient' | 'simulated' | 'error';
+  error_message?: string;
+};
+
+export type EmailSettings = {
+  resend_api_key?: string;
+  sender_name?: string;
+  sender_email?: string;
+};
+
 export type Log = {
   id: string;
   shipment_id: number;
@@ -94,6 +108,7 @@ export type Log = {
   billable_concept?: BillableConcept;
   status_id?: number | null;
   status?: Status;
+  email_notification?: LogEmailNotification;
 };
 
 export type Shipment = {

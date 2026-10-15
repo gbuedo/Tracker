@@ -5,16 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addLog, createBillableConcept } from "@/actions/shipments";
-import { Eye, EyeOff, Send, DollarSign, Tag, FileText, Activity } from "lucide-react";
+import { Eye, EyeOff, Send, DollarSign, Tag, FileText, Activity, Mail } from "lucide-react";
 import { BillableConcept, Status } from "@/lib/types";
 
 interface AddLogFormProps {
   shipmentId: number;
   billableConcepts: BillableConcept[];
   statuses: Status[];
+  clientEmails?: string;
+  clientName?: string;
 }
 
-export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFormProps) {
+export function AddLogForm({ shipmentId, billableConcepts, statuses, clientEmails, clientName }: AddLogFormProps) {
   const [isExternal, setIsExternal] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [selectedConcept, setSelectedConcept] = useState<string>("");
@@ -254,6 +256,22 @@ export function AddLogForm({ shipmentId, billableConcepts, statuses }: AddLogFor
             placeholder="Enter custom billable concept name..."
             className="bg-muted border-border text-foreground text-xs h-9"
           />
+        </div>
+      )}
+
+      {/* Client Email Notification Banner */}
+      {isExternal && (
+        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#EEF6F3] dark:bg-[#1E2E2A] border border-[#B0D4C8] dark:border-[#385B52] text-[#285A4E] dark:text-[#A2D4C6] text-xs font-semibold animate-in fade-in duration-200">
+          <Mail className="w-4 h-4 text-[#3D6E61] dark:text-[#7BB5A0] shrink-0" />
+          {clientEmails ? (
+            <span className="truncate">
+              Aviso automático por email activado para: <strong className="text-foreground">{clientEmails}</strong>
+            </span>
+          ) : (
+            <span className="text-amber-700 dark:text-amber-400">
+              ℹ️ <strong>{clientName || "Este cliente"}</strong> no tiene emails configurados aún (se puede registrar en Ajustes &bull; Notificaciones de Clientes).
+            </span>
+          )}
         </div>
       )}
 

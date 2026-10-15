@@ -3,6 +3,66 @@
 import * as db from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase";
+import { sendClientTrackingEmail, parseEmailList } from "@/lib/email";
+import { EmailSettings, LogEmailNotification } from "@/lib/types";
+
+async function triggerLogEmailNotification(
+  shipmentId: number, 
+  logId: string, 
+  eventText: string, 
+  statusId?: number | null
+): Promise<void> {
+  try {
+    const shipment = await db.getShipmentById(shipmentId);
+    if (!shipment || !shipment.client_name) return;
+
+    const clientEmailsMap = await db.getClientEmails();
+    const rawEmails = clientEmailsMap[shipment.client_name] || "";
+    const validRecipients = parseEmailList(rawEmails);
+
+    // Rule: If customer has no email configured, do nothing (record status)
+    if (validRecipients.length === 0) {
+      await db.recordLogEmailNotification(logId, {
+        sent: false,
+        status: 'no_recipient'
+      });
+      return;
+    }
+
+    const emailSettings = await db.getEmailSettings();
+    const allStatuses = await db.getStatuses();
+    const currentStatus = statusId 
+      ? allStatuses.find(s => s.id === statusId) 
+      : shipment.status;
+
+    const sendResult = await sendClientTrackingEmail({
+      to: validRecipients,
+      shipment,
+      logText: eventText,
+      statusName: currentStatus?.name,
+      statusColor: currentStatus?.color_code,
+      apiKey: emailSettings.resend_api_key,
+      senderName: emailSettings.sender_name,
+      senderEmail: emailSettings.sender_email
+    });
+
+    await db.recordLogEmailNotification(logId, {
+      sent: sendResult.success,
+      sent_at: new Date().toISOString(),
+      recipients: sendResult.recipients,
+      status: sendResult.status,
+      error_message: sendResult.error
+    });
+  } catch (err: any) {
+    console.error("Failed in triggerLogEmailNotification:", err);
+    await db.recordLogEmailNotification(logId, {
+      sent: false,
+      sent_at: new Date().toISOString(),
+      status: 'error',
+      error_message: err?.message || String(err)
+    });
+  }
+}
 
 export async function createShipment(formData: FormData) {
   const client_name = formData.get("client_name") as string;
@@ -86,9 +146,18 @@ export async function addLog(req: {
   status_id?: number | null,
   skipSyncStatus?: boolean
 }) {
-  await db.addLog(req);
+  const result = await db.addLog(req);
+
+  // Automated Email Notification for External Logs (non-blocking)
+  if (req.is_external && result?.id) {
+    triggerLogEmailNotification(req.shipment_id, result.id, req.event_text, req.status_id).catch(err => {
+      console.error("[Email Notification Trigger Exception]:", err);
+    });
+  }
+
   revalidatePath(`/shipment/${req.shipment_id}`);
   revalidatePath("/");
+  return result;
 }
 
 export async function updateShipmentStatus(shipment_id: number, status_id: number) {
@@ -272,6 +341,74 @@ export async function deleteOverseasAgentAction(id: string) {
   const data = await db.deleteOverseasAgent(id);
   revalidatePath("/shipping-instructions");
   return data;
+}
+
+// ----------------------------------------------------
+// CLIENT NOTIFICATION EMAILS & EMAIL SETTINGS ACTIONS
+// ----------------------------------------------------
+
+export async function getClientEmailsAction() {
+  return await db.getClientEmails();
+}
+
+export async function saveClientEmailsAction(mapping: Record<string, string>) {
+  await db.saveClientEmails(mapping);
+  revalidatePath("/");
+  revalidatePath("/operations");
+}
+
+export async function saveSingleClientEmailAction(clientName: string, emails: string) {
+  await db.saveSingleClientEmail(clientName, emails);
+  revalidatePath("/");
+  revalidatePath("/operations");
+}
+
+export async function getEmailSettingsAction() {
+  return await db.getEmailSettings();
+}
+
+export async function saveEmailSettingsAction(settings: EmailSettings) {
+  await db.saveEmailSettings(settings);
+  revalidatePath("/");
+}
+
+export async function sendTestEmailAction(toEmail: string) {
+  const settings = await db.getEmailSettings();
+  const fakeShipment: any = {
+    id: 9999,
+    reference: "TEST-EMBARQUE-DEMO",
+    client_name: "Cliente de Prueba",
+    transport_mode: "Aéreo",
+    pcs: 4,
+    kgs: 120,
+    chw: 140,
+    expo_hawb: "HAWB-987654",
+    eta: new Date().toISOString(),
+    status: { name: "En Tránsito", color_code: "#38bdf8" }
+  };
+
+  return await sendClientTrackingEmail({
+    to: toEmail,
+    shipment: fakeShipment,
+    logText: "Este es un correo de prueba de WCS Tracker para verificar la configuración de notificaciones automáticas.",
+    statusName: "En Tránsito",
+    statusColor: "#38bdf8",
+    apiKey: settings.resend_api_key,
+    senderName: settings.sender_name,
+    senderEmail: settings.sender_email
+  });
+}
+
+export async function resendLogEmailAction(shipmentId: number, logId: string) {
+  const shipment = await db.getShipmentById(shipmentId);
+  if (!shipment) throw new Error("Shipment not found");
+  const log = (shipment.logs || []).find(l => l.id === logId);
+  if (!log) throw new Error("Log not found");
+
+  await triggerLogEmailNotification(shipmentId, logId, log.event_text, log.status_id);
+  revalidatePath(`/shipment/${shipmentId}`);
+  revalidatePath("/");
+  return { success: true };
 }
 
 

@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept, OverseasAgent, TaskLog } from "./types";
+import { Shipment, Status, Log, BillableConcept, Carrier, Task, Subtask, Ratesheet, RateConcept, OverseasAgent, TaskLog, LogEmailNotification, EmailSettings } from "./types";
 import { unstable_noStore as noStore } from "next/cache";
 import carriersSeed from "./carriers_seed.json";
 import ratesSeed from "./rates_seed.json";
@@ -634,6 +634,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
   if (baseShipment.logs) {
     const customConcepts = await getSystemValue<BillableConcept[]>("SYSTEM_BILLABLE_CONCEPTS", []);
     const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
+    const logNotifications = await getSystemValue<Record<string, LogEmailNotification>>("SYSTEM_LOG_EMAIL_NOTIFICATIONS", {});
     const allStatuses = await getStatuses();
 
     let processed = baseShipment.logs.map((log: any) => {
@@ -646,6 +647,10 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
           updatedLog.billable_concept_id = customConceptId;
           updatedLog.billable_concept = concept;
         }
+      }
+
+      if (logNotifications[updatedLog.id]) {
+        updatedLog.email_notification = logNotifications[updatedLog.id];
       }
 
       return updatedLog;
@@ -934,7 +939,7 @@ export async function addLog(req: {
   amount_type?: 'cost' | 'selling' | null,
   status_id?: number | null,
   skipSyncStatus?: boolean
-}): Promise<void> {
+}): Promise<{ id: string }> {
   let eventTextWithStatus = req.event_text;
   if (req.status_id) {
     eventTextWithStatus += ` ||STATUS_ID:${req.status_id}||`;
@@ -969,7 +974,7 @@ export async function addLog(req: {
     }
 
     writeMockData(data);
-    return;
+    return { id: newLog.id };
   }
   try {
     const isCustomConcept = req.billable_concept_id && req.billable_concept_id >= 10000;
@@ -984,8 +989,10 @@ export async function addLog(req: {
     const { data: insertedRows, error } = await supabase.from("logs").insert(dbReq).select();
     if (error) throw error;
 
+    let createdId = `log-${Date.now()}`;
     if (insertedRows && insertedRows.length > 0) {
       const insertedRow = insertedRows[0];
+      createdId = String(insertedRow.id);
       if (isCustomConcept) {
         const logConcepts = await getSystemValue<Record<string, number>>("SYSTEM_LOG_CONCEPTS", {});
         logConcepts[insertedRow.id] = req.billable_concept_id!;
@@ -1001,6 +1008,7 @@ export async function addLog(req: {
     }
     
     isDemo = false;
+    return { id: createdId };
   } catch (err: any) {
     const errMsg = err?.message || String(err);
     if (errMsg.includes("fetch") || errMsg.includes("ENOTFOUND") || errMsg.includes("getaddrinfo")) {
@@ -1031,7 +1039,7 @@ export async function addLog(req: {
       }
 
       writeMockData(data);
-      return;
+      return { id: newLog.id };
     }
     throw err;
   }
@@ -2747,6 +2755,44 @@ export async function deleteOverseasAgent(id: string): Promise<boolean> {
   await setSystemValue("SYSTEM_OVERSEAS_AGENTS", filtered);
   return true;
 }
+
+// -------------------------------------------------------------
+// Client Notification Emails & Settings
+// -------------------------------------------------------------
+export async function getClientEmails(): Promise<Record<string, string>> {
+  noStore();
+  return await getSystemValue<Record<string, string>>("SYSTEM_CLIENT_EMAILS", {});
+}
+
+export async function saveClientEmails(mapping: Record<string, string>): Promise<void> {
+  await setSystemValue("SYSTEM_CLIENT_EMAILS", mapping);
+}
+
+export async function saveSingleClientEmail(clientName: string, emails: string): Promise<void> {
+  const current = await getClientEmails();
+  current[clientName] = emails;
+  await setSystemValue("SYSTEM_CLIENT_EMAILS", current);
+}
+
+export async function getEmailSettings(): Promise<EmailSettings> {
+  noStore();
+  return await getSystemValue<EmailSettings>("SYSTEM_EMAIL_CONFIG", {
+    resend_api_key: process.env.RESEND_API_KEY || "",
+    sender_name: "WCS Tracker",
+    sender_email: "onboarding@resend.dev"
+  });
+}
+
+export async function saveEmailSettings(settings: EmailSettings): Promise<void> {
+  await setSystemValue("SYSTEM_EMAIL_CONFIG", settings);
+}
+
+export async function recordLogEmailNotification(logId: string, notif: LogEmailNotification): Promise<void> {
+  const notifications = await getSystemValue<Record<string, LogEmailNotification>>("SYSTEM_LOG_EMAIL_NOTIFICATIONS", {});
+  notifications[logId] = notif;
+  await setSystemValue("SYSTEM_LOG_EMAIL_NOTIFICATIONS", notifications);
+}
+
 
 
 

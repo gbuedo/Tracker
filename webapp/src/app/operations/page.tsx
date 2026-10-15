@@ -15,6 +15,8 @@ export default async function OperationsDashboard() {
   const customers = await db.getCustomers();
   const carriers = await db.getCarriers();
   const appConfig = await db.getAppConfig();
+  const clientEmails = await db.getClientEmails();
+  const emailSettings = await db.getEmailSettings();
   const isDemoMode = db.checkIsDemoMode();
 
   return (
@@ -80,6 +82,8 @@ export default async function OperationsDashboard() {
           initialCustomers={customers}
           initialCarriers={carriers}
           initialConfig={appConfig}
+          initialClientEmails={clientEmails}
+          initialEmailSettings={emailSettings}
         />
 
       </div>
