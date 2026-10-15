@@ -149,18 +149,6 @@ export function buildTrackingUpdateEmailHtml(payload: {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border: 1px solid #f1f5f9; border-radius: 8px; margin-bottom: 28px; background-color: #ffffff;">
                 ${fieldsHtml}
               </table>
-
-              <!-- CTA Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center">
-                    <a href="${portalUrl}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 14px 28px; border-radius: 10px; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);">
-                      Ver Línea de Tiempo en Vivo &rarr;
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
             </td>
           </tr>
 
