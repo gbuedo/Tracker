@@ -200,37 +200,38 @@ export async function deleteCarrier(id: number) {
 export async function getFullBackupData() {
   const shipments = await db.getShipments();
   const carriers = await db.getCarriers();
+  const overseas_agents = await db.getOverseasAgents();
   const statuses = await db.getStatuses();
   const customers = await db.getCustomers();
   const tasks = await db.getTasks();
   const ratesheets = await db.getRatesheets();
+  const billable_concepts = await db.getBillableConcepts();
   const config = await db.getAppConfig();
   const logs = await db.getAllLogs();
-  
-  // Custom system settings from logs
-  const system_store = {
-    SYSTEM_CARRIERS: carriers,
-    SYSTEM_STATUSES: await db.getStatuses(),
-    SYSTEM_CUSTOMERS: customers,
-    SYSTEM_CONFIG: config,
-    SYSTEM_SHIPMENT_STATUSES: await supabase
-      .from("logs")
-      .select("event_text")
-      .eq("shipment_id", 999999)
-      .eq("amount_type", "SYSTEM_SHIPMENT_STATUSES")
-      .maybeSingle()
-      .then(res => res.data && res.data.event_text ? JSON.parse(res.data.event_text) : {})
-  };
+  const system_store = await db.getFullSystemStore();
+
+  // Guarantee system_store contains latest snapshot of master arrays
+  system_store.SYSTEM_CARRIERS = carriers;
+  system_store.SYSTEM_OVERSEAS_AGENTS = overseas_agents;
+  system_store.SYSTEM_CUSTOMERS = customers;
+  system_store.SYSTEM_CONFIG = config;
+  system_store.SYSTEM_TASKS = tasks;
+  system_store.SYSTEM_BILLABLE_CONCEPTS = billable_concepts;
+  system_store.SYSTEM_STATUSES = statuses;
 
   return {
-    version: "1.0",
+    version: "2.0",
     backup_date: new Date().toISOString(),
+    total_shipments: shipments.length,
+    total_logs: logs.length,
     shipments,
     carriers,
+    overseas_agents,
     statuses,
     customers,
     tasks,
     ratesheets,
+    billable_concepts,
     config,
     logs,
     system_store
@@ -243,6 +244,8 @@ export async function importFullBackupAction(backup: any) {
   revalidatePath("/operations");
   revalidatePath("/task-tracker");
   revalidatePath("/ratesheet-tracker");
+  revalidatePath("/shipping-instructions");
+  revalidatePath("/portal");
 }
 
 export async function getShipmentNotes(id: number) {

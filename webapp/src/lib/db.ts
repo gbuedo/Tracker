@@ -2402,6 +2402,41 @@ export async function deleteRatesheet(id: number): Promise<void> {
   }
 }
 
+export async function getFullSystemStore(): Promise<Record<string, any>> {
+  const isDefaultUrl = checkIsDefaultUrl();
+  const mockStore = { ...((readMockData().system_store || {}) as Record<string, any>) };
+
+  if (isDemo || isDefaultUrl) {
+    return mockStore;
+  }
+
+  try {
+    const systemShipmentId = await getOrCreateSystemShipmentId();
+    const { data: logsRows, error } = await supabase
+      .from("logs")
+      .select("amount_type, event_text")
+      .eq("shipment_id", systemShipmentId);
+
+    if (error) throw error;
+
+    if (logsRows) {
+      for (const row of logsRows) {
+        if (row.amount_type) {
+          try {
+            mockStore[row.amount_type] = row.event_text ? JSON.parse(row.event_text) : null;
+          } catch {
+            mockStore[row.amount_type] = row.event_text;
+          }
+        }
+      }
+    }
+    return mockStore;
+  } catch (err) {
+    console.error("Error reading full system store from Supabase:", err);
+    return mockStore;
+  }
+}
+
 export async function getAllLogs(): Promise<Log[]> {
   const isDefaultUrl = checkIsDefaultUrl();
   if (isDemo || isDefaultUrl) {
@@ -2409,14 +2444,29 @@ export async function getAllLogs(): Promise<Log[]> {
     return (data.logs || []) as Log[];
   }
   try {
-    const { data, error } = await supabase
-      .from("logs")
-      .select("*")
-      .neq("shipment_id", 999999); // Exclude system config rows
-    if (error) throw error;
-    return data as Log[];
+    const allLogs: Log[] = [];
+    const pageSize = 1000;
+    let page = 0;
+
+    while (true) {
+      const { data, error } = await supabase
+        .from("logs")
+        .select("*")
+        .neq("shipment_id", 999999) // Exclude system config rows
+        .range(page * pageSize, (page + 1) * pageSize - 1)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+
+      allLogs.push(...(data as Log[]));
+      if (data.length < pageSize) break;
+      page++;
+    }
+
+    return allLogs;
   } catch (err) {
-    console.error("Error fetching all logs:", err);
+    console.error("Error fetching all logs with pagination:", err);
     return readMockData().logs as Log[];
   }
 }
@@ -2435,7 +2485,12 @@ export async function importFullBackup(backup: any): Promise<void> {
     data.customers = backup.customers || [];
     data.config = backup.config || data.config;
     data.logs = backup.logs || [];
-    data.system_store = backup.system_store || data.system_store || {};
+    if (backup.billable_concepts) data.billable_concepts = backup.billable_concepts;
+    if (backup.overseas_agents) {
+      if (!data.system_store) data.system_store = {};
+      data.system_store.SYSTEM_OVERSEAS_AGENTS = backup.overseas_agents;
+    }
+    data.system_store = { ...(data.system_store || {}), ...(backup.system_store || {}) };
     writeMockData(data);
   } catch (e) {
     console.error("Failed to update mock_db.json during import:", e);
@@ -2452,7 +2507,7 @@ export async function importFullBackup(backup: any): Promise<void> {
       await supabase.from("ratesheets").delete().gt("id", 0);
 
       // Recreate SYSTEM_DATA_STORE shipment
-      const { data: systemShip, error: sysErr } = await supabase.from("shipments").insert({
+      const { data: systemShip, error: sysErr } = await supabase.from("shipments").upsert({
         id: 999999,
         client_name: "SYSTEM_DATA_STORE",
         reference: "System Configuration Store"
@@ -2460,23 +2515,27 @@ export async function importFullBackup(backup: any): Promise<void> {
       if (sysErr) throw sysErr;
       const systemId = systemShip.id;
 
-      // Restore system configurations in logs
-      if (backup.carriers) {
-        await supabase.from("logs").insert({
-          shipment_id: systemId,
-          amount_type: "SYSTEM_CARRIERS",
-          event_text: JSON.stringify(backup.carriers),
-          is_external: false
-        });
-      }
-      if (backup.system_store) {
-        for (const key in backup.system_store) {
-          await supabase.from("logs").insert({
+      // Consolidate full system store from backup
+      const fullStore: Record<string, any> = { ...(backup.system_store || {}) };
+      if (backup.carriers) fullStore.SYSTEM_CARRIERS = backup.carriers;
+      if (backup.overseas_agents) fullStore.SYSTEM_OVERSEAS_AGENTS = backup.overseas_agents;
+      if (backup.tasks) fullStore.SYSTEM_TASKS = backup.tasks;
+      if (backup.customers) fullStore.SYSTEM_CUSTOMERS = backup.customers;
+      if (backup.config) fullStore.SYSTEM_CONFIG = backup.config;
+      if (backup.billable_concepts) fullStore.SYSTEM_BILLABLE_CONCEPTS = backup.billable_concepts;
+      if (backup.statuses) fullStore.SYSTEM_STATUSES = backup.statuses;
+
+      // Restore all system configurations into logs under systemId
+      const systemEntries = Object.entries(fullStore);
+      for (const [key, value] of systemEntries) {
+        if (value !== undefined) {
+          const { error: insErr } = await supabase.from("logs").insert({
             shipment_id: systemId,
             amount_type: key,
-            event_text: JSON.stringify(backup.system_store[key]),
+            event_text: JSON.stringify(value),
             is_external: false
           });
+          if (insErr) console.error(`Warning: failed to restore system key ${key}:`, insErr);
         }
       }
 
@@ -2494,8 +2553,8 @@ export async function importFullBackup(backup: any): Promise<void> {
         status_id: s.status_id >= 10000 ? null : s.status_id, // Map custom statuses to null
         shipment_type: s.shipment_type,
         transport_mode: s.transport_mode,
-        eta: s.eta,
-        etd: s.etd,
+        eta: s.eta ? s.eta.split("T")[0].split(" ")[0] : null,
+        etd: s.etd ? s.etd.split("T")[0].split(" ")[0] : null,
         ct_file: s.ct_file,
         warehouse_receipt: s.warehouse_receipt,
         expo_mawb: s.expo_mawb,
@@ -2503,7 +2562,9 @@ export async function importFullBackup(backup: any): Promise<void> {
         pcs: s.pcs,
         kgs: s.kgs,
         chw: s.chw,
-        aes: s.aes
+        aes: s.aes,
+        created_at: s.created_at || new Date().toISOString(),
+        updated_at: s.updated_at || new Date().toISOString()
       }));
 
       // Insert shipments in chunks of 50
@@ -2520,7 +2581,7 @@ export async function importFullBackup(backup: any): Promise<void> {
         profile_id: l.profile_id,
         event_text: l.event_text,
         is_external: l.is_external,
-        billable_concept_id: l.billable_concept_id,
+        billable_concept_id: (l.billable_concept_id && l.billable_concept_id < 10000) ? l.billable_concept_id : null,
         amount: l.amount,
         amount_type: l.amount_type,
         created_at: l.created_at
@@ -2532,35 +2593,39 @@ export async function importFullBackup(backup: any): Promise<void> {
       }
 
       // Insert tasks
-      const dbTasks = (backup.tasks || []).map((t: any) => ({
-        id: t.id,
-        title: t.title,
-        description: t.description,
-        assignee: t.assignee,
-        start_date: t.start_date,
-        deadline: t.deadline,
-        status: t.status,
-        subtasks: t.subtasks,
-        logs: t.logs || []
-      }));
-      for (let i = 0; i < dbTasks.length; i += 50) {
-        const chunk = dbTasks.slice(i, i + 50);
-        const { error } = await supabase.from("tasks").insert(chunk);
-        if (error) throw error;
+      if (backup.tasks && backup.tasks.length > 0) {
+        const dbTasks = backup.tasks.map((t: any) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          assignee: t.assignee,
+          start_date: t.start_date,
+          deadline: t.deadline,
+          status: t.status,
+          subtasks: t.subtasks,
+          logs: t.logs || []
+        }));
+        for (let i = 0; i < dbTasks.length; i += 50) {
+          const chunk = dbTasks.slice(i, i + 50);
+          const { error } = await supabase.from("tasks").insert(chunk);
+          if (error) console.error("Warning inserting tasks table:", error);
+        }
       }
 
       // Insert ratesheets
-      const dbRatesheets = (backup.ratesheets || []).map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        client_name: r.client_name,
-        markup_percent: r.markup_percent,
-        rates: r.rates
-      }));
-      for (let i = 0; i < dbRatesheets.length; i += 50) {
-        const chunk = dbRatesheets.slice(i, i + 50);
-        const { error } = await supabase.from("ratesheets").insert(chunk);
-        if (error) throw error;
+      if (backup.ratesheets && backup.ratesheets.length > 0) {
+        const dbRatesheets = backup.ratesheets.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          client_name: r.client_name,
+          markup_percent: r.markup_percent,
+          rates: r.rates
+        }));
+        for (let i = 0; i < dbRatesheets.length; i += 50) {
+          const chunk = dbRatesheets.slice(i, i + 50);
+          const { error } = await supabase.from("ratesheets").insert(chunk);
+          if (error) console.error("Warning inserting ratesheets table:", error);
+        }
       }
 
     } catch (err) {

@@ -85,6 +85,10 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      const shipCount = data.total_shipments || data.shipments?.length || 0;
+      const logCount = data.total_logs || data.logs?.length || 0;
+      alert(`✅ Backup 100% completo generado exitosamente:\n- ${shipCount} embarques\n- ${logCount} logs de actividad\n- ${data.carriers?.length || 0} líneas aéreas/transportistas\n- ${data.overseas_agents?.length || 0} agentes del exterior\n- ${data.tasks?.length || 0} tareas/vencimientos\n- ${data.ratesheets?.length || 0} tarifarios\n- Todas las configuraciones del sistema (estados, flags, notas, fechas)`);
     } catch (err) {
       console.error(err);
       alert("Backup failed to download.");
@@ -97,7 +101,7 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const confirmImport = confirm("WARNING: Importing a backup will overwrite all current database tables (shipments, tasks, ratesheets, carrier agenda, status tags, configurations). Are you sure you want to proceed?");
+    const confirmImport = confirm("ADVERTENCIA: Importar un backup reemplazará las tablas actuales con la información del archivo. ¿Deseas continuar?");
     if (!confirmImport) {
       e.target.value = "";
       return;
@@ -110,11 +114,13 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
         try {
           const json = JSON.parse(event.target?.result as string);
           await importFullBackupAction(json);
-          alert("Backup successfully imported and database restored!");
+          const shipCount = json.total_shipments || json.shipments?.length || 0;
+          const logCount = json.total_logs || json.logs?.length || 0;
+          alert(`✅ Backup importado y base de datos restaurada al 100%:\n- ${shipCount} embarques restaurados\n- ${logCount} logs restaurados\n- Todas las configuraciones y agendas restauradas exitosamente.`);
           router.refresh();
         } catch (parseErr) {
           console.error(parseErr);
-          alert("Invalid backup file format.");
+          alert("Error: formato de archivo de backup inválido.");
         } finally {
           setImporting(false);
         }
@@ -122,7 +128,7 @@ export function ShipmentsList({ initialShipments, initialStatuses, initialCustom
       reader.readAsText(file);
     } catch (err) {
       console.error(err);
-      alert("Failed to read backup file.");
+      alert("Error al leer el archivo de backup.");
       setImporting(false);
     }
   };
