@@ -98,21 +98,42 @@ export function buildTrackingUpdateEmailHtml(payload: {
         <!-- Main Card -->
         <table role="presentation" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);" cellspacing="0" cellpadding="0">
           
-          <!-- Header -->
+          <!-- Brand Logo Header -->
           <tr>
-            <td style="background-color: #0f172a; padding: 24px 28px; border-bottom: 3px solid ${accentColor};">
+            <td style="background-color: #ffffff; padding: 22px 28px 18px 28px; border-bottom: 1px solid #f1f5f9;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td valign="middle">
+                    <img src="https://worldclasssolutions.us/wp-content/themes/world-class-solutions-theme-v1-2-2/assets/images/world-class-solutions-logo.png" alt="World Class Solutions" width="165" style="display: block; width: 165px; max-width: 100%; height: auto; border: 0;" />
+                  </td>
+                  <td align="right" valign="middle">
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px;">
+                      Tracker Operativo
+                    </div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">
+                      www.worldclasssolutions.us
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Shipment Title & Status Bar -->
+          <tr>
+            <td style="background-color: #0f172a; padding: 18px 28px; border-bottom: 3px solid ${accentColor};">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td>
-                    <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
-                      WCS TRACKER &bull; LOGISTICS NOTIFICATION
+                    <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
+                      ACTUALIZACIÓN DE EMBARQUE
                     </div>
-                    <div style="font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                      Embarque: ${shipment.reference}
+                    <div style="font-size: 19px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                      Ref: ${shipment.reference}
                     </div>
                   </td>
                   <td align="right">
-                    <span style="display: inline-block; background-color: ${accentColor}20; color: ${accentColor}; border: 1px solid ${accentColor}60; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 6px 12px; border-radius: 9999px; letter-spacing: 0.5px;">
+                    <span style="display: inline-block; background-color: ${accentColor}25; color: ${accentColor}; border: 1px solid ${accentColor}60; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 6px 14px; border-radius: 9999px; letter-spacing: 0.5px;">
                       ${displayStatus}
                     </span>
                   </td>
@@ -154,12 +175,15 @@ export function buildTrackingUpdateEmailHtml(payload: {
 
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 28px; text-align: center;">
-              <p style="margin: 0 0 6px 0; font-size: 11px; color: #94a3b8;">
-                Este es un mensaje automático generado por <strong>WCS Tracker</strong>. Por favor, no responda directamente a este correo.
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 22px 28px; text-align: center;">
+              <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #334155;">
+                World Class Solutions &bull; Global Logistics &amp; Freight Services
               </p>
-              <p style="margin: 0; font-size: 11px; color: #94a3b8;">
-                Para consultas operativas adicionales, contacte a su ejecutivo de cuenta asignado.
+              <p style="margin: 0 0 6px 0; font-size: 11px; color: #64748b;">
+                +1 (305) 530-8199 &bull; info@wcs-us.com &bull; Miami, FL
+              </p>
+              <p style="margin: 0; font-size: 10px; color: #94a3b8; font-style: italic;">
+                Este es un mensaje automático de seguimiento logístico. Por favor, no responda directamente a este correo.
               </p>
             </td>
           </tr>
